@@ -1,0 +1,13 @@
+{
+  "name": "rapidx-platform",
+  "version": "1.0.0",
+  "description": "RapidX Agentic Engineering Platform — Enterprise-grade SDLC orchestration powered by Get Things Done + Everything Claude Code",
+  "bin": { "rapidx": "bin/install.js" },
+  "files": ["bin", "src", "templates", "profiles", "get-things-done", "tests"],
+  "engines": { "node": ">=18.0.0" },
+  "license": "MIT",
+  "keywords": ["rapidx", "claude-code", "cursor", "copilot", "enterprise", "sdlc", "agentic"],
+  "scripts": {
+    "test": "node tests/run-all.js"
+  }
+}

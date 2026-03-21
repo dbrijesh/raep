@@ -1,0 +1,67 @@
+{
+  "profile_id": "enterprise-standard",
+  "client_name": "Enterprise Standard",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L2",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "review-gates",
+    "pod-maturity",
+    "architecture-copilot"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner"
+  ],
+  "review_gates": [
+    {
+      "name": "code-review",
+      "description": "Peer code review required before merge",
+      "mandatory": true
+    },
+    {
+      "name": "security-review",
+      "description": "Security review for auth, payments, and data access changes",
+      "mandatory": true
+    },
+    {
+      "name": "architecture-review",
+      "description": "Architecture review for infrastructure and data model changes",
+      "mandatory": false
+    },
+    {
+      "name": "security-scan",
+      "description": "Automated secret scanning on all commits",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": [],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": true
+  }
+}

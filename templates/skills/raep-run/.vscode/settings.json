@@ -1,0 +1,13 @@
+{
+  "rapidx.profile": "default",
+  "rapidx.techStack": {
+    "frontend": "react",
+    "backend": "typescript",
+    "database": "sqlite"
+  },
+  "rapidx.enabled": true,
+  "github.copilot.enable": {
+    "*": true
+  },
+  "github.copilot.chat.enabled": true
+}

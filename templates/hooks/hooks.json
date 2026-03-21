@@ -1,0 +1,56 @@
+{
+  "version": "1.0",
+  "hooks": [
+    {
+      "name": "session-start",
+      "description": "Load profile and tech stack context at the start of each Claude Code session",
+      "trigger": "session_start",
+      "script": ".rapidx/hooks/session-start.js",
+      "enabled": true,
+      "required": true
+    },
+    {
+      "name": "session-end",
+      "description": "Write session summary to audit log at the end of each session",
+      "trigger": "session_end",
+      "script": ".rapidx/hooks/session-end.js",
+      "enabled": true,
+      "required": false
+    },
+    {
+      "name": "audit-trail",
+      "description": "Write all significant events to the JSONL audit log",
+      "trigger": "post_tool_use",
+      "script": ".rapidx/hooks/audit-trail.js",
+      "enabled": true,
+      "required": true
+    },
+    {
+      "name": "secret-scanner",
+      "description": "Scan all file writes for hardcoded secrets and credentials",
+      "trigger": "pre_tool_use",
+      "filter": "Write",
+      "script": ".rapidx/hooks/secret-scanner.js",
+      "enabled": true,
+      "required": true
+    },
+    {
+      "name": "suggest-compact",
+      "description": "Suggest /compact when context usage exceeds 70%",
+      "trigger": "post_tool_use",
+      "script": ".rapidx/hooks/suggest-compact.js",
+      "enabled": true,
+      "required": false
+    },
+    {
+      "name": "governance-gate",
+      "description": "Enforce governance checks before merge operations",
+      "trigger": "pre_tool_use",
+      "filter": "Bash",
+      "script": ".rapidx/hooks/governance-gate.js",
+      "enabled": false,
+      "required": false,
+      "profiles": ["pharma-regulated", "finserv-sox", "insurance-hipaa", "enterprise-standard"]
+    }
+  ]
+}

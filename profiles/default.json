@@ -1,0 +1,57 @@
+{
+  "profile_id": "default",
+  "client_name": "RapidX Default",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L1",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "review-gates",
+    "pod-maturity",
+    "architecture-copilot"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner"
+  ],
+  "review_gates": [
+    {
+      "name": "code-review",
+      "description": "Standard code review required before merge",
+      "mandatory": true
+    },
+    {
+      "name": "security-scan",
+      "description": "Secret scanning on all commits",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": [],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": false
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["profile_id", "version", "engagement", "rules", "skills", "agents", "hooks"],
+  "properties": {
+    "profile_id": { "type": "string" },
+    "client_name": { "type": "string" },
+    "version": { "type": "string" },
+    "engagement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["greenfield", "modernization", "maintenance", "migration"]
+        },
+        "maturity_level": {
+          "type": "string",
+          "enum": ["L0", "L1", "L2", "L3", "L4"]
+        },
+        "tech_stack_ref": { "type": "string" }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "skills": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "agents": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "hooks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "review_gates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "mandatory": { "type": "boolean" }
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "properties": {
+        "compliance_frameworks": { "type": "array", "items": { "type": "string" } },
+        "audit_trail": { "type": "boolean" },
+        "secret_scanning": { "type": "boolean" },
+        "mandatory_review": { "type": "boolean" }
+      }
+    }
+  }
+}

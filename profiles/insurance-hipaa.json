@@ -1,0 +1,74 @@
+{
+  "profile_id": "insurance-hipaa",
+  "client_name": "Insurance — HIPAA Compliance",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L2",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "review-gates",
+    "pod-maturity",
+    "architecture-copilot"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner",
+    "governance-gate"
+  ],
+  "review_gates": [
+    {
+      "name": "code-review",
+      "description": "Mandatory peer code review",
+      "mandatory": true
+    },
+    {
+      "name": "phi-data-review",
+      "description": "Review for Protected Health Information (PHI) handling — encryption, access controls, minimum necessary principle",
+      "mandatory": true
+    },
+    {
+      "name": "security-review",
+      "description": "Security review for all code touching patient data, authentication, or data transmission",
+      "mandatory": true
+    },
+    {
+      "name": "hipaa-safeguards-review",
+      "description": "Verify technical safeguards: unique user ID, automatic logoff, encryption/decryption, audit controls",
+      "mandatory": true
+    },
+    {
+      "name": "breach-risk-assessment",
+      "description": "Assess breach risk for any new PHI data flows or storage patterns",
+      "mandatory": false
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": ["HIPAA", "HITECH", "NIST 800-66"],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": true,
+    "notes": "HIPAA Technical Safeguards (45 CFR 164.312) apply. PHI must be encrypted at rest and in transit. Minimum necessary standard: only access the PHI needed for the task. Business Associate Agreements required for all third-party services touching PHI."
+  }
+}

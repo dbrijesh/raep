@@ -1,0 +1,74 @@
+{
+  "profile_id": "finserv-sox",
+  "client_name": "Financial Services — SOX Compliance",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L2",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "review-gates",
+    "pod-maturity",
+    "architecture-copilot"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner",
+    "governance-gate"
+  ],
+  "review_gates": [
+    {
+      "name": "code-review",
+      "description": "Mandatory peer code review — two-person integrity required for financial logic",
+      "mandatory": true
+    },
+    {
+      "name": "security-review",
+      "description": "Security review for all access control, authentication, and financial transaction code",
+      "mandatory": true
+    },
+    {
+      "name": "sox-controls-review",
+      "description": "SOX IT controls review: change management, access controls, audit logging",
+      "mandatory": true
+    },
+    {
+      "name": "audit-trail-completeness",
+      "description": "Verify all financial transactions have complete audit trails",
+      "mandatory": true
+    },
+    {
+      "name": "segregation-of-duties",
+      "description": "Verify separation of duties in financial workflow code",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": ["SOX", "PCI-DSS", "NIST CSF"],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": true,
+    "notes": "SOX Section 302/404 compliance required. All changes to financial reporting systems need ITGC evidence. PCI-DSS controls apply for payment processing."
+  }
+}

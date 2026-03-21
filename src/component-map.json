@@ -1,0 +1,303 @@
+{
+  "always": {
+    "rules": ["common"],
+    "skills": [
+      "coding-standards",
+      "security-review",
+      "tdd-workflow",
+      "strategic-compact",
+      "search-first",
+      "verification-loop"
+    ],
+    "agents": [
+      "planner",
+      "architect",
+      "tdd-guide",
+      "code-reviewer",
+      "security-reviewer",
+      "build-error-resolver",
+      "doc-updater"
+    ],
+    "hooks": [
+      "session-start",
+      "session-end",
+      "audit-trail",
+      "secret-scanner"
+    ]
+  },
+  "languages": {
+    "typescript": { "rules": ["typescript"], "skills": [], "agents": [] },
+    "javascript": { "rules": ["typescript"], "skills": [], "agents": [] },
+    "python": { "rules": ["python"], "skills": [], "agents": ["python-reviewer"] },
+    "go": {
+      "rules": ["golang"],
+      "skills": ["golang-patterns", "golang-testing"],
+      "agents": ["go-reviewer", "go-build-resolver"]
+    },
+    "java": { "rules": ["java"], "skills": ["java-coding-standards", "jpa-patterns"], "agents": [] },
+    "swift": { "rules": ["swift"], "skills": [], "agents": [] },
+    "php": { "rules": ["php"], "skills": [], "agents": [] },
+    "rust": { "rules": [], "skills": [], "agents": [] },
+    "csharp": { "rules": [], "skills": [], "agents": [] },
+    "cpp": { "rules": [], "skills": ["cpp-coding-standards", "cpp-testing"], "agents": [] },
+    "perl": { "rules": [], "skills": ["perl-patterns", "perl-security", "perl-testing"], "agents": [] }
+  },
+  "frameworks": {
+    "react": {
+      "skills": ["frontend-patterns", "e2e-testing"],
+      "agents": ["e2e-runner", "refactor-cleaner"]
+    },
+    "nextjs": {
+      "skills": ["frontend-patterns", "e2e-testing"],
+      "agents": ["e2e-runner", "refactor-cleaner"]
+    },
+    "angular": {
+      "skills": ["frontend-patterns", "e2e-testing"],
+      "agents": ["e2e-runner", "refactor-cleaner"]
+    },
+    "vue": {
+      "skills": ["frontend-patterns", "e2e-testing"],
+      "agents": ["e2e-runner", "refactor-cleaner"]
+    },
+    "svelte": {
+      "skills": ["frontend-patterns", "e2e-testing"],
+      "agents": ["e2e-runner", "refactor-cleaner"]
+    },
+    "express": {
+      "skills": ["backend-patterns", "api-design"],
+      "agents": []
+    },
+    "nestjs": {
+      "skills": ["backend-patterns", "api-design"],
+      "agents": []
+    },
+    "fastify": {
+      "skills": ["backend-patterns", "api-design"],
+      "agents": []
+    },
+    "fastapi": {
+      "skills": ["backend-patterns", "api-design", "python-patterns", "python-testing"],
+      "agents": []
+    },
+    "django": {
+      "skills": [
+        "backend-patterns",
+        "api-design",
+        "django-patterns",
+        "django-security",
+        "django-tdd",
+        "django-verification"
+      ],
+      "agents": []
+    },
+    "flask": {
+      "skills": ["backend-patterns", "api-design", "python-patterns", "python-testing"],
+      "agents": []
+    },
+    "springboot": {
+      "skills": [
+        "backend-patterns",
+        "api-design",
+        "springboot-patterns",
+        "springboot-security",
+        "springboot-tdd",
+        "springboot-verification",
+        "java-coding-standards",
+        "jpa-patterns"
+      ],
+      "agents": []
+    },
+    "laravel": {
+      "skills": [
+        "backend-patterns",
+        "api-design",
+        "laravel-patterns",
+        "laravel-security",
+        "laravel-tdd",
+        "laravel-verification"
+      ],
+      "agents": []
+    },
+    "react-native": {
+      "skills": ["frontend-patterns"],
+      "agents": []
+    },
+    "flutter": {
+      "skills": ["frontend-patterns"],
+      "agents": []
+    },
+    "swift-ios": {
+      "skills": [
+        "swift-actor-persistence",
+        "swift-protocol-di-testing",
+        "swift-concurrency-6-2",
+        "liquid-glass-design",
+        "foundation-models-on-device"
+      ],
+      "agents": []
+    }
+  },
+  "databases": {
+    "postgresql": {
+      "skills": ["postgres-patterns", "database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "mysql": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "mongodb": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "dynamodb": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "sqlite": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "sqlserver": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    },
+    "mariadb": {
+      "skills": ["database-migrations"],
+      "agents": ["database-reviewer"]
+    }
+  },
+  "orms": {
+    "prisma": { "skills": [], "agents": [] },
+    "drizzle": { "skills": [], "agents": [] },
+    "typeorm": { "skills": [], "agents": [] },
+    "sqlalchemy": { "skills": [], "agents": [] },
+    "django-orm": { "skills": [], "agents": [] },
+    "jpa": { "skills": ["jpa-patterns"], "agents": [] },
+    "gorm": { "skills": [], "agents": [] },
+    "sequelize": { "skills": [], "agents": [] }
+  },
+  "infrastructure": {
+    "docker": {
+      "skills": ["docker-patterns", "deployment-patterns"],
+      "agents": []
+    },
+    "kubernetes": {
+      "skills": ["deployment-patterns", "docker-patterns"],
+      "agents": []
+    },
+    "docker-compose": {
+      "skills": ["docker-patterns", "deployment-patterns"],
+      "agents": []
+    },
+    "cicd": {
+      "skills": ["deployment-patterns"],
+      "agents": []
+    }
+  },
+  "testing": {
+    "playwright": {
+      "skills": ["e2e-testing"],
+      "agents": ["e2e-runner"]
+    },
+    "cypress": {
+      "skills": ["e2e-testing"],
+      "agents": ["e2e-runner"]
+    }
+  },
+  "apiStyles": {
+    "rest": { "skills": ["api-design"], "agents": [] },
+    "graphql": { "skills": ["api-design"], "agents": [] },
+    "grpc": { "skills": ["api-design"], "agents": [] },
+    "trpc": { "skills": ["api-design"], "agents": [] }
+  },
+  "profiles": {
+    "always": {
+      "skills": [
+        "ai-governance",
+        "client-onboarding",
+        "review-gates",
+        "pod-maturity",
+        "architecture-copilot"
+      ]
+    },
+    "regulated": { "skills": [] },
+    "modernization": { "skills": ["migration-framework"] }
+  },
+  "allKnown": {
+    "rules": [
+      "common",
+      "typescript",
+      "python",
+      "golang",
+      "java",
+      "swift",
+      "php"
+    ],
+    "skills": [
+      "coding-standards",
+      "security-review",
+      "tdd-workflow",
+      "strategic-compact",
+      "search-first",
+      "verification-loop",
+      "frontend-patterns",
+      "backend-patterns",
+      "api-design",
+      "e2e-testing",
+      "postgres-patterns",
+      "database-migrations",
+      "docker-patterns",
+      "deployment-patterns",
+      "golang-patterns",
+      "golang-testing",
+      "python-patterns",
+      "python-testing",
+      "django-patterns",
+      "django-security",
+      "django-tdd",
+      "django-verification",
+      "springboot-patterns",
+      "springboot-security",
+      "springboot-tdd",
+      "springboot-verification",
+      "java-coding-standards",
+      "jpa-patterns",
+      "laravel-patterns",
+      "laravel-security",
+      "laravel-tdd",
+      "laravel-verification",
+      "swift-actor-persistence",
+      "swift-protocol-di-testing",
+      "swift-concurrency-6-2",
+      "liquid-glass-design",
+      "foundation-models-on-device",
+      "cpp-coding-standards",
+      "cpp-testing",
+      "perl-patterns",
+      "perl-security",
+      "perl-testing",
+      "ai-governance",
+      "client-onboarding",
+      "review-gates",
+      "pod-maturity",
+      "architecture-copilot",
+      "migration-framework"
+    ],
+    "agents": [
+      "planner",
+      "architect",
+      "tdd-guide",
+      "code-reviewer",
+      "security-reviewer",
+      "build-error-resolver",
+      "doc-updater",
+      "e2e-runner",
+      "refactor-cleaner",
+      "database-reviewer",
+      "go-reviewer",
+      "go-build-resolver",
+      "python-reviewer"
+    ]
+  }
+}
