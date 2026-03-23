@@ -38,7 +38,7 @@
     "swift": { "rules": ["swift"], "skills": [], "agents": [] },
     "php": { "rules": ["php"], "skills": [], "agents": [] },
     "rust": { "rules": [], "skills": [], "agents": [] },
-    "csharp": { "rules": [], "skills": [], "agents": [] },
+    "csharp": { "rules": [], "skills": ["dotnet-patterns", "dotnet-security", "dotnet-tdd", "dotnet-verification"], "agents": ["csharp-reviewer"] },
     "cpp": { "rules": [], "skills": ["cpp-coding-standards", "cpp-testing"], "agents": [] },
     "perl": { "rules": [], "skills": ["perl-patterns", "perl-security", "perl-testing"], "agents": [] }
   },
@@ -135,6 +135,22 @@
         "foundation-models-on-device"
       ],
       "agents": []
+    },
+    "aspnet": {
+      "skills": ["backend-patterns", "api-design", "dotnet-patterns", "dotnet-security", "dotnet-tdd", "dotnet-verification"],
+      "agents": ["csharp-reviewer"]
+    },
+    "dotnet": {
+      "skills": ["backend-patterns", "api-design", "dotnet-patterns", "dotnet-security", "dotnet-tdd", "dotnet-verification"],
+      "agents": ["csharp-reviewer"]
+    },
+    "blazor": {
+      "skills": ["frontend-patterns", "dotnet-patterns", "dotnet-security"],
+      "agents": ["csharp-reviewer"]
+    },
+    "maui": {
+      "skills": ["frontend-patterns", "dotnet-patterns"],
+      "agents": ["csharp-reviewer"]
     }
   },
   "databases": {
@@ -282,7 +298,11 @@
       "review-gates",
       "pod-maturity",
       "architecture-copilot",
-      "migration-framework"
+      "migration-framework",
+      "dotnet-patterns",
+      "dotnet-security",
+      "dotnet-tdd",
+      "dotnet-verification"
     ],
     "agents": [
       "planner",
@@ -297,7 +317,8 @@
       "database-reviewer",
       "go-reviewer",
       "go-build-resolver",
-      "python-reviewer"
+      "python-reviewer",
+      "csharp-reviewer"
     ]
   }
 }
