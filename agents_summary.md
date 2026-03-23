@@ -19,11 +19,11 @@ These agents are present in every project regardless of tech stack.
 |-------|------|
 | **Planner** | Translates project goals into structured requirements, roadmaps, and phase plans. Produces phased task breakdowns with acceptance criteria, dependency mapping, and risk identification. Adapts plans to the configured tech stack and version constraints. |
 | **Architect** | Handles system design, component architecture, API contract definition, and technology decisions. Produces Architecture Decision Records (ADRs). Enforces version-constrained design — only designs with APIs available in the configured stack versions. |
-| **TDD Guide** | Drives test-driven development discipline. Generates test plans before implementation, guides the red-green-refactor cycle, sets coverage targets, and reviews test quality. |
-| **Code Reviewer** | General-purpose code reviewer. Checks for correctness, style consistency, error handling, dead code, and alignment with the active coding standards. Works alongside language-specific reviewers when a specialist is available. |
-| **Security Reviewer** | Performs OWASP Top 10 checks, reviews authentication/authorisation patterns, secrets handling, input validation, and framework-specific security configurations. Blocks ship on critical findings. |
-| **Build Error Resolver** | Diagnoses compilation errors, dependency conflicts, and build pipeline failures. Produces a root-cause analysis and a concrete fix plan. |
-| **Doc Updater** | Keeps documentation in sync with code changes. Updates READMEs, API docs, architecture diagrams, and changelogs as part of each completed task. |
+| **TDD Guide** | Writes failing tests before any implementation code, then guides the minimum implementation to make them pass, then refactors. Enforces "never write implementation before the test." Uses the project's configured testing framework (Jest/Vitest, pytest, Go testing, JUnit) from the stack config. |
+| **Code Reviewer** | Performs code reviews against a 4-category checklist: quality (readability, function size, magic numbers, error handling), standards (naming, file organisation, active rules), correctness (logic, edge cases, null handling, async/await), and tests (presence, meaningfulness, clarity). Works alongside language-specific specialist reviewers when available. |
+| **Security Reviewer** | Performs security-focused reviews triggered whenever code touches authentication, authorisation, user input, file uploads, payment processing, database queries with user-supplied data, API endpoint creation, secrets handling, or cross-origin requests. Reviews against secrets management, input validation, authentication, API security, and data protection checklists. |
+| **Build Error Resolver** | Diagnoses build errors, compilation failures, type errors, and CI/CD pipeline failures using a 6-step systematic process: read the full error, categorise it, locate the source, check version compatibility against stack config, propose the minimal fix, verify the fix introduces no new errors. Covers TypeScript, Python, Go, and CI/CD failure categories. |
+| **Doc Updater** | Keeps documentation in sync with code changes. Triggered after features or significant refactors that change public APIs, configuration options, installation procedures, or system design. Updates README, inline comments, API docs (OpenAPI/Swagger), CHANGELOG, and architecture docs. Documents the "why" not the "what" — removes outdated documentation proactively. |
 
 ---
 
@@ -31,8 +31,8 @@ These agents are present in every project regardless of tech stack.
 
 | Agent | Triggered by | Role |
 |-------|-------------|------|
-| **E2E Runner** | React, Next.js, Angular, Vue, Svelte, Blazor, React Native, Flutter, Playwright, Cypress | Orchestrates end-to-end test execution. Writes and maintains E2E test suites, interprets failures, and reports coverage against acceptance criteria. |
-| **Refactor Cleaner** | React, Next.js, Angular, Vue, Svelte | Identifies and executes safe refactors: component decomposition, dead code removal, prop drilling elimination, and performance anti-pattern cleanup. |
+| **E2E Runner** | React, Next.js, Angular, Vue, Svelte, Blazor, React Native, Flutter, Playwright, Cypress | Writes and runs end-to-end tests using the E2E framework configured in the stack (Playwright or Cypress). Tests user flows, not implementation details. Uses accessible selectors (role, label, text) over CSS selectors. Ensures each test is deterministic, independent, and sets up its own state. Debugs test failures. |
+| **Refactor Cleaner** | React, Next.js, Angular, Vue, Svelte | Improves code quality through targeted refactoring while always preserving existing behaviour. Applies patterns: extract function (long methods), extract variable (magic numbers/strings), extract interface (implicit types), remove dead code, flatten callbacks (callback hell → async/await), reduce nesting (early returns, guard clauses). Will not refactor when no tests exist to verify behaviour, when a deadline is imminent, or when code is scheduled for deletion. |
 
 ---
 
@@ -40,10 +40,10 @@ These agents are present in every project regardless of tech stack.
 
 | Agent | Triggered by | Role |
 |-------|-------------|------|
-| **C# / .NET Reviewer** | C#, ASP.NET Core, .NET, Blazor, MAUI | Specialist reviewer for C# codebases. Checks async/await correctness (flags `.Result`/`.Wait()`), EF Core N+1 patterns, DI lifetime mismatches, nullable reference handling, security headers, and .NET-specific OWASP issues. |
+| **C# / .NET Reviewer** | C#, ASP.NET Core, .NET, Blazor, MAUI | Specialist reviewer for C# codebases. Checks async/await correctness (flags `.Result`/`.Wait()`, `async void`, missing `CancellationToken`), EF Core N+1 patterns and missing `AsNoTracking()`, DI lifetime mismatches (scoped into singleton), missing `IHttpClientFactory` usage, nullable reference warnings, security headers, `[Authorize]`/`[AllowAnonymous]` coverage, and model binding hygiene. |
 | **Python Reviewer** | Python (FastAPI, Django, Flask) | Specialist reviewer for Python codebases. Checks Pythonic idioms, type annotations, async patterns, and Python-specific security concerns. |
-| **Go Reviewer** | Go | Specialist reviewer for Go codebases. Checks error handling conventions, goroutine safety, interface design, and Go-specific performance patterns. |
-| **Go Build Resolver** | Go | Diagnoses Go-specific build and module errors: missing imports, version conflicts in `go.mod`, CGO issues. |
+| **Go Reviewer** | Go | Specialist reviewer for Go codebases. Checks error handling conventions (`fmt.Errorf` wrapping, no ignored errors), goroutine lifecycle and leak prevention, interface design, and Go-specific performance patterns. |
+| **Go Build Resolver** | Go | Diagnoses Go-specific build and module errors: missing imports, version conflicts in `go.mod`, CGO issues, interface implementation gaps. Runs `go mod tidy` analysis. |
 
 ---
 
@@ -51,7 +51,7 @@ These agents are present in every project regardless of tech stack.
 
 | Agent | Triggered by | Role |
 |-------|-------------|------|
-| **Database Reviewer** | PostgreSQL, MySQL, MongoDB, DynamoDB, SQL Server, SQLite, MariaDB | Reviews schema designs, migration scripts, query patterns, indexing strategy, and data access layer code. |
+| **Database Reviewer** | PostgreSQL, MySQL, MongoDB, DynamoDB, SQL Server, SQLite, MariaDB | Reviews database schema changes, migrations, query patterns, and ORM usage for correctness, performance, and safety. Checks migration reversibility, zero-downtime patterns for large table changes, N+1 queries, index appropriateness, parameterised queries, and transaction boundaries. ORM-aware: applies Prisma (`select` field limiting), SQLAlchemy (lazy loading caution), and JPA/Hibernate (`@BatchSize`, fetch joins) specific guidance based on the configured ORM from the stack. |
 
 ---
 
@@ -61,10 +61,10 @@ These agents handle governance, compliance, and client management concerns.
 
 | Agent | Role |
 |-------|------|
-| **Governance Auditor** | Audits projects against the active client profile's governance requirements. Generates compliance reports, flags policy violations, and tracks review gate completion. |
-| **Migration Analyst** | Analyses legacy codebases for modernisation engagements. Maps existing architecture, identifies migration risk areas, estimates effort, and produces a migration roadmap. Active when engagement type is `modernization`. |
-| **Compliance Checker** | Validates that code and processes meet regulatory requirements for the active compliance framework (21 CFR Part 11, SOX, HIPAA). Blocks ship when mandatory compliance controls are not met. |
-| **Client Onboarder** | Guides client discovery — collects project context, governance requirements, tech stack details, and compliance mandates to configure a custom client profile. |
+| **Governance Auditor** | Audits the project against the active client profile's governance requirements across 5 areas: code quality (rule adherence), security (secret scanning, access controls, audit logging), review gates (mandatory checkpoint completion), audit trail (completeness of `.rapidx/audit/` logs), and component currency (installed skills/rules up to date). Produces a structured report with pass/fail per control, evidence references, and remediation recommendations. Runs compliance-specific audits for pharma (21 CFR Part 11), financial services (SOX), and insurance (HIPAA) profiles. |
+| **Migration Analyst** | Analyses legacy codebases and produces migration strategies for modernisation engagements. Runs a 5-step process: codebase mapping, dependency audit, technical debt assessment, migration complexity scoring (1–5 scale), and strategy recommendation (strangler fig / big bang / branch by abstraction). Produces a structured Migration Analysis Report with executive summary, component inventory with risk ratings, recommended migration sequence, and risks/mitigations. |
+| **Compliance Checker** | Verifies code against the regulatory compliance requirements in the active profile. Produces a structured pass/fail compliance check table with control ID, description, status, and evidence references. Covers 21 CFR Part 11 (audit trail, e-signatures, access controls, data integrity, computer validation), SOX IT Controls (change management, access management, operations, backup/recovery), and HIPAA Technical Safeguards (access controls, audit controls, integrity controls, transmission security). |
+| **Client Onboarder** | Guides onboarding of new client engagements through a 6-step workflow: discovery (industry, size, tech stack, compliance requirements), profile selection, stack detection, component installation, documentation generation, and team briefing. Asks structured context questions to configure the right profile. Produces specific handoff deliverables: `.rapidx/stack.json`, `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and an onboarding summary for the engineering team. |
 
 ---
 
@@ -78,12 +78,12 @@ Skills are reusable prompt modules that provide domain-specific knowledge and pa
 
 | Skill | Purpose |
 |-------|---------|
-| **coding-standards** | Universal coding standards: naming conventions, file organisation, error handling, commenting discipline, and code readability rules that apply across all languages and frameworks. |
-| **security-review** | OWASP Top 10 guidance, input validation, authentication patterns, authorisation checks, secrets management, and secure defaults. Applied to every review regardless of stack. |
-| **tdd-workflow** | Red-green-refactor cycle, test structure conventions, coverage strategy, mocking guidelines, and the discipline of writing tests before implementation. |
-| **strategic-compact** | Context efficiency — how to communicate intent clearly to AI agents, structure prompts effectively, and avoid token waste on irrelevant context. |
-| **search-first** | Research-before-coding discipline: always verify existing solutions, check library docs, and understand the problem space before writing new code. |
-| **verification-loop** | Structured verification: systematically confirm that completed code matches requirements, passes tests, and handles edge cases before marking work done. |
+| **coding-standards** | Coding quality principles (KISS, DRY, YAGNI, readability-first) with concrete TypeScript/JavaScript/React patterns and examples. Covers variable/function naming, immutability, error handling, async/await, type safety, React component structure, REST API conventions, file organisation, commenting discipline, and code smell detection. Note: examples are TS/JS/React biased (from ECC upstream) but the underlying principles apply universally. |
+| **security-review** | Comprehensive 10-area security checklist with code patterns: secrets management (env vars, no hardcoded keys), input validation (schema-based with zod/pydantic), SQL injection prevention (parameterised queries), authentication/authorisation (httpOnly cookies, role checks), XSS prevention (sanitisation, CSP), CSRF protection (tokens, SameSite cookies), rate limiting (endpoint and user-based), sensitive data exposure (log redaction, generic error messages), dependency security (npm audit, lock files), plus a pre-deployment security checklist. Activated on auth, payment, input handling, API creation, secrets, and sensitive data work. |
+| **tdd-workflow** | 7-step TDD workflow: write user journeys → generate test cases → run failing tests (red) → implement minimum code (green) → run tests again → refactor → verify 80%+ coverage. Covers all three test types: unit (Jest/Vitest patterns), integration (API endpoint tests), and E2E (Playwright patterns). Enforces test isolation, one assertion per test, descriptive names, semantic selectors, and mocking of external services. Includes CI/CD integration (GitHub Actions) and watch mode setup. |
+| **strategic-compact** | Session context window management — guides when to manually compact the AI context at logical task boundaries rather than letting auto-compaction trigger mid-task. Tracks tool call counts and suggests compaction after configurable thresholds (default: 50 tool calls). Includes a phase-transition decision table (e.g., compact after research before coding; do NOT compact mid-implementation), a guide to what survives vs what is lost in compaction, and token optimisation patterns including trigger-table lazy loading of skills and duplicate instruction detection. |
+| **search-first** | Structured 5-step workflow for finding existing solutions before writing custom code: need analysis → parallel search (npm/PyPI, MCP servers, GitHub, existing codebase) → evaluate candidates (functionality, maintenance, community, docs, license) → decide (adopt as-is / extend-wrap / build custom) → implement. Includes a decision matrix, search shortcuts by category, integration with planner/architect agents, and anti-patterns to avoid (jumping to code, ignoring MCP servers, dependency bloat). |
+| **verification-loop** | 6-phase verification system run after completing features, before PRs, and after refactoring: Phase 1 Build (does it compile?), Phase 2 Type Check (TypeScript/Pyright), Phase 3 Lint, Phase 4 Test Suite (with coverage — 80% minimum target), Phase 5 Security Scan (hardcoded secrets, stray debug logs), Phase 6 Diff Review (unintended changes, missing error handling, edge cases). Produces a formal VERIFICATION REPORT with pass/fail per phase and an overall READY/NOT READY verdict. |
 
 ---
 
@@ -215,12 +215,12 @@ Skills are reusable prompt modules that provide domain-specific knowledge and pa
 
 | Skill | Purpose |
 |-------|---------|
-| **ai-governance** | Responsible AI usage guidelines: data privacy, bias awareness, human oversight requirements, audit trail expectations, and acceptable use boundaries for AI-generated code. |
-| **client-onboarding** | Structured client discovery: collecting project context, governance requirements, tech stack details, compliance mandates, and team preferences to initialise a client profile. |
-| **review-gates** | Review gate workflow: which gates are mandatory, how to trigger them, what evidence is required, and how to document gate outcomes for audit purposes. |
+| **ai-governance** | Establishes guardrails for responsible and auditable AI-assisted development. Defines audit trail requirements (log session start/end, decisions, review gate outcomes), human oversight gates (AI must never autonomously push to production, modify auth/authorisation logic, change database schemas, or handle credentials without human review), context hygiene (load only relevant skills, avoid sensitive business logic in context), and a review checklist for all AI-generated code (logic correctness, security, version compatibility, test coverage, error handling). Includes additional traceability requirements for regulated profiles. |
+| **client-onboarding** | Structured client discovery checklist covering: industry and size (determines compliance profile), current tech stack (determines component selection), engineering maturity (determines starting maturity level), existing coding standards to preserve, required reviewers for different change types, and CI/CD pipeline details. Used by the Client Onboarder agent to configure a complete client profile. |
+| **review-gates** | Defines 4 standard human review checkpoints with triggers and checklists: Code Review Gate (before merging to main — readability, logic, tests), Security Review Gate (auth/payment/sensitive data changes — secrets, input validation, OWASP controls), Architecture Review Gate (new services, schema changes, infra — alignment, dependencies, rollback), Database Review Gate (migrations, large table queries — reversibility, zero-downtime, indexes). Also defines compliance-specific gates for pharma (IQ/OQ/PQ validation, e-signatures), SOX (IT controls, segregation of duties), and HIPAA (PHI handling, encryption, access control). |
 | **pod-maturity** | A passive reference guide injected into agent context so every AI response is calibrated to your team's current maturity level (L0–L4). Loaded from the active client profile, it tells the agent what level you are at, what behaviours define that level, and what the upgrade path looks like — so planning, review, and execution suggestions automatically match your team's actual autonomy and governance posture. Use `/rapidx:maturity-gate` to get a checklist of what requirements are met and what is still needed to advance to the next level. |
-| **architecture-copilot** | Architecture guidance and ADR (Architecture Decision Record) generation. Provides structured templates, decision frameworks, and technology evaluation criteria. |
-| **migration-framework** | Legacy modernisation framework for brownfield engagements: codebase analysis methodology, strangler fig pattern guidance, data migration strategy, and risk-tiered migration sequencing. Active for `modernization` engagement types. |
+| **architecture-copilot** | Assists with architectural decision making by providing an ADR (Architecture Decision Record) template (context, decision, consequences, alternatives considered), 6 architectural principles for AI-assisted projects (explicit over implicit, reversible decisions first, version-pinned dependencies, separation of concerns, observable systems, security by design), and an architecture review checklist (ADR documented, trade-offs noted, consistent with existing patterns, version compatibility verified, security and scalability considered). |
+| **migration-framework** | 4-phase framework for legacy system modernisation: Phase 1 Discovery (map codebase, document architecture, identify seams, produce risk register), Phase 2 Strategy (choose from strangler fig / big bang / branch-by-abstraction / database-first), Phase 3 Execution (strangler-fig iteration: smallest slice → facade → route traffic → verify parity → decommission), Phase 4 Validation (functional parity, performance benchmarks, data integrity, security posture, rollback plan). Key patterns: dual-write for data consistency during cutover, feature flag traffic routing (1% → 100%), shadow mode and contract testing. Active for `modernization` engagement types. |
 
 ---
 
