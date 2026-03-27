@@ -156,9 +156,9 @@ One installer run configures all your tools simultaneously:
 
 | Platform | What gets configured |
 |----------|---------------------|
-| Claude Code | Commands, settings.json hooks, CLAUDE.md |
-| VS Code + Copilot | copilot-instructions.md, settings.json merge, extensions.json |
-| Cursor | Rules with YAML frontmatter, skills, hooks, mcp.json |
+| Claude Code | `/rapidx:*` commands, `/gsd:*` commands, settings.json hooks, CLAUDE.md, COMMANDS.md |
+| VS Code + Copilot | copilot-instructions.md, settings.json merge, extensions.json, `.github/copilot/agents/rapidx-*.md`, `.github/copilot/prompts/rapidx/*.prompt.md` |
+| Cursor | Rules with YAML frontmatter, skills, hooks, mcp.json, `.cursor/agents/rapidx-*.md`, `.cursor/commands/rapidx/*.md` |
 | Codex | config.toml, AGENTS.md, skill files |
 | OpenCode | opencode.json, instruction files |
 | GitHub Copilot CLI | instructions.md, skill reference files |
@@ -228,9 +228,9 @@ Re-runs the tech stack questionnaire for a new category only, computes the delta
 
 | Platform | Detection method | Config written |
 |----------|-----------------|---------------|
-| **Claude Code CLI** | `claude --version` | `.claude/commands/`, `.claude/settings.json`, `CLAUDE.md` |
-| **VS Code + GitHub Copilot** | `code --version` + `code --list-extensions` | `.github/copilot-instructions.md`, `.vscode/settings.json`, `.vscode/extensions.json` |
-| **Cursor IDE** | App path detection + `.cursor/` dir | `.cursor/rules/`, `.cursor/skills/`, `.cursor/mcp.json` |
+| **Claude Code CLI** | `claude --version` | `.claude/commands/rapidx/` (53 `/rapidx:*` aliases), `.claude/commands/gsd/` (53 originals), `.claude/settings.json`, `CLAUDE.md`, `COMMANDS.md` |
+| **VS Code + GitHub Copilot** | `code --version` + `code --list-extensions` | `.github/copilot-instructions.md`, `.vscode/settings.json`, `.vscode/extensions.json`, `.github/copilot/agents/rapidx-*.md` (10 agents), `.github/copilot/prompts/rapidx/*.prompt.md` (53 prompt files), `.github/copilot/skills/` |
+| **Cursor IDE** | App path detection + `.cursor/` dir | `.cursor/rules/`, `.cursor/skills/`, `.cursor/agents/rapidx-*.md` (10 agents), `.cursor/commands/rapidx/` (53 MDC files), `.cursor/mcp.json` |
 | **GitHub Copilot CLI** | `gh copilot --version` | `.github/copilot/instructions.md`, `.github/copilot/skills/` |
 | **Codex CLI/App** | `codex --version` | `.codex/config.toml`, `.codex/AGENTS.md`, `.agents/skills/` |
 | **OpenCode** | `opencode --version` | `.opencode/opencode.json`, `.opencode/instructions/` |
@@ -418,37 +418,37 @@ node bin/install.js --profile enterprise-standard
 
 ## 9. Command Reference
 
-### Get Things Done workflow commands (`/gsd:*`)
+### Get Things Done workflow commands — `/rapidx:*`
 
-These are the SDLC workflow commands from the Get Things Done engine. 53 commands total.
+These are the 53 SDLC workflow commands from the Get Things Done engine, available on every supported platform under the `/rapidx:*` namespace. The original `/gsd:*` names are kept as aliases in Claude Code for backward compatibility.
 
 | Command | Description |
 |---------|-------------|
-| `/gsd:new-project` | Initialize a new project — extract requirements, generate roadmap |
-| `/gsd:discuss-phase` | Discuss and refine upcoming phase with stakeholders |
-| `/gsd:plan-phase` | Generate detailed task plan for a phase |
-| `/gsd:execute-phase` | Execute current phase with wave-based parallel tasks |
-| `/gsd:verify-work` | Verify completed work against acceptance criteria |
-| `/gsd:review` | Code review current changes |
-| `/gsd:ship` | Prepare and execute release |
-| `/gsd:quick` | Quick ad-hoc task, bug fix, or hotfix |
-| `/gsd:map-codebase` | Analyze existing codebase for migration/modernization |
-| `/gsd:next` | Move to the next task in current phase |
-| `/gsd:progress` | Show current phase and task progress |
-| `/gsd:complete-milestone` | Complete current milestone and archive |
-| `/gsd:new-milestone` | Start a new milestone |
-| `/gsd:debug` | Debug a specific issue with structured analysis |
-| `/gsd:add-tests` | Add test coverage to existing code |
-| `/gsd:research-phase` | Deep research phase before planning |
-| `/gsd:validate-phase` | Validate phase completion against requirements |
-| `/gsd:audit-milestone` | Audit a completed milestone |
-| `/gsd:pause-work` | Save context and pause current session |
-| `/gsd:resume-work` | Resume from a paused session |
-| `/gsd:session-report` | Generate a session summary report |
-| `/gsd:stats` | Show project statistics |
-| `/gsd:health` | Check project health status |
-| `/gsd:help` | Show all Get Things Done commands |
-| ... | 29 additional workflow commands |
+| `/rapidx:new-project` | Initialize a new project — extract requirements, generate roadmap |
+| `/rapidx:discuss-phase` | Discuss and refine upcoming phase with stakeholders |
+| `/rapidx:plan-phase` | Generate detailed task plan for a phase |
+| `/rapidx:execute-phase` | Execute current phase with wave-based parallel tasks |
+| `/rapidx:verify-work` | Verify completed work against acceptance criteria |
+| `/rapidx:review` | Code review current changes |
+| `/rapidx:ship` | Prepare and execute release |
+| `/rapidx:quick` | Quick ad-hoc task, bug fix, or hotfix |
+| `/rapidx:map-codebase` | Analyze existing codebase for migration/modernization |
+| `/rapidx:next` | Move to the next task in current phase |
+| `/rapidx:progress` | Show current phase and task progress |
+| `/rapidx:complete-milestone` | Complete current milestone and archive |
+| `/rapidx:new-milestone` | Start a new milestone |
+| `/rapidx:debug` | Debug a specific issue with structured analysis |
+| `/rapidx:add-tests` | Add test coverage to existing code |
+| `/rapidx:research-phase` | Deep research phase before planning |
+| `/rapidx:validate-phase` | Validate phase completion against requirements |
+| `/rapidx:audit-milestone` | Audit a completed milestone |
+| `/rapidx:pause-work` | Save context and pause current session |
+| `/rapidx:resume-work` | Resume from a paused session |
+| `/rapidx:session-report` | Generate a session summary report |
+| `/rapidx:stats` | Show project statistics |
+| ... | 31 additional workflow commands (see `COMMANDS.md` for full list) |
+
+> **Backward compatibility:** Claude Code also installs `/gsd:*` aliases for all commands (e.g. `/gsd:new-project` still works). All Copilot and Cursor formats use `/rapidx:*` names only.
 
 ### RapidX enterprise commands (`/rapidx:*`)
 
@@ -464,20 +464,81 @@ These are the SDLC workflow commands from the Get Things Done engine. 53 command
 | `/rapidx:onboard-codebase` | Onboard an existing legacy codebase to RapidX |
 | `/rapidx:health` | Check RapidX installation health and configuration |
 
-### Where commands run
+### How commands are delivered per platform
 
-| Tool | How to invoke |
-|------|--------------|
-| **Claude Code CLI** | Type `/gsd:new-project` or `/rapidx:help` directly in the chat |
-| **VS Code Copilot Chat** | Open chat panel → type `/gsd:new-project` |
-| **Cursor AI chat** | Type `/gsd:plan-phase` in the AI panel |
-| **GitHub Copilot CLI** | `gh copilot suggest "/gsd:quick fix the auth bug"` |
+| Platform | Format | Location | How to invoke |
+|----------|--------|----------|---------------|
+| **Claude Code** | Slash commands (`.md`) | `.claude/commands/rapidx/` | `/rapidx:new-project` |
+| **Claude Code** | Legacy aliases | `.claude/commands/gsd/` | `/gsd:new-project` (backward compat) |
+| **VS Code + Copilot** | Prompt files (`.prompt.md`) | `.github/copilot/prompts/rapidx/` | Open file → run via Copilot Chat, or `#file:.github/copilot/prompts/rapidx/new-project.prompt.md` |
+| **Cursor** | MDC files (`.md`) | `.cursor/commands/rapidx/` | `@.cursor/commands/rapidx/new-project.md` in Composer |
+| **GitHub Copilot CLI** | Instructions | `.github/copilot/instructions.md` | `gh copilot suggest "/rapidx:quick fix the auth bug"` |
+
+A `COMMANDS.md` quick-reference file is generated at the project root listing all 53 commands with per-platform usage examples.
 
 ---
 
 ## 10. Agent Catalog
 
-Agents are specialized subagents that perform specific roles within a task. They are loaded selectively based on task type and tech stack.
+Agents are specialized subagents that perform specific roles within a task. They are loaded selectively based on task type and tech stack. The 10 core Get Things Done agents are available across all supported IDEs — not just Claude Code.
+
+### Cross-IDE agent availability
+
+| Agent | Claude Code | VS Code + Copilot | Cursor |
+|-------|-------------|-------------------|--------|
+| `planner` | ✓ `.claude/agents/` | ✓ `.github/copilot/agents/rapidx-planner.md` | ✓ `.cursor/agents/rapidx-planner.md` |
+| `architect` | ✓ | ✓ `rapidx-architect.md` | ✓ `rapidx-architect.md` |
+| `tdd-guide` | ✓ | ✓ `rapidx-tdd-guide.md` | ✓ `rapidx-tdd-guide.md` |
+| `code-reviewer` | ✓ | ✓ `rapidx-code-reviewer.md` | ✓ `rapidx-code-reviewer.md` |
+| `security-reviewer` | ✓ | ✓ `rapidx-security-reviewer.md` | ✓ `rapidx-security-reviewer.md` |
+| `build-error-resolver` | ✓ | ✓ `rapidx-build-error-resolver.md` | ✓ `rapidx-build-error-resolver.md` |
+| `doc-updater` | ✓ | ✓ `rapidx-doc-updater.md` | ✓ `rapidx-doc-updater.md` |
+| `e2e-runner` | ✓ | ✓ `rapidx-e2e-runner.md` | ✓ `rapidx-e2e-runner.md` |
+| `refactor-cleaner` | ✓ | ✓ `rapidx-refactor-cleaner.md` | ✓ `rapidx-refactor-cleaner.md` |
+| `database-reviewer` | ✓ | ✓ `rapidx-database-reviewer.md` | ✓ `rapidx-database-reviewer.md` |
+
+**Invoke in Copilot Chat:**
+```
+#file:.github/copilot/agents/rapidx-code-reviewer.md
+Review the changes in src/auth/
+```
+
+**Invoke in Cursor Composer:**
+```
+@.cursor/agents/rapidx-code-reviewer.md
+Review the changes in src/auth/
+```
+
+### Skill injection at install time
+
+When the installer runs, each agent file gets an `## Active skills` section appended containing only the skills that were installed for the user's tech stack. This is determined by intersecting `agent-skill-map.json` (which skills each agent can use) with `components.skills` (which skills were actually installed). The result is agent files that reference exactly the relevant context for your project — no bloat from skills you didn't install.
+
+**Example — code-reviewer with a Go + PostgreSQL stack:**
+```markdown
+## Active skills
+
+These skills were installed for your tech stack. Reference them with @ in Composer:
+
+- @.cursor/skills/coding-standards/SKILL.md
+- @.cursor/skills/security-review/SKILL.md
+- @.cursor/skills/golang-patterns/SKILL.md
+- @.cursor/skills/postgres-patterns/SKILL.md
+```
+
+**Agent-to-skill map** (`src/agent-skill-map.json`):
+
+| Agent | Candidate skills (filtered to installed) |
+|-------|------------------------------------------|
+| `planner` | strategic-compact, coding-standards, frontend-patterns, backend-patterns, api-design |
+| `architect` | architecture-copilot, coding-standards, api-design, frontend-patterns, backend-patterns, postgres-patterns, docker-patterns, deployment-patterns |
+| `tdd-guide` | tdd-workflow, coding-standards, e2e-testing, verification-loop, golang-testing, python-testing, django-tdd, springboot-tdd, laravel-tdd, dotnet-tdd, cpp-testing, swift-protocol-di-testing, perl-testing |
+| `code-reviewer` | coding-standards, security-review, frontend-patterns, backend-patterns, golang-patterns, python-patterns, django-patterns, springboot-patterns, laravel-patterns, dotnet-patterns, cpp-coding-standards, java-coding-standards, perl-patterns, swift-actor-persistence |
+| `security-reviewer` | security-review, ai-governance, django-security, springboot-security, laravel-security, dotnet-security, perl-security, swift-concurrency-6-2 |
+| `build-error-resolver` | coding-standards, verification-loop, golang-patterns, python-patterns, django-patterns, springboot-patterns, laravel-patterns, dotnet-patterns, cpp-coding-standards, java-coding-standards |
+| `doc-updater` | coding-standards, api-design |
+| `e2e-runner` | e2e-testing, verification-loop, frontend-patterns |
+| `refactor-cleaner` | coding-standards, verification-loop, frontend-patterns, backend-patterns, golang-patterns, python-patterns, django-patterns, springboot-patterns, dotnet-patterns |
+| `database-reviewer` | postgres-patterns, database-migrations, backend-patterns, jpa-patterns |
 
 ### Always-installed agents (all stacks)
 
@@ -742,26 +803,29 @@ rapidx
 **Claude Code:**
 ```bash
 node bin/install.js --claude --local --profile default
-claude  # open Claude Code, then type /gsd:new-project
+claude  # open Claude Code, then type /rapidx:new-project
 ```
 
 **VS Code + GitHub Copilot:**
 ```bash
 node bin/install.js --vscode --local --profile default
-# Open VS Code → Copilot Chat → /gsd:new-project
+# Open VS Code → Copilot Chat →
+# Attach: #file:.github/copilot/agents/rapidx-planner.md
+# Then type your request, or open a .prompt.md file directly
 ```
 
 **Cursor:**
 ```bash
 node bin/install.js --cursor --local --profile default
-# Open Cursor → AI panel → /gsd:new-project
+# Open Cursor Composer → @.cursor/agents/rapidx-planner.md
+# Or reference a command: @.cursor/commands/rapidx/new-project.md
 ```
 
 **GitHub Copilot CLI:**
 ```bash
 gh extension install github/gh-copilot  # install if needed
 node bin/install.js --copilot-cli --local --profile default
-gh copilot suggest "/gsd:new-project"
+gh copilot suggest "/rapidx:new-project"
 ```
 
 **All platforms at once:**
@@ -885,19 +949,28 @@ rapidx-platform/
 │   ├── generate-claude-md.js         # CLAUDE.md generator
 │   ├── generate-agents-md.js         # AGENTS.md generator
 │   ├── generate-copilot-instructions.js  # copilot-instructions.md generator
+│   ├── generate-commands.js          # GSD → multi-IDE command converter (Claude rapidx:*, Copilot .prompt.md, Cursor MDC)
+│   ├── generate-commands-index.js    # Generates COMMANDS.md and Copilot index prompt
+│   ├── agent-skill-map.json          # Maps each agent to its candidate skills
+│   ├── inject-agent-skills.js        # Appends ## Active skills section to agent files at install time
 │   ├── verify-install.js             # Post-install verification
 │   ├── add-tech.js                   # Add technology to existing install
 │   └── uninstall.js                  # Clean uninstall
 │
 ├── templates/
-│   ├── commands/rapidx/              # 9 /rapidx:* command files
+│   ├── commands/rapidx/              # 9 /rapidx:* enterprise command files
 │   ├── agents/                       # All agent markdown files
 │   ├── rules/                        # Language rule sets (common, typescript, python, golang, java, swift, php)
-│   ├── skills/                       # 48 skill directories
+│   ├── skills/
+│   │   ├── raep-run/
+│   │   │   ├── .cursor/agents/       # 10 Cursor MDC agent files (rapidx-*.md)
+│   │   │   └── .github/copilot/
+│   │   │       └── agents/           # 10 Copilot agent files (planner.md, etc — prefixed rapidx- on copy)
+│   │   └── <skill-name>/             # 48 skill directories (SKILL.md + supporting files)
 │   └── hooks/                        # Hook scripts (audit-trail, secret-scanner, session-start, governance-gate)
 │
 ├── get-things-done/
-│   ├── commands/gsd/                 # 53 Get Things Done workflow commands
+│   ├── commands/gsd/                 # 53 Get Things Done workflow commands (source for conversion)
 │   └── agents/                       # 19 GTD agents
 │
 ├── profiles/
@@ -911,6 +984,7 @@ rapidx-platform/
 │
 ├── tests/
 │   ├── installer/                    # detect-platforms, detect-stack, map-components, install-flow, install-vscode
+│   │                                 # generate-commands, inject-agent-skills
 │   ├── profiles/                     # schema-validation, profile-loading
 │   ├── hooks/                        # audit-trail, secret-scanner
 │   ├── integration/                  # full-flow
@@ -939,16 +1013,18 @@ node tests/run-all.js
 RapidX Platform Test Suite
 ══════════════════════════
 
-  detect-platforms.test.js    ✓ 5 assertions
-  detect-stack.test.js        ✓ 7 assertions
-  map-components.test.js      ✓ 7 assertions
-  schema-validation.test.js   ✓ 8 assertions
-  profile-loading.test.js     ✓ 7 assertions
-  audit-trail.test.js         ✓ 4 assertions
-  secret-scanner.test.js      ✓ 7 assertions
-  full-flow.test.js           ✓ 9 assertions
+  detect-platforms.test.js       ✓ 5 assertions
+  detect-stack.test.js           ✓ 7 assertions
+  map-components.test.js         ✓ 7 assertions
+  generate-commands.test.js      ✓ 8 assertions
+  inject-agent-skills.test.js    ✓ 11 assertions
+  schema-validation.test.js      ✓ 8 assertions
+  profile-loading.test.js        ✓ 7 assertions
+  audit-trail.test.js            ✓ 4 assertions
+  secret-scanner.test.js         ✓ 7 assertions
+  full-flow.test.js              ✓ 9 assertions
 
-  Passed: 8  |  All tests passed.
+  Passed: 10  |  All tests passed.
 ```
 
 Tests use Node.js `assert` only — no test framework dependencies.

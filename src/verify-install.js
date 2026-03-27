@@ -56,8 +56,8 @@ function verifyInstall(options) {
   // Check per-platform files
   if (platforms.includes('claude')) {
     checkFile('CLAUDE.md', 'CLAUDE.md');
-    checkDir('.claude/commands/gsd', 'GTD commands');
-    checkDir('.claude/commands/rapidx', 'RapidX commands');
+    checkDir('.claude/commands/gsd', 'GTD commands (legacy /gsd: namespace)');
+    checkDir('.claude/commands/rapidx', 'RapidX commands (/rapidx: namespace)');
     checkFile('.claude/settings.json', 'Claude settings');
   }
 

@@ -81,8 +81,10 @@ function uninstall(options) {
     removeDir(path.join(targetDir, '.cursor', 'rules'));
     removeDir(path.join(targetDir, '.cursor', 'hooks'));
     removeDir(path.join(targetDir, '.cursor', 'skills'));
+    removeDir(path.join(targetDir, '.cursor', 'agents'));
+    removeDir(path.join(targetDir, '.cursor', 'commands', 'rapidx'));
     removeFile(path.join(targetDir, '.cursor', 'mcp.json'));
-    removed.push('.cursor/rules/', '.cursor/hooks/', '.cursor/skills/', '.cursor/mcp.json');
+    removed.push('.cursor/rules/', '.cursor/hooks/', '.cursor/skills/', '.cursor/agents/', '.cursor/commands/rapidx/', '.cursor/mcp.json');
   }
 
   if (platforms.includes('codex')) {

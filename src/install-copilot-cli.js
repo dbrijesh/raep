@@ -47,10 +47,11 @@ ${components ? Array.from(components.skills).map(s => `- ${s} (see skills/${s}.m
 ## Workflow
 
 This project uses Get Things Done workflow engine. Key commands:
-- \`/gsd:new-project\` — Initialize project
-- \`/gsd:plan-phase\` — Plan phase
-- \`/gsd:execute-phase\` — Execute phase
-- \`/gsd:verify-work\` — Verify work
+- \`/rapidx:new-project\` — Initialize project
+- \`/rapidx:plan-phase\` — Plan phase
+- \`/rapidx:execute-phase\` — Execute phase
+- \`/rapidx:verify-work\` — Verify work
+(Also available as \`/gsd:*\` for backward compatibility.)
 `;
 
   fs.writeFileSync(path.join(copilotDir, 'instructions.md'), instructions, 'utf8');

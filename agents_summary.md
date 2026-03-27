@@ -9,6 +9,18 @@
 
 Agents are specialised AI subagents that perform discrete roles during planning, development, review, testing, and governance. They are activated automatically based on task type and the project's configured tech stack — only relevant agents are loaded into context.
 
+The 10 core Get Things Done agents are available across **Claude Code, VS Code + GitHub Copilot, and Cursor**. Each agent file is augmented at install time with an `## Active skills` section that references only the skills installed for your tech stack (see [Agent × Skill relationships](#agent--skill-relationships) below).
+
+### How to invoke agents by IDE
+
+| IDE | Pattern | Example |
+|-----|---------|---------|
+| **Claude Code** | Built-in subagent delegation | Described in CLAUDE.md / AGENTS.md |
+| **VS Code + Copilot Chat** | Attach with `#file:` | `#file:.github/copilot/agents/rapidx-code-reviewer.md` |
+| **Cursor Composer** | Reference with `@` | `@.cursor/agents/rapidx-code-reviewer.md` |
+
+---
+
 ---
 
 ### Core Agents — Always Active
@@ -61,10 +73,35 @@ These agents handle governance, compliance, and client management concerns.
 
 | Agent | Role |
 |-------|------|
-| **Governance Auditor** | Audits the project against the active client profile's governance requirements across 5 areas: code quality (rule adherence), security (secret scanning, access controls, audit logging), review gates (mandatory checkpoint completion), audit trail (completeness of `.rapidx/audit/` logs), and component currency (installed skills/rules up to date). Produces a structured report with pass/fail per control, evidence references, and remediation recommendations. Runs compliance-specific audits for pharma (21 CFR Part 11), financial services (SOX), and insurance (HIPAA) profiles. |
+| **Governance Auditor** | Audits the project against the active client profile's governance requirements across 5 areas: code quality (rule adherence), security (secret scanning, access controls, audit logging), review gates (mandatory checkpoint completion), audit trail (completeness of `.rapidx/audit/` logs), and component currency (installed skills/rules up to date). Produces a structured report with pass/fail per control, evidence references, and remediation recommendations. Runs compliance-specific audits for pharma (21 CFR Part 11), financial services (SOX), and insurance (HIPAA) profiles. Invoke with `/rapidx:governance-check` in Claude Code, or attach the agent file in Copilot/Cursor. |
 | **Migration Analyst** | Analyses legacy codebases and produces migration strategies for modernisation engagements. Runs a 5-step process: codebase mapping, dependency audit, technical debt assessment, migration complexity scoring (1–5 scale), and strategy recommendation (strangler fig / big bang / branch by abstraction). Produces a structured Migration Analysis Report with executive summary, component inventory with risk ratings, recommended migration sequence, and risks/mitigations. |
 | **Compliance Checker** | Verifies code against the regulatory compliance requirements in the active profile. Produces a structured pass/fail compliance check table with control ID, description, status, and evidence references. Covers 21 CFR Part 11 (audit trail, e-signatures, access controls, data integrity, computer validation), SOX IT Controls (change management, access management, operations, backup/recovery), and HIPAA Technical Safeguards (access controls, audit controls, integrity controls, transmission security). |
 | **Client Onboarder** | Guides onboarding of new client engagements through a 6-step workflow: discovery (industry, size, tech stack, compliance requirements), profile selection, stack detection, component installation, documentation generation, and team briefing. Asks structured context questions to configure the right profile. Produces specific handoff deliverables: `.rapidx/stack.json`, `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and an onboarding summary for the engineering team. |
+
+---
+
+---
+
+## Agent × Skill relationships
+
+Each agent has a set of candidate skills it can use. At install time the installer filters this list to only the skills actually installed for your tech stack (`components.skills` from `mapComponents()`). The filtered list is appended directly into each agent file as an `## Active skills` section.
+
+This means agents are pre-wired with exactly the right context for your project — a Go service gets `golang-patterns` injected, a Django project gets `django-patterns`, and neither sees irrelevant skills.
+
+| Agent | Candidate skills (filtered to installed at install time) |
+|-------|----------------------------------------------------------|
+| **planner** | `strategic-compact`, `coding-standards`, `frontend-patterns`, `backend-patterns`, `api-design` |
+| **architect** | `architecture-copilot`, `coding-standards`, `api-design`, `frontend-patterns`, `backend-patterns`, `postgres-patterns`, `docker-patterns`, `deployment-patterns` |
+| **tdd-guide** | `tdd-workflow`, `coding-standards`, `e2e-testing`, `verification-loop`, `golang-testing`, `python-testing`, `django-tdd`, `springboot-tdd`, `laravel-tdd`, `dotnet-tdd`, `cpp-testing`, `swift-protocol-di-testing`, `perl-testing` |
+| **code-reviewer** | `coding-standards`, `security-review`, `frontend-patterns`, `backend-patterns`, `golang-patterns`, `python-patterns`, `django-patterns`, `springboot-patterns`, `laravel-patterns`, `dotnet-patterns`, `cpp-coding-standards`, `java-coding-standards`, `perl-patterns`, `swift-actor-persistence` |
+| **security-reviewer** | `security-review`, `ai-governance`, `django-security`, `springboot-security`, `laravel-security`, `dotnet-security`, `perl-security`, `swift-concurrency-6-2` |
+| **build-error-resolver** | `coding-standards`, `verification-loop`, `golang-patterns`, `python-patterns`, `django-patterns`, `springboot-patterns`, `laravel-patterns`, `dotnet-patterns`, `cpp-coding-standards`, `java-coding-standards` |
+| **doc-updater** | `coding-standards`, `api-design` |
+| **e2e-runner** | `e2e-testing`, `verification-loop`, `frontend-patterns` |
+| **refactor-cleaner** | `coding-standards`, `verification-loop`, `frontend-patterns`, `backend-patterns`, `golang-patterns`, `python-patterns`, `django-patterns`, `springboot-patterns`, `dotnet-patterns` |
+| **database-reviewer** | `postgres-patterns`, `database-migrations`, `backend-patterns`, `jpa-patterns` |
+
+> Source: `src/agent-skill-map.json` — `src/inject-agent-skills.js` performs the filtering and injection during installation.
 
 ---
 
@@ -218,7 +255,7 @@ Skills are reusable prompt modules that provide domain-specific knowledge and pa
 | **ai-governance** | Establishes guardrails for responsible and auditable AI-assisted development. Defines audit trail requirements (log session start/end, decisions, review gate outcomes), human oversight gates (AI must never autonomously push to production, modify auth/authorisation logic, change database schemas, or handle credentials without human review), context hygiene (load only relevant skills, avoid sensitive business logic in context), and a review checklist for all AI-generated code (logic correctness, security, version compatibility, test coverage, error handling). Includes additional traceability requirements for regulated profiles. |
 | **client-onboarding** | Structured client discovery checklist covering: industry and size (determines compliance profile), current tech stack (determines component selection), engineering maturity (determines starting maturity level), existing coding standards to preserve, required reviewers for different change types, and CI/CD pipeline details. Used by the Client Onboarder agent to configure a complete client profile. |
 | **review-gates** | Defines 4 standard human review checkpoints with triggers and checklists: Code Review Gate (before merging to main — readability, logic, tests), Security Review Gate (auth/payment/sensitive data changes — secrets, input validation, OWASP controls), Architecture Review Gate (new services, schema changes, infra — alignment, dependencies, rollback), Database Review Gate (migrations, large table queries — reversibility, zero-downtime, indexes). Also defines compliance-specific gates for pharma (IQ/OQ/PQ validation, e-signatures), SOX (IT controls, segregation of duties), and HIPAA (PHI handling, encryption, access control). |
-| **pod-maturity** | A passive reference guide injected into agent context so every AI response is calibrated to your team's current maturity level (L0–L4). Loaded from the active client profile, it tells the agent what level you are at, what behaviours define that level, and what the upgrade path looks like — so planning, review, and execution suggestions automatically match your team's actual autonomy and governance posture. Use `/rapidx:maturity-gate` to get a checklist of what requirements are met and what is still needed to advance to the next level. |
+| **pod-maturity** | A passive reference guide injected into agent context so every AI response is calibrated to your team's current maturity level (L0–L4). Loaded from the active client profile, it tells the agent what level you are at, what behaviours define that level, and what the upgrade path looks like — so planning, review, and execution suggestions automatically match your team's actual autonomy and governance posture. Use `/rapidx:maturity-gate` (Claude Code) or the equivalent `.prompt.md` in Copilot to get a checklist of what requirements are met and what is still needed to advance to the next level. |
 | **architecture-copilot** | Assists with architectural decision making by providing an ADR (Architecture Decision Record) template (context, decision, consequences, alternatives considered), 6 architectural principles for AI-assisted projects (explicit over implicit, reversible decisions first, version-pinned dependencies, separation of concerns, observable systems, security by design), and an architecture review checklist (ADR documented, trade-offs noted, consistent with existing patterns, version compatibility verified, security and scalability considered). |
 | **migration-framework** | 4-phase framework for legacy system modernisation: Phase 1 Discovery (map codebase, document architecture, identify seams, produce risk register), Phase 2 Strategy (choose from strangler fig / big bang / branch-by-abstraction / database-first), Phase 3 Execution (strangler-fig iteration: smallest slice → facade → route traffic → verify parity → decommission), Phase 4 Validation (functional parity, performance benchmarks, data integrity, security posture, rollback plan). Key patterns: dual-write for data consistency during cutover, feature flag traffic routing (1% → 100%), shadow mode and contract testing. Active for `modernization` engagement types. |
 

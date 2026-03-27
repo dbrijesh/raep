@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const { writeClaudeMd } = require('./generate-claude-md');
+const { generateAllCommands } = require('./generate-commands');
+const { writeCommandsIndex } = require('./generate-commands-index');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -93,11 +95,23 @@ function installClaude(options) {
     copyDirRecursive(gtdSrc, gsdCommandsDir);
   }
 
-  // ── Copy RapidX commands ───────────────────────────────────────────────────
+  // ── Copy hand-authored RapidX commands ────────────────────────────────────
   const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
   if (fs.existsSync(rapidxSrc)) {
     copyDirRecursive(rapidxSrc, rapidxCommandsDir);
   }
+
+  // ── Generate /rapidx:* aliases from all GSD commands ──────────────────────
+  // Files go directly into rapidx/ so the path-based namespace gives /rapidx:<name>
+  const gsdAliasResult = generateAllCommands(gsdCommandsDir, {
+    rapidx: rapidxCommandsDir,
+  });
+  if (gsdAliasResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Generated ${gsdAliasResult.generated} /rapidx:* command aliases\n`);
+  }
+
+  // ── Write COMMANDS.md index ────────────────────────────────────────────────
+  writeCommandsIndex(gsdCommandsDir, { projectRoot: targetDir });
 
   // ── Copy hook scripts ──────────────────────────────────────────────────────
   const hooksSrc = path.join(TEMPLATES_DIR, 'hooks', 'rapidx');

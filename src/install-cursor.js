@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { generateAllCommands } = require('./generate-commands');
+const { injectAgentSkills } = require('./inject-agent-skills');
 const { writeAgentsMd } = require('./generate-agents-md');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
@@ -88,6 +90,39 @@ function writeMcpJson(cursorDir, stack) {
   fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2), 'utf8');
 }
 
+// GSD agents that have Cursor-specific MDC agent files
+const GSD_AGENT_NAMES = [
+  'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
+  'build-error-resolver', 'doc-updater', 'e2e-runner', 'refactor-cleaner', 'database-reviewer',
+];
+
+/**
+ * Copy GSD agent MDC files to .cursor/agents/.
+ * Cursor auto-suggests these when the description matches the task context.
+ * @param {string} agentsDir
+ * @param {object} components
+ */
+function installCursorAgents(agentsDir, components) {
+  fs.mkdirSync(agentsDir, { recursive: true });
+
+  const requestedAgents = components ? Array.from(components.agents) : GSD_AGENT_NAMES;
+  const toInstall = requestedAgents.filter(a => GSD_AGENT_NAMES.includes(a));
+
+  const agentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.cursor', 'agents');
+
+  const installedSkills = components ? components.skills : new Set();
+
+  for (const agentName of toInstall) {
+    const srcFile = path.join(agentsSrc, `rapidx-${agentName}.md`);
+    const destFile = path.join(agentsDir, `rapidx-${agentName}.md`);
+    if (!fs.existsSync(srcFile)) continue;
+
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'cursor');
+    fs.writeFileSync(destFile, augmented, 'utf8');
+  }
+}
+
 /**
  * Install RapidX for Cursor IDE.
  */
@@ -120,10 +155,22 @@ function installCursor(options) {
   // Generate mcp.json
   writeMcpJson(cursorDir, stack);
 
+  // Copy GSD agent MDC files to .cursor/agents/
+  installCursorAgents(path.join(cursorDir, 'agents'), components);
+
+  // ── Generate Cursor command files from all GSD commands ───────────────────
+  const gtdSrc = path.join(TEMPLATES_DIR, '..', 'get-things-done', 'commands', 'gsd');
+  const cursorCommandsResult = generateAllCommands(gtdSrc, {
+    cursor: path.join(cursorDir, 'commands', 'rapidx'),
+  });
+  if (cursorCommandsResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Generated ${cursorCommandsResult.generated} Get Things Done commands in .cursor/commands/rapidx/\n`);
+  }
+
   // Generate AGENTS.md
   writeAgentsMd(targetDir, profile, stack, components);
 
   return { success: true };
 }
 
-module.exports = { installCursor };
+module.exports = { installCursor, installCursorAgents };

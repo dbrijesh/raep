@@ -1,0 +1,148 @@
+'use strict';
+
+const assert = require('assert');
+const {
+  parseGsdCommand,
+  toRapidxAlias,
+  toCopilotPrompt,
+  toCursorCommand,
+} = require('../../src/generate-commands');
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const NEW_PROJECT = `---
+name: gsd:new-project
+description: Initialize a new project with deep context gathering and PROJECT.md
+argument-hint: "[--auto]"
+allowed-tools:
+  - Read
+  - Bash
+  - Write
+  - Task
+  - AskUserQuestion
+---
+<context>
+**Flags:**
+- \`--auto\` — Automatic mode.
+</context>
+
+<objective>
+Initialize a new project through unified flow: questioning → research → requirements → roadmap.
+</objective>
+
+<execution_context>
+@~/.claude/get-things-done/workflows/new-project.md
+</execution_context>
+
+<process>
+Execute the new-project workflow from @~/.claude/get-things-done/workflows/new-project.md end-to-end.
+Preserve all workflow gates.
+</process>
+`;
+
+const NO_HINT = `---
+name: gsd:next
+description: Automatically advance to the next logical step
+allowed-tools:
+  - Read
+  - Bash
+---
+<objective>
+Detect the current project state and invoke the next logical workflow step.
+</objective>
+
+<process>
+Execute the next workflow from @~/.claude/get-things-done/workflows/next.md end-to-end.
+</process>
+`;
+
+const NO_FRONTMATTER = `# Some doc without frontmatter`;
+
+// ─── Tests ────────────────────────────────────────────────────────────────────
+
+// parseGsdCommand — full command
+{
+  const parsed = parseGsdCommand(NEW_PROJECT);
+  assert.strictEqual(parsed.name, 'gsd:new-project');
+  assert.strictEqual(parsed.description, 'Initialize a new project with deep context gathering and PROJECT.md');
+  assert.strictEqual(parsed.argumentHint, '[--auto]');
+  assert.deepStrictEqual(parsed.allowedTools, ['Read', 'Bash', 'Write', 'Task', 'AskUserQuestion']);
+  assert.ok(parsed.objective.includes('Initialize a new project'));
+  assert.ok(parsed.contextBlock.includes('--auto'));
+  console.log('✓ parseGsdCommand — full command');
+}
+
+// parseGsdCommand — no argument-hint
+{
+  const parsed = parseGsdCommand(NO_HINT);
+  assert.strictEqual(parsed.name, 'gsd:next');
+  assert.strictEqual(parsed.argumentHint, '');
+  console.log('✓ parseGsdCommand — no argument-hint');
+}
+
+// parseGsdCommand — no frontmatter returns empty name
+{
+  const parsed = parseGsdCommand(NO_FRONTMATTER);
+  assert.strictEqual(parsed.name, '');
+  console.log('✓ parseGsdCommand — no frontmatter → empty name');
+}
+
+// toRapidxAlias — name conversion (no gsd- infix)
+{
+  const parsed = parseGsdCommand(NEW_PROJECT);
+  const out = toRapidxAlias(parsed);
+  assert.ok(out.includes('name: rapidx:new-project'), 'should be rapidx:new-project (no gsd- infix)');
+  assert.ok(!out.includes('name: rapidx:gsd-'), 'should NOT have gsd- infix');
+  assert.ok(out.includes('[Get Things Done]'), 'description should have GTD prefix');
+  assert.ok(out.includes('argument-hint:'), 'should preserve argument-hint');
+  assert.ok(out.includes('allowed-tools:'), 'should preserve allowed-tools');
+  assert.ok(!out.includes('name: gsd:'), 'should not contain original gsd: name');
+  console.log('✓ toRapidxAlias — name is rapidx:<slug> not rapidx:gsd-<slug>');
+}
+
+// toRapidxAlias — no hint command
+{
+  const parsed = parseGsdCommand(NO_HINT);
+  const out = toRapidxAlias(parsed);
+  assert.ok(out.includes('name: rapidx:next'), 'should be rapidx:next');
+  assert.ok(!out.includes('argument-hint:'), 'should not add empty argument-hint');
+  console.log('✓ toRapidxAlias — no argument-hint omitted');
+}
+
+// toCopilotPrompt — format
+{
+  const parsed = parseGsdCommand(NEW_PROJECT);
+  const out = toCopilotPrompt(parsed);
+  assert.ok(out.startsWith('---'), 'should start with frontmatter');
+  assert.ok(out.includes('mode: agent'), 'should have mode: agent');
+  assert.ok(out.includes('[Get Things Done]'), 'description should have GTD prefix');
+  assert.ok(out.includes('## What this does'), 'should have objective section');
+  assert.ok(out.includes('[--auto]'), 'should include usage hint');
+  // Workflow @references must be stripped — Copilot cannot resolve ~/.claude paths
+  assert.ok(!out.includes('@~/.claude/'), 'should not contain @workflow references');
+  console.log('✓ toCopilotPrompt — format and @reference stripping');
+}
+
+// toCursorCommand — format
+{
+  const parsed = parseGsdCommand(NEW_PROJECT);
+  const out = toCursorCommand(parsed);
+  assert.ok(out.startsWith('---'), 'should start with frontmatter');
+  assert.ok(out.includes('alwaysApply: false'), 'should have alwaysApply: false');
+  assert.ok(out.includes('[Get Things Done]'), 'description should have Get Things Done prefix');
+  assert.ok(out.includes('## How to invoke'), 'should have invocation section');
+  assert.ok(out.includes('@.cursor/commands/rapidx/new-project.md'), 'should show correct @ path');
+  assert.ok(!out.includes('@~/.claude/'), 'should not contain @workflow references');
+  console.log('✓ toCursorCommand — format and @reference stripping');
+}
+
+// toCursorCommand — no hint in description when not present
+{
+  const parsed = parseGsdCommand(NO_HINT);
+  const out = toCursorCommand(parsed);
+  assert.ok(out.includes('[Get Things Done]'));
+  assert.ok(!out.includes('undefined'), 'should not have undefined in output');
+  console.log('✓ toCursorCommand — no argumentHint does not leave undefined');
+}
+
+console.log('\nAll generate-commands tests passed.');
