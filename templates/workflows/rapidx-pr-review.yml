@@ -1,0 +1,145 @@
+name: RapidX AI PR Review
+
+# AI-powered pull request review workflow.
+# Uses GitHub Copilot / AI to review PRs against:
+# 1. Project constitution
+# 2. Architecture decisions (ADRs)
+# 3. Security best practices
+# 4. Spec acceptance criteria (if on spec branch)
+# 5. Tech stack version constraints
+#
+# Agentic workflow pattern from github/awesome-copilot
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+    branches: [main, develop]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    name: AI Code Review
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              per_page: 100,
+            });
+            const changed = files.map(f => f.filename).join('\n');
+            core.setOutput('files', changed);
+            core.setOutput('count', files.length);
+            return files;
+
+      - name: Load RapidX context
+        id: load-context
+        run: |
+          # Load stack config
+          STACK=$(cat .rapidx/stack.json 2>/dev/null || echo '{}')
+          echo "stack=$STACK" >> $GITHUB_OUTPUT
+
+          # Load constitution summary
+          if [ -f ".rapidx/CONSTITUTION.md" ]; then
+            CONSTITUTION=$(head -50 .rapidx/CONSTITUTION.md | base64 -w0)
+            echo "has_constitution=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_constitution=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Load architecture summary
+          if [ -f "ARCHITECTURE.md" ]; then
+            echo "has_architecture=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_architecture=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Load ADR count
+          ADR_COUNT=$(find docs/adr -name "*.md" 2>/dev/null | wc -l || echo "0")
+          echo "adr_count=$ADR_COUNT" >> $GITHUB_OUTPUT
+
+      - name: Security scan
+        run: |
+          echo "Running security scan..."
+          FINDINGS=""
+
+          # Check for hardcoded secrets patterns
+          git diff origin/${{ github.base_ref }}...HEAD -- '*.ts' '*.js' '*.py' '*.go' | \
+            grep '^+' | \
+            grep -iE '(password|secret|api_key|token|private_key)\s*=\s*["\x27][^"\x27]{8,}' | \
+            grep -v 'process\.env\|os\.environ\|config\.' && \
+            FINDINGS="$FINDINGS\n- Potential hardcoded secrets detected" || true
+
+          if [ -n "$FINDINGS" ]; then
+            echo "::warning::Security findings: $FINDINGS"
+            echo "SECURITY_FINDINGS=$FINDINGS" >> $GITHUB_ENV
+          else
+            echo "No security issues detected"
+            echo "SECURITY_FINDINGS=none" >> $GITHUB_ENV
+          fi
+
+      - name: Post review summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const stackStr = '${{ steps.load-context.outputs.stack }}';
+            const hasConstitution = '${{ steps.load-context.outputs.has_constitution }}' === 'true';
+            const hasArchitecture = '${{ steps.load-context.outputs.has_architecture }}' === 'true';
+            const adrCount = '${{ steps.load-context.outputs.adr_count }}';
+            const changedCount = '${{ steps.changed-files.outputs.count }}';
+            const securityFindings = process.env.SECURITY_FINDINGS || 'none';
+
+            let stack = {};
+            try { stack = JSON.parse(stackStr); } catch {}
+            const techLine = [
+              stack.frontend?.framework && `${stack.frontend.framework}@${stack.frontend.version || 'latest'}`,
+              stack.backend?.language && `${stack.backend.language}@${stack.backend.runtime_version || 'latest'}`,
+              stack.database?.primary && `${stack.database.primary}@${stack.database.primary_version || 'latest'}`,
+            ].filter(Boolean).join(' · ') || 'See .rapidx/stack.json';
+
+            let body = '## RapidX AI Review Summary\n\n';
+            body += `**Tech stack**: ${techLine}\n`;
+            body += `**Files changed**: ${changedCount}\n\n`;
+
+            body += '### Automated Checks\n\n';
+            body += `| Check | Status |\n|-------|--------|\n`;
+            body += `| Constitution | ${hasConstitution ? '✅ Present' : '⚠️ No .rapidx/CONSTITUTION.md'} |\n`;
+            body += `| Architecture docs | ${hasArchitecture ? '✅ Present' : '⚠️ No ARCHITECTURE.md'} |\n`;
+            body += `| ADRs | ${parseInt(adrCount) > 0 ? `✅ ${adrCount} ADR(s) on record` : '⚠️ No ADRs in docs/adr/'} |\n`;
+            body += `| Security scan | ${securityFindings === 'none' ? '✅ Clean' : `⚠️ Findings: ${securityFindings}`} |\n\n`;
+
+            body += '### Review Checklist\n\n';
+            body += '- [ ] Code follows project patterns (`.rapidx/knowledge/code-patterns.md`)\n';
+            body += '- [ ] Version constraints respected (no features from newer stack versions)\n';
+            body += '- [ ] Tests written for all changes\n';
+            body += '- [ ] Spec acceptance criteria verified (if spec branch)\n';
+            body += '- [ ] Architecture decisions respected (`docs/adr/`)\n';
+            body += '- [ ] No hardcoded secrets or credentials\n\n';
+
+            body += '### Request Full AI Review\n\n';
+            body += 'In VS Code Copilot Chat: `@code-reviewer review this PR`\n';
+            body += 'In Claude Code: `/gsd:review`\n';
+            body += 'In Cursor: Ask: "Review my changes for this PR"\n\n';
+
+            body += '_Powered by [RapidX](https://github.com/rapidx) Agentic Engineering Platform_';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });

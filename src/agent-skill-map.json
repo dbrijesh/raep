@@ -1,0 +1,139 @@
+{
+  "_comment": "Maps each agent to the skills it leverages. All listed skills are candidates — the installer filters to only those actually installed for the user's tech stack.",
+
+  "planner": {
+    "skills": [
+      "strategic-compact",
+      "coding-standards",
+      "frontend-patterns",
+      "backend-patterns",
+      "api-design"
+    ],
+    "reason": "Planner uses strategic-compact for structured thinking, coding-standards to know what to plan for, and stack-specific patterns to generate relevant task breakdowns."
+  },
+
+  "architect": {
+    "skills": [
+      "architecture-copilot",
+      "coding-standards",
+      "api-design",
+      "frontend-patterns",
+      "backend-patterns",
+      "postgres-patterns",
+      "docker-patterns",
+      "deployment-patterns"
+    ],
+    "reason": "Architect uses architecture-copilot for ADR templates and design patterns, plus stack-specific skills to make version-aware design decisions."
+  },
+
+  "tdd-guide": {
+    "skills": [
+      "tdd-workflow",
+      "coding-standards",
+      "e2e-testing",
+      "verification-loop",
+      "golang-testing",
+      "python-testing",
+      "django-tdd",
+      "springboot-tdd",
+      "laravel-tdd",
+      "dotnet-tdd",
+      "cpp-testing",
+      "swift-protocol-di-testing",
+      "perl-testing"
+    ],
+    "reason": "TDD Guide uses tdd-workflow as its core process, plus the language/framework-specific testing skill for the user's tech stack."
+  },
+
+  "code-reviewer": {
+    "skills": [
+      "coding-standards",
+      "security-review",
+      "frontend-patterns",
+      "backend-patterns",
+      "golang-patterns",
+      "python-patterns",
+      "django-patterns",
+      "springboot-patterns",
+      "laravel-patterns",
+      "dotnet-patterns",
+      "cpp-coding-standards",
+      "java-coding-standards",
+      "perl-patterns",
+      "swift-actor-persistence"
+    ],
+    "reason": "Code Reviewer enforces coding-standards and security-review, plus stack-specific pattern skills to catch framework-specific anti-patterns."
+  },
+
+  "security-reviewer": {
+    "skills": [
+      "security-review",
+      "ai-governance",
+      "django-security",
+      "springboot-security",
+      "laravel-security",
+      "dotnet-security",
+      "perl-security",
+      "swift-concurrency-6-2"
+    ],
+    "reason": "Security Reviewer uses security-review as its core checklist, ai-governance for AI-related risks, and framework-specific security skills for targeted checks."
+  },
+
+  "build-error-resolver": {
+    "skills": [
+      "coding-standards",
+      "verification-loop",
+      "golang-patterns",
+      "python-patterns",
+      "django-patterns",
+      "springboot-patterns",
+      "laravel-patterns",
+      "dotnet-patterns",
+      "cpp-coding-standards",
+      "java-coding-standards"
+    ],
+    "reason": "Build Error Resolver uses coding-standards to understand correct patterns, verification-loop to confirm fixes, and stack-specific skills to diagnose framework errors."
+  },
+
+  "doc-updater": {
+    "skills": [
+      "coding-standards",
+      "api-design"
+    ],
+    "reason": "Doc Updater uses coding-standards to write consistent doc comments and api-design for accurate API documentation."
+  },
+
+  "e2e-runner": {
+    "skills": [
+      "e2e-testing",
+      "verification-loop",
+      "frontend-patterns"
+    ],
+    "reason": "E2E Runner uses e2e-testing for Playwright/Cypress patterns, verification-loop to structure test validation, and frontend-patterns for UI-aware selectors."
+  },
+
+  "refactor-cleaner": {
+    "skills": [
+      "coding-standards",
+      "verification-loop",
+      "frontend-patterns",
+      "backend-patterns",
+      "golang-patterns",
+      "python-patterns",
+      "django-patterns",
+      "springboot-patterns",
+      "dotnet-patterns"
+    ],
+    "reason": "Refactor Cleaner uses coding-standards as the target state, verification-loop to confirm no regressions, and stack-specific skills to know which patterns to refactor toward."
+  },
+
+  "database-reviewer": {
+    "skills": [
+      "postgres-patterns",
+      "database-migrations",
+      "backend-patterns",
+      "jpa-patterns"
+    ],
+    "reason": "Database Reviewer uses postgres-patterns for query and schema checks, database-migrations for migration safety, jpa-patterns for ORM-specific issues."
+  }
+}

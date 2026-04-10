@@ -1,0 +1,50 @@
+{
+  "profile_id": "greenfield-startup",
+  "client_name": "Greenfield Startup",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L1",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "pod-maturity"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner"
+  ],
+  "review_gates": [
+    {
+      "name": "security-scan",
+      "description": "Secret scanning on all commits",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": [],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": false
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "rapidx": {
+    "hooks": [
+      {
+        "name": "session-start",
+        "script": ".rapidx/hooks/session-start.js"
+      },
+      {
+        "name": "session-end",
+        "script": ".rapidx/hooks/session-end.js"
+      },
+      {
+        "name": "audit-trail",
+        "script": ".rapidx/hooks/audit-trail.js"
+      },
+      {
+        "name": "secret-scanner",
+        "script": ".rapidx/hooks/secret-scanner.js"
+      }
+    ],
+    "permissions": {
+      "allow": [
+        "Bash(node:.rapidx/hooks/*.js)",
+        "Read(.rapidx/**)",
+        "Write(.rapidx/**)"
+      ]
+    }
+  }
+}

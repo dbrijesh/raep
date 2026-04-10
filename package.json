@@ -1,0 +1,23 @@
+{
+  "name": "rapidx-platform",
+  "version": "2.0.0",
+  "description": "RapidX Agentic Engineering Platform — Enterprise-grade SDLC orchestration powered by Get Things Done + Everything Claude Code",
+  "bin": {
+    "rapidx": "bin/install.js",
+    "rapidx-learn": "scripts/learn-codebase.js"
+  },
+  "files": ["bin", "src", "templates", "profiles", "get-things-done", "tests", "scripts"],
+  "engines": { "node": ">=18.0.0" },
+  "license": "MIT",
+  "keywords": [
+    "rapidx", "claude-code", "cursor", "copilot", "codex", "opencode",
+    "enterprise", "sdlc", "agentic", "spec-driven-development", "knowledge-graph"
+  ],
+  "scripts": {
+    "test": "node tests/run-all.js",
+    "learn": "node scripts/learn-codebase.js --all",
+    "learn:code": "node scripts/learn-codebase.js --code",
+    "learn:arch": "node scripts/learn-codebase.js --arch",
+    "learn:preview": "node scripts/learn-codebase.js --all --preview"
+  }
+}
