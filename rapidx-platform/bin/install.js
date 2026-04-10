@@ -527,8 +527,8 @@ function printQuickStart(platforms, profileId, stack, targetDir, components) {
 async function main() {
   const flags = parseArgs(process.argv);
 
-  // Show banner
-  ui.banner();
+  // Show animated banner
+  await ui.banner();
 
   // Handle --check-update
   if (flags['check-update']) {

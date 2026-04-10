@@ -66,7 +66,15 @@ function generateCopilotInstructions(profile, stack, components) {
     codingStandards.push('- Always handle errors — never use `_` for error values in production code');
   }
 
-  const skillRefs = skills.map(s => `- [\`${s}\`](.github/copilot/skills/${s}.md)`).join('\n');
+  const skillRefs = skills.map(s => `- [\`${s}\`](.github/skills/${s}.md) — attach with \`#file:.github/skills/${s}.md\``).join('\n');
+
+  // Agent refs — only include agents that have a Copilot agent file
+  const GSD_AGENT_NAMES = [
+    'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
+    'build-error-resolver', 'doc-updater', 'e2e-runner', 'refactor-cleaner', 'database-reviewer',
+  ];
+  const agents = components ? Array.from(components.agents).filter(a => GSD_AGENT_NAMES.includes(a)) : GSD_AGENT_NAMES;
+  const agentRefs = agents.map(a => `- [\`${a}\`](.github/agents/rapidx-${a}.md) — attach with \`#file:.github/agents/rapidx-${a}.md\``).join('\n');
 
   return `# GitHub Copilot Instructions — ${clientName}
 
@@ -79,7 +87,7 @@ function generateCopilotInstructions(profile, stack, components) {
 **Profile:** ${profileId}
 **Maturity level:** ${(profile.engagement && profile.engagement.maturity_level) || 'L1'}
 
-This project uses the **Get Things Done** workflow engine for structured SDLC delivery, combined with the **Everything Claude Code** component library for coding standards and patterns.
+This project uses the **RapidX** agentic workflow engine for structured SDLC delivery, powered by best-of-breed open source harness engineering components.
 
 ## Technology stack
 
@@ -113,22 +121,69 @@ ${codingStandards.join('\n')}
 
 ## Available skills (reference files)
 
-${skillRefs || 'Skills are defined in `.github/copilot/skills/`'}
+${skillRefs || 'Skills are defined in `.github/skills/`'}
 
-## Workflow commands
+## Available agents (RapidX)
 
-Use these commands in Copilot Chat or Claude Code:
+Attach an agent file in Copilot Chat with \`#file:\` to activate it:
 
+${agentRefs || 'Agents are defined in `.github/agents/`'}
+
+**Example:**
 \`\`\`
-/gsd:new-project      Start a new project with structured planning
-/gsd:plan-phase       Plan the next development phase
-/gsd:execute-phase    Execute current phase tasks
-/gsd:verify-work      Verify completed work
-/gsd:review           Code review and quality check
-/gsd:ship             Prepare for release
-/rapidx:help          Show all RapidX commands
-/rapidx:switch-client Change active client profile
+#file:.github/agents/rapidx-planner.md
+Plan a new project for a user authentication service
 \`\`\`
+
+## RapidX commands
+
+**Claude Code** — use slash commands directly:
+\`\`\`
+/rapidx:new-project      Start a new project
+/rapidx:plan-phase       Plan next phase
+/rapidx:execute-phase    Execute phase tasks
+/rapidx:verify-work      Verify completed work
+/rapidx:ship             Prepare for release
+/rapidx:debug            Debug an issue
+/rapidx:learn            Learn patterns from codebase
+/rapidx:fine-tune        Apply learned knowledge to all platforms
+/rapidx:spec             Create feature specification (SDD)
+/rapidx:do               Smart dispatcher — describe what you want
+/rapidx:help             All RapidX commands
+\`\`\`
+(Also available as \`/gsd:*\` for backward compatibility.)
+
+**Copilot Chat (VS Code)** — type \`/rapidx-<command>\` directly in chat (auto-discovered from \`.github/prompts/\`):
+
+**Execution modes — pick your autonomy level:**
+\`\`\`
+/rapidx-do-mode2 <task>  Structured: you approve every gate (plan, diffs, commit)
+/rapidx-do-mode3 <task>  Orchestrated: agents run parallel waves, you review per wave
+/rapidx-do-mode4 <task>  Autonomous: full autopilot, no checkpoints, audit log written
+\`\`\`
+
+**Core workflow commands:**
+\`\`\`
+/rapidx-new-project      Start a new project
+/rapidx-plan-phase       Plan next phase
+/rapidx-execute-phase    Execute phase tasks
+/rapidx-verify-work      Verify completed work
+/rapidx-ship             Prepare for release
+/rapidx-learn            Learn patterns from codebase
+/rapidx-fine-tune        Apply learned knowledge to all AI platforms
+/rapidx-spec             Create feature spec (Spec-Driven Development)
+/rapidx-gtd              Command router — describe what you want
+\`\`\`
+Or open any \`.prompt.md\` file in \`.github/prompts/\` and click **Run in Copilot Chat**.
+All prompts use \`agent: agent\` per the VS Code prompt file standard with full tool access.
+
+**Cursor Composer** — reference a command file with @:
+\`\`\`
+@.cursor/commands/rapidx/new-project.md
+@.cursor/commands/rapidx/execute-phase.md 2
+@.cursor/commands/rapidx/debug.md user login fails with 401
+\`\`\`
+All commands available in \`.cursor/commands/rapidx/\`
 
 ## Review gates
 
