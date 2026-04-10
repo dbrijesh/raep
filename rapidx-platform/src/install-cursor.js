@@ -1,0 +1,129 @@
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const { writeAgentsMd } = require('./generate-agents-md');
+
+const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+
+/**
+ * Convert a plain markdown rule file to Cursor's YAML frontmatter format.
+ * @param {string} content - Original rule content
+ * @param {string} ruleName - Rule name for the frontmatter
+ * @returns {string}
+ */
+function toFrontmatterFormat(content, ruleName) {
+  // If already has frontmatter, return as-is
+  if (content.trimStart().startsWith('---')) {
+    return content;
+  }
+  // Extract first line as description
+  const firstLine = content.split('\n').find(l => l.trim() && !l.startsWith('#')) || ruleName;
+  return `---
+description: ${firstLine.replace(/[#*_]/g, '').trim()}
+globs: []
+alwaysApply: false
+---
+
+${content}`;
+}
+
+/**
+ * Copy rules to .cursor/rules/ with YAML frontmatter conversion.
+ */
+function installCursorRules(rulesDir, components) {
+  fs.mkdirSync(rulesDir, { recursive: true });
+  const rules = components ? Array.from(components.rules) : [];
+
+  for (const rule of rules) {
+    const ruleDir = path.join(TEMPLATES_DIR, 'rules', rule);
+    if (!fs.existsSync(ruleDir)) continue;
+
+    const files = fs.readdirSync(ruleDir).filter(f => f.endsWith('.md'));
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(ruleDir, file), 'utf8');
+      const converted = toFrontmatterFormat(content, `${rule}/${file.replace('.md', '')}`);
+      const destPath = path.join(rulesDir, `${rule}-${file}`);
+      fs.writeFileSync(destPath, converted, 'utf8');
+    }
+  }
+}
+
+/**
+ * Copy skills to .cursor/skills/.
+ */
+function installCursorSkills(skillsDir, components) {
+  fs.mkdirSync(skillsDir, { recursive: true });
+  const skills = components ? Array.from(components.skills) : [];
+
+  for (const skill of skills) {
+    const skillSrc = path.join(TEMPLATES_DIR, 'skills', skill);
+    if (!fs.existsSync(skillSrc)) continue;
+
+    const destSkillDir = path.join(skillsDir, skill);
+    fs.mkdirSync(destSkillDir, { recursive: true });
+
+    const files = fs.readdirSync(skillSrc);
+    for (const file of files) {
+      fs.copyFileSync(path.join(skillSrc, file), path.join(destSkillDir, file));
+    }
+  }
+}
+
+/**
+ * Generate .cursor/mcp.json.
+ */
+function writeMcpJson(cursorDir, stack) {
+  const mcpPath = path.join(cursorDir, 'mcp.json');
+  const config = {
+    version: '1.0',
+    generated_by: 'rapidx-platform',
+    stack: {
+      frontend: (stack.frontend && stack.frontend.framework) || null,
+      backend: (stack.backend && stack.backend.language) || null,
+      database: (stack.database && stack.database.primary) || null,
+    },
+    servers: [],
+  };
+  fs.writeFileSync(mcpPath, JSON.stringify(config, null, 2), 'utf8');
+}
+
+/**
+ * Install RapidX for Cursor IDE.
+ */
+function installCursor(options) {
+  const { targetDir, profile, stack, components } = options;
+
+  const cursorDir = path.join(targetDir, '.cursor');
+  const rulesDir = path.join(cursorDir, 'rules');
+  const hooksDir = path.join(cursorDir, 'hooks');
+  const skillsDir = path.join(cursorDir, 'skills');
+
+  fs.mkdirSync(cursorDir, { recursive: true });
+  fs.mkdirSync(hooksDir, { recursive: true });
+
+  // Copy rules with frontmatter conversion
+  installCursorRules(rulesDir, components);
+
+  // Copy skills
+  installCursorSkills(skillsDir, components);
+
+  // Copy hook adapter scripts
+  const hooksSrc = path.join(TEMPLATES_DIR, 'hooks', 'rapidx');
+  if (fs.existsSync(hooksSrc)) {
+    const hookFiles = fs.readdirSync(hooksSrc);
+    for (const f of hookFiles) {
+      fs.copyFileSync(path.join(hooksSrc, f), path.join(hooksDir, f));
+    }
+  }
+
+  // Generate mcp.json
+  writeMcpJson(cursorDir, stack);
+
+  // Generate AGENTS.md
+  writeAgentsMd(targetDir, profile, stack, components);
+
+  return { success: true };
+}
+
+module.exports = { installCursor };

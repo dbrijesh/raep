@@ -1,0 +1,28 @@
+{
+  "project": "ToDo App",
+  "initialized": "2026-03-21",
+  "profile": "enterprise-standard",
+  "workflow": "gsd",
+  "maturity": "L2",
+  "stack": {
+    "frontend": "react@19",
+    "backend": "typescript + express",
+    "database": "sqlite"
+  },
+  "planning": {
+    "phases": 5,
+    "current_phase": null,
+    "auto_commit": false,
+    "require_approval_between_phases": true
+  },
+  "review_gates": {
+    "code_review": true,
+    "security_review": true,
+    "architecture_review": false
+  },
+  "preferences": {
+    "test_first": false,
+    "verbose_planning": false,
+    "research_mode": false
+  }
+}

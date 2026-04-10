@@ -1,0 +1,74 @@
+{
+  "profile_id": "pharma-regulated",
+  "client_name": "Pharma — 21 CFR Part 11",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "greenfield",
+    "maturity_level": "L2",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "coding-standards",
+    "security-review",
+    "tdd-workflow",
+    "strategic-compact",
+    "search-first",
+    "verification-loop",
+    "ai-governance",
+    "client-onboarding",
+    "review-gates",
+    "pod-maturity",
+    "architecture-copilot"
+  ],
+  "agents": [
+    "planner",
+    "architect",
+    "tdd-guide",
+    "code-reviewer",
+    "security-reviewer",
+    "build-error-resolver",
+    "doc-updater"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner",
+    "governance-gate"
+  ],
+  "review_gates": [
+    {
+      "name": "code-review",
+      "description": "Mandatory peer code review",
+      "mandatory": true
+    },
+    {
+      "name": "security-review",
+      "description": "Security review for all changes touching patient data or system access",
+      "mandatory": true
+    },
+    {
+      "name": "validation-protocol",
+      "description": "21 CFR Part 11 validation protocol review for IQ/OQ/PQ",
+      "mandatory": true
+    },
+    {
+      "name": "audit-trail-review",
+      "description": "Verify audit trail completeness for regulated data",
+      "mandatory": true
+    },
+    {
+      "name": "e-signature-review",
+      "description": "Electronic signature implementation review",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": ["21 CFR Part 11", "GAMP 5", "ICH Q10"],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": true,
+    "notes": "All electronic records must have audit trails. Electronic signatures must meet 21 CFR Part 11 requirements. System validation required per GAMP 5."
+  }
+}

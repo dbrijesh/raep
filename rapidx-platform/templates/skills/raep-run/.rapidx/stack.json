@@ -1,0 +1,80 @@
+{
+  "frontend": {
+    "framework": "react",
+    "version": "19",
+    "ui_library": [],
+    "state_management": []
+  },
+  "backend": {
+    "language": "typescript",
+    "language_version": "20",
+    "runtime": "node",
+    "runtime_version": null,
+    "framework": "express",
+    "framework_version": null,
+    "api_style": []
+  },
+  "database": {
+    "primary": "sqlite",
+    "primary_version": null,
+    "orm": "sqlalchemy",
+    "orm_version": null,
+    "cache": []
+  },
+  "infrastructure": {
+    "cloud": "aws",
+    "containers": [],
+    "cicd": [],
+    "orchestration": null
+  },
+  "testing": {
+    "unit": [],
+    "e2e": [],
+    "coverage_tool": null,
+    "frameworks": []
+  },
+  "detected_at": "2026-03-21T09:25:48.096Z",
+  "profile": "enterprise-standard",
+  "installed_components": {
+    "rules": [
+      "common",
+      "typescript"
+    ],
+    "skills": [
+      "coding-standards",
+      "security-review",
+      "tdd-workflow",
+      "strategic-compact",
+      "search-first",
+      "verification-loop",
+      "ai-governance",
+      "client-onboarding",
+      "review-gates",
+      "pod-maturity",
+      "architecture-copilot",
+      "frontend-patterns",
+      "e2e-testing",
+      "backend-patterns",
+      "api-design",
+      "database-migrations"
+    ],
+    "agents": [
+      "planner",
+      "architect",
+      "tdd-guide",
+      "code-reviewer",
+      "security-reviewer",
+      "build-error-resolver",
+      "doc-updater",
+      "e2e-runner",
+      "refactor-cleaner",
+      "database-reviewer"
+    ],
+    "hooks": [
+      "session-start",
+      "session-end",
+      "audit-trail",
+      "secret-scanner"
+    ]
+  }
+}
