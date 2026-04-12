@@ -77,8 +77,17 @@ function titleCase(s) {
 const NATIVE_RAPIDX_COMMANDS = new Set(['health', 'help']);
 
 /**
- * Generate a Claude Code /rapidx:* alias from a parsed GSD command.
- * Preserves the original workflow references — just moves to rapidx: namespace.
+ * Rewrite all /gsd: command references in content to /rapidx:.
+ * @param {string} text
+ * @returns {string}
+ */
+function rewriteGsdRefs(text) {
+  return text.replace(/\/gsd:/g, '/rapidx:');
+}
+
+/**
+ * Generate a Claude Code /rapidx:* command from a parsed GSD command.
+ * All internal /gsd: cross-references are rewritten to /rapidx:.
  */
 function toRapidxAlias(parsed) {
   const name = slug(parsed.name);
@@ -90,25 +99,25 @@ function toRapidxAlias(parsed) {
   // Preserve all execution_context and context sections from original
   const execCtxMatch = parsed.raw.match(/<execution_context>([\s\S]*?)<\/execution_context>/);
   const execCtx = execCtxMatch
-    ? `\n<execution_context>${execCtxMatch[1]}</execution_context>\n`
+    ? `\n<execution_context>${rewriteGsdRefs(execCtxMatch[1])}</execution_context>\n`
     : '';
 
   const ctxBlock = parsed.contextBlock
-    ? `\n<context>\n${parsed.contextBlock}\n</context>\n`
+    ? `\n<context>\n${rewriteGsdRefs(parsed.contextBlock)}\n</context>\n`
     : '';
 
-  const fallbackProcess = `Execute the ${name} workflow from @~/.claude/get-things-done/workflows/${name}.md end-to-end.\nPreserve all workflow gates.`;
+  const fallbackProcess = `Execute the ${name} workflow from @~/.claude/commands/rapidx/${name}.md end-to-end.\nPreserve all workflow gates.`;
 
   return `---
 name: rapidx:${name}
 description: "[RapidX] ${parsed.description}"${hintLine}${toolsBlock}
 ---
 <objective>
-${parsed.objective}
+${rewriteGsdRefs(parsed.objective)}
 </objective>
 ${execCtx}${ctxBlock}
 <process>
-${parsed.processBlock || fallbackProcess}
+${rewriteGsdRefs(parsed.processBlock) || fallbackProcess}
 </process>
 `;
 }
@@ -143,15 +152,18 @@ function toCopilotPrompt(parsed) {
     : '';
 
   // Inline the process — strip @workflow references since Copilot can't resolve them
-  const processText = parsed.processBlock
-    .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
-    .replace(/Execute the \S+ workflow from \S+ end-to-end\.?\n?/g, '')
-    .trim();
+  const processText = rewriteGsdRefs(
+    parsed.processBlock
+      .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
+      .replace(/@~\/\.claude\/commands\/rapidx\/[^\s]+/g, '')
+      .replace(/Execute the \S+ workflow from \S+ end-to-end\.?\n?/g, '')
+      .trim()
+  );
 
   const fallbackProcess = `Read \`.planning/\` state files to understand current project state.\nThen execute the "${name}" RapidX workflow: ${parsed.description.toLowerCase()}.`;
 
   const contextSection = parsed.contextBlock && !parsed.contextBlock.includes('$ARGUMENTS')
-    ? `\n## Context\n\n${parsed.contextBlock}\n`
+    ? `\n## Context\n\n${rewriteGsdRefs(parsed.contextBlock)}\n`
     : '';
 
   const toolsList = COPILOT_AGENT_TOOLS.map(t => `  - ${t}`).join('\n');
@@ -189,15 +201,18 @@ function toCursorCommand(parsed) {
     : '';
 
   // Strip @workflow file references — Cursor can't resolve ~/.claude paths
-  const processText = parsed.processBlock
-    .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
-    .replace(/Execute the \S+ workflow from \S+ end-to-end\.?\n?/g, '')
-    .trim();
+  const processText = rewriteGsdRefs(
+    parsed.processBlock
+      .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
+      .replace(/@~\/\.claude\/commands\/rapidx\/[^\s]+/g, '')
+      .replace(/Execute the \S+ workflow from \S+ end-to-end\.?\n?/g, '')
+      .trim()
+  );
 
   const fallbackProcess = `Read \`.planning/\` state files to understand current project state.\nExecute the "${name}" workflow: ${parsed.description.toLowerCase()}.`;
 
   const contextSection = parsed.contextBlock && !parsed.contextBlock.includes('$ARGUMENTS')
-    ? `\n## Context\n\n${parsed.contextBlock}\n`
+    ? `\n## Context\n\n${rewriteGsdRefs(parsed.contextBlock)}\n`
     : '';
 
   return `---
@@ -308,6 +323,7 @@ function generateAllCommands(gsdSourceDir, outputDirs) {
 
 module.exports = {
   parseGsdCommand,
+  rewriteGsdRefs,
   toRapidxAlias,
   toCopilotPrompt,
   toCursorCommand,

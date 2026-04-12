@@ -81,18 +81,21 @@ function installClaude(options) {
 
   // ── Directory structure ────────────────────────────────────────────────────
   const claudeDir = path.join(targetDir, '.claude');
-  const gsdCommandsDir = path.join(claudeDir, 'commands', 'gsd');
   const rapidxCommandsDir = path.join(claudeDir, 'commands', 'rapidx');
   const hooksDir = path.join(targetDir, '.rapidx', 'hooks');
 
-  fs.mkdirSync(gsdCommandsDir, { recursive: true });
   fs.mkdirSync(rapidxCommandsDir, { recursive: true });
   fs.mkdirSync(hooksDir, { recursive: true });
 
-  // ── Copy GTD commands ──────────────────────────────────────────────────────
+  // ── Convert GTD commands → /rapidx:* and write to .claude/commands/rapidx/ ─
+  // Source files stay in get-things-done/commands/gsd/ (vendor copy).
+  // generateAllCommands rewrites all internal /gsd: refs to /rapidx: on output.
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
-  if (fs.existsSync(gtdSrc)) {
-    copyDirRecursive(gtdSrc, gsdCommandsDir);
+  const gtdResult = generateAllCommands(gtdSrc, {
+    rapidx: rapidxCommandsDir,
+  });
+  if (gtdResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Installed ${gtdResult.generated} Get Things Done commands as /rapidx:*\n`);
   }
 
   // ── Copy hand-authored RapidX commands ────────────────────────────────────
@@ -101,17 +104,8 @@ function installClaude(options) {
     copyDirRecursive(rapidxSrc, rapidxCommandsDir);
   }
 
-  // ── Generate /rapidx:* aliases from all GSD commands ──────────────────────
-  // Files go directly into rapidx/ so the path-based namespace gives /rapidx:<name>
-  const gsdAliasResult = generateAllCommands(gsdCommandsDir, {
-    rapidx: rapidxCommandsDir,
-  });
-  if (gsdAliasResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Generated ${gsdAliasResult.generated} /rapidx:* command aliases\n`);
-  }
-
   // ── Write COMMANDS.md index ────────────────────────────────────────────────
-  writeCommandsIndex(gsdCommandsDir, { projectRoot: targetDir });
+  writeCommandsIndex(rapidxCommandsDir, { projectRoot: targetDir });
 
   // ── Copy hook scripts ──────────────────────────────────────────────────────
   const hooksSrc = path.join(TEMPLATES_DIR, 'hooks', 'rapidx');

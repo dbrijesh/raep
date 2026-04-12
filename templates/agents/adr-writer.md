@@ -71,7 +71,7 @@ Invoked by:
 - `/rapidx:adr new` or `/rapidx:adr new [title]` — create new ADR
 - `/rapidx:learn-arch` — reads all ADRs to build architecture knowledge
 - During `/rapidx:spec-review` — checks spec against accepted ADRs
-- During `/gsd:review` — checks code changes against ADR decisions
+- During `/rapidx:review` — checks code changes against ADR decisions
 
 ## ADR directory management
 

@@ -150,7 +150,7 @@ ADR Compliance Check
      Fix: Use PostgreSQL via Prisma for this use case
 
   Summary: 1 violation found
-  Run /gsd:review to get full code review with ADR compliance
+  Run /rapidx:review to get full code review with ADR compliance
 ```
 
 ---

@@ -112,8 +112,8 @@ ${buildVersionConstraints(stackConfig)}
 | New feature spec | \`/rapidx:spec [feature]\` |
 | Review spec | \`/rapidx:spec-review [id]\` |
 | Generate plan | \`/rapidx:plan-spec [id]\` |
-| Execute tasks | \`/gsd:execute-phase\` |
-| Verify work | \`/gsd:verify-work\` |
+| Execute tasks | \`/rapidx:execute-phase\` |
+| Verify work | \`/rapidx:verify-work\` |
 | Learn from codebase | \`/rapidx:learn\` |
 | Check governance | \`/rapidx:governance-check\` |
 ${knowledgeBlock}
@@ -207,10 +207,10 @@ These specialized agents are available in this project. Invoke them for specific
 2. /rapidx:spec-review [id]      → spec-writer validates the spec
 3. /rapidx:plan-spec [id]        → planner + architect create plan
 4. /rapidx:tasks-from-spec [id]  → planner creates GTD tasks
-5. /gsd:execute-phase            → workflow-orchestrator executes
-6. /gsd:verify-work              → code-reviewer + security-reviewer verify
-7. /gsd:review                   → code-reviewer does PR review
-8. /gsd:ship                     → doc-updater + release prep
+5. /rapidx:execute-phase         → workflow-orchestrator executes
+6. /rapidx:verify-work           → code-reviewer + security-reviewer verify
+7. /rapidx:review                → code-reviewer does PR review
+8. /rapidx:ship                  → doc-updater + release prep
 \`\`\`
 `,
     },

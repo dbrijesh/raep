@@ -56,7 +56,6 @@ function verifyInstall(options) {
   // Check per-platform files
   if (platforms.includes('claude')) {
     checkFile('CLAUDE.md', 'CLAUDE.md');
-    checkDir('.claude/commands/gsd', 'GTD commands (legacy /gsd: namespace)');
     checkDir('.claude/commands/rapidx', 'RapidX commands (/rapidx: namespace)');
     checkFile('.claude/settings.json', 'Claude settings');
   }
@@ -82,6 +81,15 @@ function verifyInstall(options) {
 
   if (platforms.includes('opencode')) {
     checkFile('.opencode/opencode.json', 'OpenCode config');
+  }
+
+  if (platforms.includes('kiro')) {
+    checkDir('.kiro/skills', 'Kiro skills');
+    checkDir('.kiro/powers', 'Kiro powers');
+    checkDir('.kiro/steering', 'Kiro steering');
+    checkFile('.kiro/steering/tech-stack.md', 'Kiro tech-stack steering');
+    checkFile('.kiro/steering/coding-standards.md', 'Kiro coding-standards steering');
+    checkFile('AGENTS.md', 'AGENTS.md');
   }
 
   return {

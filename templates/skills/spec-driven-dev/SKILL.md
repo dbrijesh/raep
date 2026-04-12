@@ -47,12 +47,12 @@ Break the plan into GTD-compatible executable tasks. Write tests first (failing)
 **Command**: `/rapidx:tasks-from-spec {###-feature-slug}`
 
 ### Phase 4 — Implement
-Execute tasks via `/gsd:execute-phase`. Each task references its spec section. Tests are written before implementation code.
+Execute tasks via `/rapidx:execute-phase`. Each task references its spec section. Tests are written before implementation code.
 
 ### Phase 5 — Verify
 Verify completed implementation against spec acceptance criteria.
 
-**Command**: `/gsd:verify-work`
+**Command**: `/rapidx:verify-work`
 **Verified against**: `specs/{###}/spec.md` acceptance scenarios
 
 ### Phase 6 — Close

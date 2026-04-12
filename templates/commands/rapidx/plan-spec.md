@@ -132,7 +132,7 @@ Phases: {N} | Tasks: {total} | Estimated complexity: {Low/Medium/High}
 
 Next steps:
   /rapidx:tasks-from-spec $ARGUMENTS  → Break into GTD tasks
-  /gsd:execute-phase                   → Start execution
+  /rapidx:execute-phase                   → Start execution
   /rapidx:spec-review $ARGUMENTS      → Final spec review before coding
 ```
 </process>

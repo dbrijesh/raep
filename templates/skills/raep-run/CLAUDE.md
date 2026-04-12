@@ -41,12 +41,12 @@ Always use the exact versions listed above. Do NOT suggest upgrading or using fe
 This project uses **Get Things Done** (GTD) workflow engine for structured SDLC delivery.
 
 Key commands:
-- `/gsd:new-project` — Start a new project with requirements and roadmap
-- `/gsd:plan-phase` — Plan the next development phase
-- `/gsd:execute-phase` — Execute current phase with parallel tasks
-- `/gsd:verify-work` — Verify completed work against requirements
-- `/gsd:review` — Code review current changes
-- `/gsd:ship` — Prepare release
+- `/rapidx:new-project` — Start a new project with requirements and roadmap
+- `/rapidx:plan-phase` — Plan the next development phase
+- `/rapidx:execute-phase` — Execute current phase with parallel tasks
+- `/rapidx:verify-work` — Verify completed work against requirements
+- `/rapidx:review` — Code review current changes
+- `/rapidx:ship` — Prepare release
 
 RapidX commands:
 - `/rapidx:help` — Show all RapidX commands

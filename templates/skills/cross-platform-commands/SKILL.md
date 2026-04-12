@@ -16,16 +16,16 @@ Ensures that every RapidX and Get Things Done command works consistently across 
 | **Review spec** | `/rapidx:spec-review [id]` | `@spec-writer review [id]` | Ask: "Review spec [id]" | `codex "review spec [id]"` | `/rapidx:spec-review [id]` |
 | **Generate plan** | `/rapidx:plan-spec [id]` | `@planner plan [id]` | Ask: "Plan spec [id]" | `codex "plan [id]"` | `/rapidx:plan-spec [id]` |
 | **Create tasks** | `/rapidx:tasks-from-spec [id]` | `@planner tasks [id]` | Ask: "Create tasks for [id]" | `codex "tasks [id]"` | `/rapidx:tasks-from-spec [id]` |
-| **Execute phase** | `/gsd:execute-phase` | `@workflow-orchestrator execute` | Ask: "Execute current phase" | `codex "execute phase"` | `/gsd:execute-phase` |
-| **Verify work** | `/gsd:verify-work` | `@code-reviewer verify` | Ask: "Verify work" | `codex "verify work"` | `/gsd:verify-work` |
-| **Code review** | `/gsd:review` | `@code-reviewer review` | Ask: "Review my changes" | `codex "review"` | `/gsd:review` |
-| **Ship** | `/gsd:ship` | `@workflow-orchestrator ship` | Ask: "Prepare release" | `codex "ship"` | `/gsd:ship` |
+| **Execute phase** | `/rapidx:execute-phase` | `@workflow-orchestrator execute` | Ask: "Execute current phase" | `codex "execute phase"` | `/rapidx:execute-phase` |
+| **Verify work** | `/rapidx:verify-work` | `@code-reviewer verify` | Ask: "Verify work" | `codex "verify work"` | `/rapidx:verify-work` |
+| **Code review** | `/rapidx:review` | `@code-reviewer review` | Ask: "Review my changes" | `codex "review"` | `/rapidx:review` |
+| **Ship** | `/rapidx:ship` | `@workflow-orchestrator ship` | Ask: "Prepare release" | `codex "ship"` | `/rapidx:ship` |
 | **Learn codebase** | `/rapidx:learn` | `@knowledge-curator learn` | Ask: "Learn from codebase" | `codex "learn"` | `/rapidx:learn` |
 | **Fine-tune** | `/rapidx:fine-tune` | `@knowledge-curator fine-tune` | Ask: "Fine-tune from patterns" | `codex "fine-tune"` | `/rapidx:fine-tune` |
 | **Architecture ADR** | `/rapidx:adr new [title]` | `@adr-writer new [title]` | Ask: "Create ADR for [decision]" | `codex "adr [title]"` | `/rapidx:adr new` |
 | **Governance check** | `/rapidx:governance-check` | `@security-reviewer governance` | Ask: "Run governance check" | `codex "governance"` | `/rapidx:governance-check` |
-| **New project** | `/gsd:new-project` | `@planner new project` | Ask: "Start new project" | `codex "new project"` | `/gsd:new-project` |
-| **Quick task** | `/gsd:quick [task]` | `@workflow-orchestrator quick [task]` | Ask: "Quick: [task]" | `codex "[task]"` | `/gsd:quick [task]` |
+| **New project** | `/rapidx:new-project` | `@planner new project` | Ask: "Start new project" | `codex "new project"` | `/rapidx:new-project` |
+| **Quick task** | `/rapidx:quick [task]` | `@workflow-orchestrator quick [task]` | Ask: "Quick: [task]" | `codex "[task]"` | `/rapidx:quick [task]` |
 
 ## Workflow state is platform-agnostic
 
@@ -48,7 +48,7 @@ A workflow started in one tool can be continued in another — the state files a
 ## Platform-specific command surfaces
 
 ### Claude Code
-- Slash commands: `/gsd:*` and `/rapidx:*`
+- Slash commands: `/rapidx:*` and `/rapidx:*`
 - Settings: `.claude/settings.json`
 - Hooks: Pre/post tool execution, session start/end
 - Full command list: `/rapidx:help`

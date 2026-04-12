@@ -132,7 +132,7 @@ jobs:
 
             body += '### Request Full AI Review\n\n';
             body += 'In VS Code Copilot Chat: `@code-reviewer review this PR`\n';
-            body += 'In Claude Code: `/gsd:review`\n';
+            body += 'In Claude Code: `/rapidx:review`\n';
             body += 'In Cursor: Ask: "Review my changes for this PR"\n\n';
 
             body += '_Powered by [RapidX](https://github.com/rapidx) Agentic Engineering Platform_';

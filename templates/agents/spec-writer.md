@@ -26,7 +26,7 @@ Invoked by:
 - `/rapidx:plan-spec` — generate implementation plan
 - `/rapidx:spec-review` — review spec quality
 - `/rapidx:tasks-from-spec` — convert plan to GTD tasks
-- Automatically invoked by `/gsd:new-project` when SDD mode is enabled
+- Automatically invoked by `/rapidx:new-project` when SDD mode is enabled
 
 ## SDD Workflow
 
@@ -41,9 +41,9 @@ Feature Request
       ↓
 /rapidx:tasks-from-spec → .planning/TASKS.md
       ↓
-/gsd:execute-phase    → Implementation (code serves spec)
+/rapidx:execute-phase    → Implementation (code serves spec)
       ↓
-/gsd:verify-work      → Verify against spec acceptance criteria
+/rapidx:verify-work      → Verify against spec acceptance criteria
       ↓
 Mark spec Status: Implemented
 ```

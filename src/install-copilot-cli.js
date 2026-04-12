@@ -51,7 +51,6 @@ This project uses Get Things Done workflow engine. Key commands:
 - \`/rapidx:plan-phase\` — Plan phase
 - \`/rapidx:execute-phase\` — Execute phase
 - \`/rapidx:verify-work\` — Verify work
-(Also available as \`/gsd:*\` for backward compatibility.)
 `;
 
   fs.writeFileSync(path.join(copilotDir, 'instructions.md'), instructions, 'utf8');

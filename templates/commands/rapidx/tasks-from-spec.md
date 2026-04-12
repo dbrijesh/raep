@@ -8,7 +8,7 @@ allowed-tools:
 ---
 
 <objective>
-Transform the implementation plan at `specs/$ARGUMENTS/plan.md` into a GTD-compatible task list in `.planning/TASKS.md`, ready for `/gsd:execute-phase` to pick up and run.
+Transform the implementation plan at `specs/$ARGUMENTS/plan.md` into a GTD-compatible task list in `.planning/TASKS.md`, ready for `/rapidx:execute-phase` to pick up and run.
 </objective>
 
 <process>
@@ -117,8 +117,8 @@ Tasks generated from spec: specs/$ARGUMENTS/
 Tasks added to .planning/TASKS.md
 
 Start execution:
-  /gsd:execute-phase     → Run next pending tasks
-  /gsd:verify-work       → Verify against spec acceptance criteria
+  /rapidx:execute-phase     → Run next pending tasks
+  /rapidx:verify-work       → Verify against spec acceptance criteria
   /rapidx:spec-review $ARGUMENTS → Pre-flight spec review
 ```
 </process>

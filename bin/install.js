@@ -27,6 +27,7 @@ const { installCodex } = require('../src/install-codex');
 const { installOpencode } = require('../src/install-opencode');
 const { installGemini } = require('../src/install-gemini');
 const { installAntigravity } = require('../src/install-antigravity');
+const { installKiro } = require('../src/install-kiro');
 
 // ── CLI Flag parsing ───────────────────────────────────────────────────────────
 function parseArgs(argv) {
@@ -41,6 +42,7 @@ function parseArgs(argv) {
     opencode: false,
     gemini: false,
     antigravity: false,
+    kiro: false,
     all: false,
 
     // Scope
@@ -81,6 +83,7 @@ function parseArgs(argv) {
     else if (arg === '--opencode') flags.opencode = true;
     else if (arg === '--gemini') flags.gemini = true;
     else if (arg === '--antigravity') flags.antigravity = true;
+    else if (arg === '--kiro') flags.kiro = true;
     else if (arg === '--all') flags.all = true;
     else if (arg === '--global' || arg === '-g') flags.global = true;
     else if (arg === '--local' || arg === '-l') flags.local = true;
@@ -108,7 +111,7 @@ function parseArgs(argv) {
  */
 function isNonInteractive(flags) {
   const hasPlatform = flags.claude || flags.cursor || flags.vscode || flags.codex ||
-    flags.opencode || flags.gemini || flags.antigravity || flags['copilot-cli'] || flags.all;
+    flags.opencode || flags.gemini || flags.antigravity || flags.kiro || flags['copilot-cli'] || flags.all;
   const hasScope = flags.global || flags.local || flags.both;
   const hasProfile = !!flags.profile;
   return hasPlatform && hasScope && hasProfile;
@@ -136,6 +139,7 @@ function printPlatformResults(platforms) {
     : '';
   ui.writeln(`    ${check(platforms.vscode.detected)} VS Code               ${ver(platforms.vscode.version)}${vsExt}`);
   ui.writeln(`    ${check(platforms.cursor.detected)} Cursor IDE             ${ver(platforms.cursor.version)}`);
+  ui.writeln(`    ${check(platforms.kiro.detected)} Kiro IDE               ${ver(platforms.kiro.version)}`);
   ui.writeln(`    ${check(platforms.jetbrains.detected)} JetBrains             ${ver(platforms.jetbrains.version)}`);
   ui.writeln('');
   ui.writeln(`  ${ui.colored('Other:', ui.BOLD)}`);
@@ -444,6 +448,7 @@ async function runInstallers(platforms, targetDir, profile, stack, components) {
         case 'opencode': installOpencode(opts); break;
         case 'gemini': installGemini(opts); break;
         case 'antigravity': installAntigravity(opts); break;
+        case 'kiro': installKiro(opts); break;
       }
       progress.done(`Configuring ${platform}...`);
     } catch (e) {
@@ -502,19 +507,22 @@ function printQuickStart(platforms, profileId, stack, targetDir, components) {
 
   ui.writeln(ui.colored('  Quick start:', ui.BOLD));
   if (platforms.includes('claude')) {
-    ui.writeln(`    ${ui.colored('Claude Code:', ui.CYAN)}    claude → /gsd:new-project`);
+    ui.writeln(`    ${ui.colored('Claude Code:', ui.CYAN)}    claude → /rapidx:new-project`);
   }
   if (platforms.includes('vscode')) {
-    ui.writeln(`    ${ui.colored('VS Code:', ui.CYAN)}        Open project → Copilot Chat → type /gsd:new-project`);
+    ui.writeln(`    ${ui.colored('VS Code:', ui.CYAN)}        Open project → Copilot Chat → type /rapidx-new-project`);
   }
   if (platforms.includes('cursor')) {
     ui.writeln(`    ${ui.colored('Cursor:', ui.CYAN)}         Open project → AI chat → commands available`);
   }
+  if (platforms.includes('kiro')) {
+    ui.writeln(`    ${ui.colored('Kiro:', ui.CYAN)}           Open project → type / to browse skills or mention a keyword to activate a power`);
+  }
   ui.writeln('');
   ui.writeln(ui.colored('  Key commands:', ui.BOLD));
-  ui.writeln(`    ${ui.colored('/gsd:new-project', ui.CYAN)}       Start a new project with Get Things Done workflow`);
-  ui.writeln(`    ${ui.colored('/gsd:map-codebase', ui.CYAN)}      Analyze existing codebase`);
-  ui.writeln(`    ${ui.colored('/gsd:quick', ui.CYAN)}             Quick ad-hoc task or bug fix`);
+  ui.writeln(`    ${ui.colored('/rapidx:new-project', ui.CYAN)}    Start a new project with Get Things Done workflow`);
+  ui.writeln(`    ${ui.colored('/rapidx:map-codebase', ui.CYAN)}   Analyze existing codebase`);
+  ui.writeln(`    ${ui.colored('/rapidx:quick', ui.CYAN)}          Quick ad-hoc task or bug fix`);
   ui.writeln(`    ${ui.colored('/rapidx:help', ui.CYAN)}           Show all RapidX commands`);
   ui.writeln(`    ${ui.colored('/rapidx:switch-client', ui.CYAN)}  Change client profile`);
   ui.writeln(`    ${ui.colored('/rapidx:add-tech', ui.CYAN)}       Add a technology to your stack`);
@@ -614,6 +622,7 @@ async function main() {
       { label: `Claude Code CLI${platforms.claude.detected ? ' (detected v' + (platforms.claude.version || '?') + ')' : ''}`, value: 'claude', checked: platforms.claude.detected },
       { label: `VS Code + GitHub Copilot${platforms.vscode.detected ? ' (detected)' : ''}`, value: 'vscode', checked: platforms.vscode.detected },
       { label: `Cursor IDE${platforms.cursor.detected ? ' (detected v' + (platforms.cursor.version || '?') + ')' : ''}`, value: 'cursor', checked: platforms.cursor.detected },
+      { label: `Kiro IDE${platforms.kiro.detected ? ' (detected)' : ''}`, value: 'kiro', checked: platforms.kiro.detected },
       { label: 'Codex CLI / App', value: 'codex', checked: false },
       { label: 'OpenCode', value: 'opencode', checked: false },
       { label: 'GitHub Copilot CLI (standalone)', value: 'copilot-cli', checked: platforms.copilotCli.detected },
@@ -714,11 +723,13 @@ function buildPlatformList(flags, platforms) {
   if (flags.opencode) list.push('opencode');
   if (flags.gemini) list.push('gemini');
   if (flags.antigravity) list.push('antigravity');
+  if (flags.kiro) list.push('kiro');
   // Defaults to detected platforms if nothing specified
   if (list.length === 0) {
     if (platforms.claude.detected) list.push('claude');
     if (platforms.vscode.detected) list.push('vscode');
     if (platforms.cursor.detected) list.push('cursor');
+    if (platforms.kiro.detected) list.push('kiro');
   }
   return list;
 }

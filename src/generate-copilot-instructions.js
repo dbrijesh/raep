@@ -151,7 +151,6 @@ Plan a new project for a user authentication service
 /rapidx:do               Smart dispatcher — describe what you want
 /rapidx:help             All RapidX commands
 \`\`\`
-(Also available as \`/gsd:*\` for backward compatibility.)
 
 **Copilot Chat (VS Code)** — type \`/rapidx-<command>\` directly in chat (auto-discovered from \`.github/prompts/\`):
 

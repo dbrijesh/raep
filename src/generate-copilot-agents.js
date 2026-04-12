@@ -140,10 +140,10 @@ The Get Things Done workflow:
 2. REVIEW SPEC: /rapidx:spec-review → specs/{###}/review.md
 3. PLAN: /rapidx:plan-spec → specs/{###}/plan.md
 4. TASK: /rapidx:tasks-from-spec → .planning/TASKS.md
-5. EXECUTE: /gsd:execute-phase
-6. VERIFY: /gsd:verify-work (against spec acceptance criteria)
-7. REVIEW: /gsd:review
-8. SHIP: /gsd:ship
+5. EXECUTE: /rapidx:execute-phase
+6. VERIFY: /rapidx:verify-work (against spec acceptance criteria)
+7. REVIEW: /rapidx:review
+8. SHIP: /rapidx:ship
 9. LEARN: /rapidx:knowledge-sync
 
 Current stack: ${buildVersionRef(stack)}

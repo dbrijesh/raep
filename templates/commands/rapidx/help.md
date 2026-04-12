@@ -29,20 +29,20 @@ For VS Code Copilot: `/rapidx-do-mode2`, `/rapidx-do-mode3`, `/rapidx-do-mode4`
 
 ---
 
-## RapidX workflow commands (/gsd:* aliases)
+## RapidX workflow commands (/rapidx:* aliases)
 
 | Command | Description |
 |---------|-------------|
-| `/gsd:new-project` | Initialize a new project with requirements and roadmap |
-| `/gsd:plan-phase` | Plan the next development phase |
-| `/gsd:execute-phase` | Execute current phase with parallel tasks |
-| `/gsd:verify-work` | Verify completed work against requirements |
-| `/gsd:review` | Code review current changes |
-| `/gsd:ship` | Prepare and execute release |
-| `/gsd:quick` | Quick ad-hoc task or bug fix |
-| `/gsd:map-codebase` | Analyze existing codebase for migration |
-| `/gsd:health` | Check project health status |
-| `/gsd:help` | Show full workflow command reference |
+| `/rapidx:new-project` | Initialize a new project with requirements and roadmap |
+| `/rapidx:plan-phase` | Plan the next development phase |
+| `/rapidx:execute-phase` | Execute current phase with parallel tasks |
+| `/rapidx:verify-work` | Verify completed work against requirements |
+| `/rapidx:review` | Code review current changes |
+| `/rapidx:ship` | Prepare and execute release |
+| `/rapidx:quick` | Quick ad-hoc task or bug fix |
+| `/rapidx:map-codebase` | Analyze existing codebase for migration |
+| `/rapidx:health` | Check project health status |
+| `/rapidx:help` | Show full workflow command reference |
 
 ## Spec-Driven Development commands
 
@@ -104,8 +104,8 @@ All RapidX commands work across AI coding platforms:
 |-------------|-----------------|--------|-------|
 | `/rapidx:spec` | `@spec-writer [feature]` | Ask: "Create spec for..." | `codex spec [feature]` |
 | `/rapidx:learn` | `@knowledge-curator learn` | Ask: "Learn from codebase" | `codex learn` |
-| `/gsd:execute-phase` | `@workflow-orchestrator execute` | Ask: "Execute current phase" | `codex execute phase` |
-| `/gsd:review` | `@code-reviewer review` | Ask: "Review my changes" | `codex review` |
+| `/rapidx:execute-phase` | `@workflow-orchestrator execute` | Ask: "Execute current phase" | `codex execute phase` |
+| `/rapidx:review` | `@code-reviewer review` | Ask: "Review my changes" | `codex review` |
 
 ## Complete SDLC workflow (quick reference)
 
@@ -132,16 +132,16 @@ All RapidX commands work across AI coding platforms:
 /rapidx:tasks-from-spec 001-user-authentication
 
 # 8. Execute tasks
-/gsd:execute-phase
+/rapidx:execute-phase
 
 # 9. Verify against spec
-/gsd:verify-work
+/rapidx:verify-work
 
 # 10. Review code
-/gsd:review
+/rapidx:review
 
 # 11. Ship
-/gsd:ship
+/rapidx:ship
 
 # 12. Update knowledge (after new patterns introduced)
 /rapidx:learn --code

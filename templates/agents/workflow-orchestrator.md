@@ -18,10 +18,10 @@ LEARN            → /rapidx:learn               (codebase context injection)
 REVIEW SPEC      → /rapidx:spec-review
 PLAN             → /rapidx:plan-spec
 TASK             → /rapidx:tasks-from-spec
-EXECUTE          → /gsd:execute-phase
-VERIFY           → /gsd:verify-work
-REVIEW CODE      → /gsd:review
-SHIP             → /gsd:ship
+EXECUTE          → /rapidx:execute-phase
+VERIFY           → /rapidx:verify-work
+REVIEW CODE      → /rapidx:review
+SHIP             → /rapidx:ship
 LEARN AGAIN      → /rapidx:knowledge-sync      (update with new patterns)
 ```
 
@@ -29,12 +29,12 @@ LEARN AGAIN      → /rapidx:knowledge-sync      (update with new patterns)
 
 | GTD/RapidX Command | Claude Code | VS Code Copilot | Cursor | Codex | OpenCode |
 |--------------------|-------------|-----------------|--------|-------|----------|
-| New project | `/gsd:new-project` | `@workspace /new-project` | Agent mode → new-project | `codex "start new project"` | `/new-project` |
+| New project | `/rapidx:new-project` | `@workspace /new-project` | Agent mode → new-project | `codex "start new project"` | `/new-project` |
 | Create spec | `/rapidx:spec` | `@spec [feature]` | `@spec [feature]` | `codex spec [feature]` | `/spec` |
 | Plan spec | `/rapidx:plan-spec` | `@plan-spec [id]` | `@plan-spec [id]` | `codex plan-spec [id]` | `/plan-spec` |
-| Execute phase | `/gsd:execute-phase` | `@execute-phase` | `@execute-phase` | `codex execute-phase` | `/execute-phase` |
-| Verify work | `/gsd:verify-work` | `@verify` | `@verify` | `codex verify` | `/verify` |
-| Review code | `/gsd:review` | `@review` | `@review` | `codex review` | `/review` |
+| Execute phase | `/rapidx:execute-phase` | `@execute-phase` | `@execute-phase` | `codex execute-phase` | `/execute-phase` |
+| Verify work | `/rapidx:verify-work` | `@verify` | `@verify` | `codex verify` | `/verify` |
+| Review code | `/rapidx:review` | `@review` | `@review` | `codex review` | `/review` |
 | Governance check | `/rapidx:governance-check` | `@governance` | `@governance` | `codex governance` | `/governance` |
 | Learn codebase | `/rapidx:learn` | `@learn` | `@learn` | `codex learn` | `/learn` |
 | Fine-tune | `/rapidx:fine-tune` | `@fine-tune` | `@fine-tune` | `codex fine-tune` | `/fine-tune` |
@@ -42,7 +42,7 @@ LEARN AGAIN      → /rapidx:knowledge-sync      (update with new patterns)
 ## Platform-specific behavior
 
 ### Claude Code
-Full command support via `/gsd:*` and `/rapidx:*` slash commands.
+Full command support via `/rapidx:*` and `/rapidx:*` slash commands.
 Hooks execute automatically for context injection, audit trail, and governance.
 
 ### VS Code + GitHub Copilot
