@@ -8,8 +8,10 @@ const { injectAgentSkills } = require('./inject-agent-skills');
 const { execSync } = require('child_process');
 const { writeCopilotInstructions } = require('./generate-copilot-instructions');
 const { writeAgentsMd } = require('./generate-agents-md');
+const { AGENT_NAMES } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 const COPILOT_EXTENSION_URL = 'https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';
 
 /**
@@ -66,12 +68,12 @@ function mergeVSCodeSettings(settingsPath, stack) {
     },
   };
 
-  // Merge
-  const merged = Object.assign({}, existing, rapidxSettings);
-  // Preserve any existing rapidx keys that we don't explicitly set
-  if (existing.rapidx) {
-    merged.rapidx = Object.assign({}, existing.rapidx, rapidxSettings.rapidx || {});
-  }
+  // Merge: RapidX defaults go in first so existing user settings always win.
+  // The rapidx.* namespace is ours — our values take priority over stale existing keys.
+  const merged = Object.assign({}, rapidxSettings, existing);
+  merged['rapidx.profile'] = rapidxSettings['rapidx.profile'];
+  merged['rapidx.techStack'] = rapidxSettings['rapidx.techStack'];
+  merged['rapidx.enabled'] = true;
 
   const dir = path.dirname(settingsPath);
   fs.mkdirSync(dir, { recursive: true });
@@ -123,11 +125,8 @@ function createSkillRefs(githubDir, components) {
   }
 }
 
-// GSD agents that have Copilot-specific agent files
-const GSD_AGENT_NAMES = [
-  'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
-  'build-error-resolver', 'doc-updater', 'e2e-runner', 'refactor-cleaner', 'database-reviewer',
-];
+// Shared agent list — see src/constants.js
+const GSD_AGENT_NAMES = AGENT_NAMES;
 
 /**
  * Copy GSD agent files to .github/agents/.
@@ -212,7 +211,7 @@ function installVSCode(options) {
   // ── Generate Copilot .prompt.md files from all GSD commands ───────────────
   // Files go to .github/prompts/ — VS Code auto-discovers this location.
   // Type /<command-name> in Copilot Chat to invoke any prompt.
-  const gtdSrc = path.join(TEMPLATES_DIR, '..', 'get-things-done', 'commands', 'gsd');
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
   const copilotPromptsResult = generateAllCommands(gtdSrc, {
     copilot: promptsDir,
   });

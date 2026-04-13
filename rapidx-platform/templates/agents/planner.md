@@ -19,7 +19,7 @@ The Planner agent is responsible for translating project goals into structured r
 
 ## Activation
 
-Invoked by `/gsd:new-project` and `/gsd:plan-phase` commands.
+Invoked by `/rapidx:new-project` and `/rapidx:plan-phase` commands.
 
 ## Tech stack awareness
 

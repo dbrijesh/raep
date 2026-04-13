@@ -551,4 +551,4 @@ curl -X POST http://localhost:3001/api/todos \
 
 ---
 
-**Next step:** Run `/gsd:execute-phase 2` to implement all these files.
+**Next step:** Run `/rapidx:execute-phase 2` to implement all these files.

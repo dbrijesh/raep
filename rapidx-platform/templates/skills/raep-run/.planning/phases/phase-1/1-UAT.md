@@ -92,4 +92,4 @@ All exit criteria met. One issue found (duplicate ESLint `extends` key) was fixe
 
 ---
 
-**Next:** Run `/gsd:plan-phase 2` to plan the Core API phase.
+**Next:** Run `/rapidx:plan-phase 2` to plan the Core API phase.

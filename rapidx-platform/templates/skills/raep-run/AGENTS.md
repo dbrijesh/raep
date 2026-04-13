@@ -81,11 +81,11 @@ Always use the versions listed above. Do NOT suggest features from newer version
 ## Workflow
 
 This project uses the **Get Things Done** workflow:
-1. `/gsd:new-project` or `/gsd:new-milestone` — Start
-2. `/gsd:plan-phase` — Plan a phase
-3. `/gsd:execute-phase` — Execute
-4. `/gsd:verify-work` — Verify
-5. `/gsd:ship` — Ship
+1. `/rapidx:new-project` or `/rapidx:new-milestone` — Start
+2. `/rapidx:plan-phase` — Plan a phase
+3. `/rapidx:execute-phase` — Execute
+4. `/rapidx:verify-work` — Verify
+5. `/rapidx:ship` — Ship
 
 ## RapidX commands
 

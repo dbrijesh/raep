@@ -3,6 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const { writeClaudeMd } = require('./generate-claude-md');
+const { generateAllCommands } = require('./generate-commands');
+const { writeCommandsIndex } = require('./generate-commands-index');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -41,14 +43,36 @@ function mergeClaudeSettings(settingsPath, components) {
 
   const hooks = components ? Array.from(components.hooks) : ['session-start', 'session-end', 'audit-trail', 'secret-scanner'];
 
-  // Build hooks array for Claude settings
-  const hookConfigs = hooks.map(h => ({
-    name: h,
-    script: `.rapidx/hooks/${h}.js`,
-  }));
+  // Map hook name → Claude Code event type (settings.json uses PascalCase event keys)
+  // Trigger names in hooks.json use snake_case; Claude settings.json uses PascalCase.
+  const TRIGGER_MAP = {
+    'session-start':    { event: 'UserPromptSubmit', matcher: null },
+    'session-end':      { event: 'Stop',             matcher: null },
+    'audit-trail':      { event: 'PostToolUse',      matcher: '.*' },
+    'secret-scanner':   { event: 'PreToolUse',       matcher: 'Write|Edit|MultiEdit' },
+    'suggest-compact':  { event: 'PostToolUse',      matcher: '.*' },
+    'governance-gate':  { event: 'PreToolUse',       matcher: 'Bash' },
+    'codebase-context': { event: 'UserPromptSubmit', matcher: null },
+    'knowledge-sync':   { event: 'Stop',             matcher: null },
+    'spec-validator':   { event: 'PreToolUse',       matcher: 'Bash' },
+  };
+
+  // Build Claude settings hooks object: { EventType: [ hookEntry, ... ] }
+  const hooksObj = {};
+  for (const h of hooks) {
+    const mapping = TRIGGER_MAP[h];
+    if (!mapping) continue;
+    const { event, matcher } = mapping;
+    if (!hooksObj[event]) hooksObj[event] = [];
+    const entry = {
+      hooks: [{ type: 'command', command: `node .rapidx/hooks/${h}.js` }],
+    };
+    if (matcher) entry.matcher = matcher;
+    hooksObj[event].push(entry);
+  }
 
   const rapidxSettings = {
-    hooks: hookConfigs,
+    hooks: hooksObj,
     permissions: {
       allow: [
         'Bash(node:.rapidx/hooks/*.js)',
@@ -79,25 +103,31 @@ function installClaude(options) {
 
   // ── Directory structure ────────────────────────────────────────────────────
   const claudeDir = path.join(targetDir, '.claude');
-  const gsdCommandsDir = path.join(claudeDir, 'commands', 'gsd');
   const rapidxCommandsDir = path.join(claudeDir, 'commands', 'rapidx');
   const hooksDir = path.join(targetDir, '.rapidx', 'hooks');
 
-  fs.mkdirSync(gsdCommandsDir, { recursive: true });
   fs.mkdirSync(rapidxCommandsDir, { recursive: true });
   fs.mkdirSync(hooksDir, { recursive: true });
 
-  // ── Copy GTD commands ──────────────────────────────────────────────────────
+  // ── Convert GTD commands → /rapidx:* and write to .claude/commands/rapidx/ ─
+  // Source files stay in get-things-done/commands/gsd/ (vendor copy).
+  // generateAllCommands rewrites all internal /gsd: refs to /rapidx: on output.
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
-  if (fs.existsSync(gtdSrc)) {
-    copyDirRecursive(gtdSrc, gsdCommandsDir);
+  const gtdResult = generateAllCommands(gtdSrc, {
+    rapidx: rapidxCommandsDir,
+  });
+  if (gtdResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Installed ${gtdResult.generated} Get Things Done commands as /rapidx:*\n`);
   }
 
-  // ── Copy RapidX commands ───────────────────────────────────────────────────
+  // ── Copy hand-authored RapidX commands ────────────────────────────────────
   const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
   if (fs.existsSync(rapidxSrc)) {
     copyDirRecursive(rapidxSrc, rapidxCommandsDir);
   }
+
+  // ── Write COMMANDS.md index ────────────────────────────────────────────────
+  writeCommandsIndex(rapidxCommandsDir, { projectRoot: targetDir });
 
   // ── Copy hook scripts ──────────────────────────────────────────────────────
   const hooksSrc = path.join(TEMPLATES_DIR, 'hooks', 'rapidx');

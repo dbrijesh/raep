@@ -41,9 +41,14 @@ function generateAgentsMd(profile, stack, components) {
     'e2e-runner': 'End-to-end test orchestration with Playwright/Cypress.',
     'refactor-cleaner': 'Code refactoring, cleanup, and technical debt reduction.',
     'database-reviewer': 'Database schema review, query optimization, and migration safety.',
-    'go-reviewer': 'Go-specific code review and idiomatic patterns.',
-    'go-build-resolver': 'Resolves Go build errors and module issues.',
-    'python-reviewer': 'Python-specific code review and Pythonic patterns.',
+    'spec-writer': 'Writes EARS-notation feature specifications, requirements docs, and implementation plans.',
+    'knowledge-curator': 'Captures and maintains project knowledge, architecture patterns, and team conventions in .rapidx/knowledge/.',
+    'workflow-orchestrator': 'Orchestrates multi-agent Get Things Done SDLC pipelines across Plan→Build→Review→Test→Ship phases.',
+    'adr-writer': 'Writes Architecture Decision Records (ADRs) in MADR format with context, options, and consequences.',
+    'csharp-reviewer': 'C#/.NET code review: SOLID principles, async correctness, EF Core patterns, ASP.NET Core security.',
+    'go-reviewer': 'Go-specific code review: idiomatic patterns, concurrency safety, interface design, error handling.',
+    'go-build-resolver': 'Resolves Go build errors, module issues, import cycles, and type mismatches.',
+    'python-reviewer': 'Python-specific code review: type hints, async correctness, Django/FastAPI/Flask patterns, security.',
   };
 
   const agentSection = agents.map(a => {
@@ -93,11 +98,11 @@ Always use the versions listed above. Do NOT suggest features from newer version
 ## Workflow
 
 This project uses the **Get Things Done** workflow:
-1. \`/gsd:new-project\` or \`/gsd:new-milestone\` — Start
-2. \`/gsd:plan-phase\` — Plan a phase
-3. \`/gsd:execute-phase\` — Execute
-4. \`/gsd:verify-work\` — Verify
-5. \`/gsd:ship\` — Ship
+1. \`/rapidx:new-project\` or \`/rapidx:new-milestone\` — Start
+2. \`/rapidx:plan-phase\` — Plan a phase
+3. \`/rapidx:execute-phase\` — Execute
+4. \`/rapidx:verify-work\` — Verify
+5. \`/rapidx:ship\` — Ship
 
 ## RapidX commands
 

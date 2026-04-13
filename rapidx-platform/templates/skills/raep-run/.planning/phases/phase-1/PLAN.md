@@ -401,4 +401,4 @@ npm run lint
 
 ## Next Step
 
-Once exit criteria are verified, run `/gsd:execute-phase 1` to implement the code, then `/gsd:verify-work` to confirm before proceeding to Phase 2.
+Once exit criteria are verified, run `/rapidx:execute-phase 1` to implement the code, then `/rapidx:verify-work` to confirm before proceeding to Phase 2.

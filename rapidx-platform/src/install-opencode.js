@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { generateAgentsMd } = require('./generate-agents-md');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
@@ -41,6 +42,11 @@ function installOpencode(options) {
   };
 
   fs.writeFileSync(path.join(opencodeDir, 'opencode.json'), JSON.stringify(config, null, 2), 'utf8');
+
+  // Write AGENTS.md for agent delegation context
+  const agentsMd = generateAgentsMd(profile, stack, components);
+  fs.writeFileSync(path.join(opencodeDir, 'AGENTS.md'), agentsMd, 'utf8');
+  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
 
   // Copy selected skills as instruction files
   const skills = components ? Array.from(components.skills) : [];

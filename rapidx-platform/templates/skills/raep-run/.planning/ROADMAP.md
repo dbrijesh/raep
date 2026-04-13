@@ -104,4 +104,4 @@
 
 ---
 
-**Next step:** Run `/gsd:plan-phase 1` to begin Phase 1 execution.
+**Next step:** Run `/rapidx:plan-phase 1` to begin Phase 1 execution.

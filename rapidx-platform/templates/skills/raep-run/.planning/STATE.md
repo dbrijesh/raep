@@ -1,21 +1,21 @@
 # STATE.md — ToDo App
 
 > Project memory — updated as work progresses
-> Last updated: 2026-03-21
+> Last updated: 2026-03-26
 
 ## Current Status
 
-**Active phase:** Phase 1 — COMPLETE ✓ | Next: Phase 2 — Core API
-**Overall progress:** 1 / 5 phases verified complete
+**Active phase:** Phase 5 — Verification & Cleanup (next: plan → execute)
+**Overall progress:** 4 / 5 phases verified complete
 
 ## Phase Status
 
 | Phase | Name | Status | Notes |
 |---|---|---|---|
 | 1 | Project Foundation | **VERIFIED COMPLETE** ✓ | UAT passed, 1 fix applied |
-| 2 | Core API (CRUD) | Planned — ready to execute | PLAN.md created |
-| 3 | Frontend Core UI | Not started | |
-| 4 | Polish & UX | Not started | |
+| 2 | Core API (CRUD) | **VERIFIED COMPLETE** ✓ | UAT passed, 2 bugs fixed |
+| 3 | Frontend Core UI | **VERIFIED COMPLETE** ✓ | UAT passed, 1 bug fixed |
+| 4 | Polish & UX | **VERIFIED COMPLETE** ✓ | UAT passed, 0 bugs |
 | 5 | Verification & Cleanup | Not started | |
 
 ## Key Decisions

@@ -125,17 +125,26 @@ function mapComponents(stackConfig) {
   // ── Mobile ────────────────────────────────────────────────────────────────
   if (stackConfig.mobile && stackConfig.mobile.framework) {
     const mfw = stackConfig.mobile.framework.toLowerCase();
-    const entry = componentMap.frameworks[mfw] || componentMap.frameworks['react-native'];
+    // Only install the exact mapped framework — no silent fallback to a different one
+    const entry = componentMap.frameworks[mfw];
     if (entry) addFromEntry(entry, result);
   }
 
   // ── Profile-specific extras ───────────────────────────────────────────────
+  // Use exact profile ID matching against known sets — substring matching can
+  // cause false positives (e.g. "unregulated-startup" matching "regulated").
+  const REGULATED_PROFILES = new Set([
+    'pharma-regulated', 'finserv-sox', 'insurance-hipaa',
+    'enterprise-standard', 'regulated',
+  ]);
+  const MODERNIZATION_PROFILES = new Set(['modernization', 'legacy-modernization']);
+
   if (stackConfig.profile) {
     const profile = stackConfig.profile.toLowerCase();
-    if (profile.includes('regulated') || profile.includes('pharma') || profile.includes('finserv') || profile.includes('hipaa') || profile.includes('sox') || profile.includes('insurance')) {
+    if (REGULATED_PROFILES.has(profile)) {
       addFromEntry(componentMap.profiles.regulated, result);
     }
-    if (profile.includes('modernization')) {
+    if (MODERNIZATION_PROFILES.has(profile)) {
       addFromEntry(componentMap.profiles.modernization, result);
     }
   }

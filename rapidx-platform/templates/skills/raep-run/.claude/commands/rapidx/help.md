@@ -10,20 +10,20 @@ Display the complete RapidX command reference including all available commands, 
 <output>
 # RapidX Agentic Engineering Platform — Command Reference
 
-## Get Things Done workflow commands (/gsd:*)
+## Get Things Done workflow commands (/rapidx:*)
 
 | Command | Description |
 |---------|-------------|
-| `/gsd:new-project` | Initialize a new project with requirements and roadmap |
-| `/gsd:plan-phase` | Plan the next development phase |
-| `/gsd:execute-phase` | Execute current phase with parallel tasks |
-| `/gsd:verify-work` | Verify completed work against requirements |
-| `/gsd:review` | Code review current changes |
-| `/gsd:ship` | Prepare and execute release |
-| `/gsd:quick` | Quick ad-hoc task or bug fix |
-| `/gsd:map-codebase` | Analyze existing codebase for migration |
-| `/gsd:health` | Check project health status |
-| `/gsd:help` | Show Get Things Done command reference |
+| `/rapidx:new-project` | Initialize a new project with requirements and roadmap |
+| `/rapidx:plan-phase` | Plan the next development phase |
+| `/rapidx:execute-phase` | Execute current phase with parallel tasks |
+| `/rapidx:verify-work` | Verify completed work against requirements |
+| `/rapidx:review` | Code review current changes |
+| `/rapidx:ship` | Prepare and execute release |
+| `/rapidx:quick` | Quick ad-hoc task or bug fix |
+| `/rapidx:map-codebase` | Analyze existing codebase for migration |
+| `/rapidx:health` | Check project health status |
+| `/rapidx:help` | Show Get Things Done command reference |
 
 ## RapidX enterprise commands (/rapidx:*)
 
@@ -43,16 +43,16 @@ Display the complete RapidX command reference including all available commands, 
 
 ```bash
 # Start a new project
-/gsd:new-project
+/rapidx:new-project
 
 # Plan phase 1
-/gsd:plan-phase 1
+/rapidx:plan-phase 1
 
 # Execute current phase
-/gsd:execute-phase
+/rapidx:execute-phase
 
 # Verify work
-/gsd:verify-work
+/rapidx:verify-work
 
 # Switch client profile
 /rapidx:switch-client enterprise-standard

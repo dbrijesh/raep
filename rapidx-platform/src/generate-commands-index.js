@@ -112,7 +112,7 @@ ${[...coreRows, ...otherRows].join('\n')}
 ## How to use per platform
 
 ### Claude Code
-Use \`/rapidx:<command>\` in the chat prompt. \`/gsd:<command>\` also works for backward compatibility.
+Use \`/rapidx:<command>\` in the chat prompt:
 
 \`\`\`
 /rapidx:new-project

@@ -111,6 +111,10 @@ function loadAndValidate(profileId, stackData) {
   if (!validation.valid) {
     process.stderr.write(`[RapidX] Profile validation warnings for "${profileId}":\n`);
     validation.errors.forEach(e => process.stderr.write(`  - ${e}\n`));
+    // Coerce missing array fields to empty arrays so downstream iterators don't crash
+    for (const field of ['rules', 'skills', 'agents', 'hooks']) {
+      if (!Array.isArray(profile[field])) profile[field] = [];
+    }
   }
 
   return profile;

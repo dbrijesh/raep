@@ -51,6 +51,33 @@
       "enabled": false,
       "required": false,
       "profiles": ["pharma-regulated", "finserv-sox", "insurance-hipaa", "enterprise-standard"]
+    },
+    {
+      "name": "codebase-context",
+      "description": "Inject codebase knowledge (patterns, architecture, guidelines) at session start",
+      "trigger": "session_start",
+      "script": ".rapidx/hooks/codebase-context.js",
+      "enabled": true,
+      "required": false,
+      "note": "Runs after session-start. Provides learned project context to all agents."
+    },
+    {
+      "name": "knowledge-sync",
+      "description": "Auto-detect knowledge refresh needs at session end and prompt if needed",
+      "trigger": "session_end",
+      "script": ".rapidx/hooks/knowledge-sync.js",
+      "enabled": true,
+      "required": false
+    },
+    {
+      "name": "spec-validator",
+      "description": "Validate spec compliance before git commits on spec feature branches",
+      "trigger": "pre_tool_use",
+      "filter": "Bash",
+      "script": ".rapidx/hooks/spec-validator.js",
+      "enabled": true,
+      "required": false,
+      "note": "Set RAPIDX_STRICT_SPEC=1 to block commits on spec violations"
     }
   ]
 }

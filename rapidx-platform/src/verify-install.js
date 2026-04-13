@@ -56,8 +56,7 @@ function verifyInstall(options) {
   // Check per-platform files
   if (platforms.includes('claude')) {
     checkFile('CLAUDE.md', 'CLAUDE.md');
-    checkDir('.claude/commands/gsd', 'GTD commands');
-    checkDir('.claude/commands/rapidx', 'RapidX commands');
+    checkDir('.claude/commands/rapidx', 'RapidX commands (/rapidx: namespace)');
     checkFile('.claude/settings.json', 'Claude settings');
   }
 
@@ -82,6 +81,35 @@ function verifyInstall(options) {
 
   if (platforms.includes('opencode')) {
     checkFile('.opencode/opencode.json', 'OpenCode config');
+    checkFile('AGENTS.md', 'AGENTS.md');
+  }
+
+  if (platforms.includes('gemini')) {
+    checkFile('.gemini/config.json', 'Gemini config');
+    checkFile('.gemini/AGENTS.md', 'Gemini AGENTS.md');
+    checkFile('AGENTS.md', 'AGENTS.md');
+  }
+
+  if (platforms.includes('antigravity')) {
+    checkFile('.agent/config.json', 'Antigravity config');
+    checkFile('.agent/AGENTS.md', 'Antigravity AGENTS.md');
+    checkDir('.agent/skills', 'Antigravity skills');
+    checkFile('AGENTS.md', 'AGENTS.md');
+  }
+
+  if (platforms.includes('copilot-cli')) {
+    checkFile('.github/copilot/instructions.md', 'Copilot CLI instructions');
+    checkFile('AGENTS.md', 'AGENTS.md');
+  }
+
+  if (platforms.includes('kiro')) {
+    checkDir('.kiro/skills', 'Kiro skills');
+    checkDir('.kiro/powers', 'Kiro powers');
+    checkDir('.kiro/steering', 'Kiro steering');
+    checkDir('.kiro/hooks', 'Kiro hooks');
+    checkFile('.kiro/steering/tech-stack.md', 'Kiro tech-stack steering');
+    checkFile('.kiro/steering/coding-standards.md', 'Kiro coding-standards steering');
+    checkFile('AGENTS.md', 'AGENTS.md');
   }
 
   return {

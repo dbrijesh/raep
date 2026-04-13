@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { generateAgentsMd } = require('./generate-agents-md');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
@@ -47,13 +48,17 @@ ${components ? Array.from(components.skills).map(s => `- ${s} (see skills/${s}.m
 ## Workflow
 
 This project uses Get Things Done workflow engine. Key commands:
-- \`/gsd:new-project\` — Initialize project
-- \`/gsd:plan-phase\` — Plan phase
-- \`/gsd:execute-phase\` — Execute phase
-- \`/gsd:verify-work\` — Verify work
+- \`/rapidx:new-project\` — Initialize project
+- \`/rapidx:plan-phase\` — Plan phase
+- \`/rapidx:execute-phase\` — Execute phase
+- \`/rapidx:verify-work\` — Verify work
 `;
 
   fs.writeFileSync(path.join(copilotDir, 'instructions.md'), instructions, 'utf8');
+
+  // Write AGENTS.md for agent delegation context
+  const agentsMd = generateAgentsMd(profile, stack, components);
+  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
 
   // Copy skill files
   const skills = components ? Array.from(components.skills) : [];

@@ -2,6 +2,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { generateAgentsMd } = require('./generate-agents-md');
+const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
 /**
  * Install RapidX for Antigravity.
@@ -32,6 +34,25 @@ function installAntigravity(options) {
   };
 
   fs.writeFileSync(path.join(agentDir, 'config.json'), JSON.stringify(config, null, 2), 'utf8');
+
+  // Write AGENTS.md for agent delegation context
+  const agentsMd = generateAgentsMd(profile, stack, components);
+  fs.writeFileSync(path.join(agentDir, 'AGENTS.md'), agentsMd, 'utf8');
+  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
+
+  // Copy selected skills to .agent/skills/
+  const skillsDir = path.join(agentDir, 'skills');
+  fs.mkdirSync(skillsDir, { recursive: true });
+  const skills = components ? Array.from(components.skills) : [];
+  for (const skill of skills) {
+    const skillSrc = path.join(TEMPLATES_DIR, 'skills', skill, 'SKILL.md');
+    const destPath = path.join(skillsDir, `${skill}.md`);
+    if (fs.existsSync(skillSrc)) {
+      fs.copyFileSync(skillSrc, destPath);
+    } else {
+      fs.writeFileSync(destPath, `# ${skill}\n\nSee full skill documentation.\n`, 'utf8');
+    }
+  }
 
   return { success: true };
 }

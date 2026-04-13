@@ -1,0 +1,168 @@
+name: RapidX Spec Check
+
+# AI-powered specification validation workflow.
+# Runs on PRs to verify that:
+# 1. Feature branches have a corresponding spec
+# 2. Spec acceptance criteria are reflected in the implementation
+# 3. Constitution compliance is maintained
+#
+# Inspired by github/awesome-copilot agentic workflows.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main, develop, 'release/**']
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  spec-check:
+    runs-on: ubuntu-latest
+    name: Spec Compliance Check
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for spec directory
+        id: spec-check
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          echo "Branch: $BRANCH"
+
+          # Check if this is a spec-driven feature branch (###-feature-slug)
+          if echo "$BRANCH" | grep -qE '^[0-9]{3}-'; then
+            SPEC_ID=$(echo "$BRANCH" | grep -oE '^[0-9]{3}-[a-z0-9-]+')
+            SPEC_PATH="specs/${SPEC_ID}/spec.md"
+            echo "spec_id=$SPEC_ID" >> $GITHUB_OUTPUT
+            echo "spec_path=$SPEC_PATH" >> $GITHUB_OUTPUT
+
+            if [ -f "$SPEC_PATH" ]; then
+              echo "spec_exists=true" >> $GITHUB_OUTPUT
+              echo "Spec found: $SPEC_PATH"
+            else
+              echo "spec_exists=false" >> $GITHUB_OUTPUT
+              echo "No spec found for branch $BRANCH"
+            fi
+          else
+            echo "spec_id=" >> $GITHUB_OUTPUT
+            echo "spec_exists=skip" >> $GITHUB_OUTPUT
+            echo "Not a spec branch — skipping spec check"
+          fi
+
+      - name: Validate spec completeness
+        if: steps.spec-check.outputs.spec_exists == 'true'
+        run: |
+          SPEC_PATH="${{ steps.spec-check.outputs.spec_path }}"
+
+          # Check required spec sections
+          MISSING=""
+          grep -q "## 1. Problem Statement" "$SPEC_PATH" || MISSING="$MISSING\n- Missing: Problem Statement"
+          grep -q "## 2. User Scenarios" "$SPEC_PATH" || MISSING="$MISSING\n- Missing: User Scenarios"
+          grep -q "Given.*When.*Then" "$SPEC_PATH" || MISSING="$MISSING\n- Missing: Given/When/Then acceptance scenarios"
+          grep -q "## 3. Technical Design" "$SPEC_PATH" || MISSING="$MISSING\n- Missing: Technical Design"
+          grep -q "## 5. Constitution Check" "$SPEC_PATH" || MISSING="$MISSING\n- Missing: Constitution Check"
+
+          # Check spec status
+          STATUS=$(grep -oP '(?<=\*\*Status\*\*: ).*' "$SPEC_PATH" | head -1)
+          echo "Spec status: $STATUS"
+
+          if [ -n "$MISSING" ]; then
+            echo "::warning::Spec is incomplete. Missing sections: $MISSING"
+            echo "spec_complete=false" >> $GITHUB_ENV
+          else
+            echo "spec_complete=true" >> $GITHUB_ENV
+          fi
+
+          echo "SPEC_STATUS=$STATUS" >> $GITHUB_ENV
+
+      - name: Check spec review exists
+        if: steps.spec-check.outputs.spec_exists == 'true'
+        run: |
+          SPEC_ID="${{ steps.spec-check.outputs.spec_id }}"
+          REVIEW_PATH="specs/${SPEC_ID}/review.md"
+
+          if [ -f "$REVIEW_PATH" ]; then
+            VERDICT=$(grep -oP '(?<=Verdict: ).*' "$REVIEW_PATH" | head -1 || echo "Unknown")
+            echo "Review verdict: $VERDICT"
+            echo "REVIEW_VERDICT=$VERDICT" >> $GITHUB_ENV
+            echo "review_exists=true" >> $GITHUB_ENV
+          else
+            echo "No spec review found"
+            echo "review_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check constitution compliance
+        if: steps.spec-check.outputs.spec_exists == 'true'
+        run: |
+          CONSTITUTION_PATH=".rapidx/CONSTITUTION.md"
+          if [ -f "$CONSTITUTION_PATH" ]; then
+            echo "Constitution found — checking compliance..."
+            # Basic check: constitution check section in spec must not have unchecked blockers
+            SPEC_PATH="${{ steps.spec-check.outputs.spec_path }}"
+            UNCHECKED=$(grep -c '- \[ \]' "$SPEC_PATH" || echo "0")
+            echo "Unchecked constitution items: $UNCHECKED"
+            echo "UNCHECKED_ITEMS=$UNCHECKED" >> $GITHUB_ENV
+          else
+            echo "No constitution found — skipping compliance check"
+            echo "UNCHECKED_ITEMS=0" >> $GITHUB_ENV
+          fi
+
+      - name: Post PR comment
+        if: steps.spec-check.outputs.spec_exists != 'skip'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const specExists = '${{ steps.spec-check.outputs.spec_exists }}';
+            const specId = '${{ steps.spec-check.outputs.spec_id }}';
+            const specPath = '${{ steps.spec-check.outputs.spec_path }}';
+            const specComplete = process.env.spec_complete;
+            const specStatus = process.env.SPEC_STATUS;
+            const reviewExists = process.env.review_exists;
+            const reviewVerdict = process.env.REVIEW_VERDICT;
+            const uncheckedItems = parseInt(process.env.UNCHECKED_ITEMS || '0');
+
+            let body = '## RapidX Spec Check\n\n';
+
+            if (specExists === 'false') {
+              body += `> **No spec found for feature branch \`${specId}\`**\n\n`;
+              body += `Create a spec: \`/rapidx:spec ${specId.replace(/^\d+-/, '')}\`\n`;
+            } else if (specExists === 'true') {
+              const statusEmoji = specStatus === 'Reviewed' ? '✅' : specStatus === 'Draft' ? '🟡' : '🔵';
+              body += `| Check | Status |\n|-------|--------|\n`;
+              body += `| Spec exists | ✅ \`${specPath}\` |\n`;
+              body += `| Spec status | ${statusEmoji} ${specStatus || 'Unknown'} |\n`;
+              body += `| Spec complete | ${specComplete === 'true' ? '✅' : '⚠️ Incomplete'} |\n`;
+              body += `| Spec reviewed | ${reviewExists === 'true' ? `✅ ${reviewVerdict}` : '⚠️ Not reviewed'} |\n`;
+              body += `| Constitution | ${uncheckedItems === 0 ? '✅ Compliant' : `⚠️ ${uncheckedItems} unchecked items`} |\n\n`;
+
+              if (specStatus === 'Draft' || reviewExists === 'false') {
+                body += '**Action needed:**\n';
+                if (specStatus === 'Draft') body += '- Run `/rapidx:spec-review ' + specId + '` to validate the spec\n';
+                if (reviewExists === 'false') body += '- Run `/rapidx:spec-review ' + specId + '` to generate a review\n';
+              }
+            }
+
+            body += '\n_Powered by [RapidX](https://github.com/rapidx) Spec-Driven Development_';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body
+            });
+
+      - name: Fail if no spec on spec branch
+        if: steps.spec-check.outputs.spec_exists == 'false'
+        run: |
+          echo "::error::Feature branch '${GITHUB_HEAD_REF}' has no spec. Create one with /rapidx:spec"
+          exit 1

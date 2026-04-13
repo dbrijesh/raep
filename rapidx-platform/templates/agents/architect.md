@@ -19,7 +19,7 @@ The Architect agent handles system design, component architecture, technology de
 
 ## Activation
 
-Invoked when architectural questions arise, during phase planning for new systems, and during `/gsd:new-project`.
+Invoked when architectural questions arise, during phase planning for new systems, and during `/rapidx:new-project`.
 
 ## Principles
 

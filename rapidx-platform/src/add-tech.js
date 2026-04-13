@@ -4,9 +4,13 @@ const fs = require('fs');
 const path = require('path');
 const { mapComponents } = require('./map-components');
 const { loadAndValidate } = require('./profile-loader');
-const { writeClaudeMd } = require('./generate-claude-md');
-const { writeAgentsMd } = require('./generate-agents-md');
-const { writeCopilotInstructions } = require('./generate-copilot-instructions');
+const { installCursor } = require('./install-cursor');
+const { installCodex } = require('./install-codex');
+const { installOpencode } = require('./install-opencode');
+const { installGemini } = require('./install-gemini');
+const { installAntigravity } = require('./install-antigravity');
+const { installCopilotCli } = require('./install-copilot-cli');
+const { installKiro } = require('./install-kiro');
 
 /**
  * Read .rapidx/stack.json from a target directory.
@@ -81,6 +85,18 @@ function addTech(options) {
   if (newStackSelections.database && !mergedStack.database) {
     mergedStack.database = newStackSelections.database;
   }
+  if (newStackSelections.infrastructure) {
+    mergedStack.infrastructure = Object.assign({}, mergedStack.infrastructure || {}, newStackSelections.infrastructure);
+  }
+  if (newStackSelections.testing) {
+    const existing = mergedStack.testing || { frameworks: [] };
+    const added = newStackSelections.testing.frameworks || [];
+    const merged = new Set([...(existing.frameworks || []), ...added]);
+    mergedStack.testing = { frameworks: Array.from(merged) };
+  }
+  if (newStackSelections.mobile && !mergedStack.mobile) {
+    mergedStack.mobile = newStackSelections.mobile;
+  }
 
   // Compute new full component set
   const newComponents = mapComponents(mergedStack);
@@ -107,18 +123,33 @@ function addTech(options) {
   const profileId = mergedStack.profile || 'default';
   const profile = loadAndValidate(profileId, mergedStack);
 
-  if (platforms.includes('claude')) {
-    writeClaudeMd(targetDir, profile, mergedStack, newComponents);
-  }
-  if (platforms.includes('vscode') || platforms.includes('copilot-cli')) {
-    writeCopilotInstructions(targetDir, profile, mergedStack, newComponents);
-    writeAgentsMd(targetDir, profile, mergedStack, newComponents);
-  }
-  if (platforms.includes('cursor')) {
-    writeAgentsMd(targetDir, profile, mergedStack, newComponents);
+  const opts = { targetDir, profile, stack: mergedStack, components: newComponents };
+
+  const installerMap = {
+    claude:       () => { const { installClaude }  = require('./install-claude');  installClaude(opts); },
+    vscode:       () => { const { installVSCode }  = require('./install-vscode');  installVSCode(opts); },
+    cursor:       () => installCursor(opts),
+    codex:        () => installCodex(opts),
+    opencode:     () => installOpencode(opts),
+    gemini:       () => installGemini(opts),
+    antigravity:  () => installAntigravity(opts),
+    'copilot-cli':() => installCopilotCli(opts),
+    kiro:         () => installKiro(opts),
+  };
+
+  const errors = [];
+  for (const platform of platforms) {
+    const run = installerMap[platform];
+    if (!run) continue;
+    try {
+      run();
+    } catch (e) {
+      process.stderr.write(`[RapidX] Error updating ${platform}: ${e.message}\n`);
+      errors.push({ platform, error: e.message });
+    }
   }
 
-  return { success: true, delta };
+  return { success: errors.length === 0, delta, errors };
 }
 
 module.exports = { addTech, readStackJson, writeStackJson, computeDelta };
