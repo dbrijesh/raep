@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 /**
  * Remove a directory if it exists.
@@ -72,7 +73,10 @@ function uninstall(options) {
     removeDir(path.join(targetDir, '.claude', 'commands', 'rapidx'));
     cleanSettings(path.join(targetDir, '.claude', 'settings.json'));
     removeFile(path.join(targetDir, 'CLAUDE.md'));
-    removed.push('.claude/commands/rapidx/', 'CLAUDE.md');
+    // Remove GTD engine from home directory (shared across all projects)
+    const gtdHome = path.join(os.homedir(), '.claude', 'get-things-done');
+    removeDir(gtdHome);
+    removed.push('.claude/commands/rapidx/', 'CLAUDE.md', '~/.claude/get-things-done/');
   }
 
   if (platforms.includes('vscode')) {

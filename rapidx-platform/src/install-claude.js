@@ -2,12 +2,18 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { writeClaudeMd } = require('./generate-claude-md');
 const { generateAllCommands } = require('./generate-commands');
 const { writeCommandsIndex } = require('./generate-commands-index');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
+
+// GTD engine always lives at ~/.claude/get-things-done/ regardless of install scope,
+// because all @~/.claude/get-things-done/ references in commands and workflows
+// resolve against the user's home directory, not the project directory.
+const GTD_INSTALL_DIR = path.join(os.homedir(), '.claude', 'get-things-done');
 
 /**
  * Copy a directory recursively.
@@ -21,6 +27,31 @@ function copyDirRecursive(src, dest) {
     const destPath = path.join(dest, entry.name);
     if (entry.isDirectory()) {
       copyDirRecursive(srcPath, destPath);
+    } else {
+      fs.copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+// Text file extensions whose content should have /gsd: rewritten to /rapidx:
+const TEXT_EXTS = new Set(['.md', '.txt', '.json', '.toml', '.yaml', '.yml']);
+
+/**
+ * Copy the GTD engine directory to dest, rewriting /gsd: → /rapidx: in text files.
+ * Binary files (.cjs, .js, etc.) are copied as-is.
+ */
+function copyGtdEngine(src, dest) {
+  if (!fs.existsSync(src)) return;
+  fs.mkdirSync(dest, { recursive: true });
+  const entries = fs.readdirSync(src, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      copyGtdEngine(srcPath, destPath);
+    } else if (TEXT_EXTS.has(path.extname(entry.name).toLowerCase())) {
+      const content = fs.readFileSync(srcPath, 'utf8');
+      fs.writeFileSync(destPath, content.replace(/\/gsd:/g, '/rapidx:'), 'utf8');
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
@@ -108,6 +139,17 @@ function installClaude(options) {
 
   fs.mkdirSync(rapidxCommandsDir, { recursive: true });
   fs.mkdirSync(hooksDir, { recursive: true });
+
+  // ── Install GTD engine to ~/.claude/get-things-done/ ─────────────────────
+  // GTD commands reference @~/.claude/get-things-done/workflows|references|etc.
+  // These paths always resolve against the user's home directory, so the engine
+  // must live there regardless of whether this is a local or global install.
+  if (fs.existsSync(GTD_DIR)) {
+    copyGtdEngine(GTD_DIR, GTD_INSTALL_DIR);
+    process.stdout.write(`  [RapidX] Installed Get Things Done engine → ${GTD_INSTALL_DIR}\n`);
+  } else {
+    process.stderr.write(`[RapidX] Warning: GTD engine source not found at ${GTD_DIR}\n`);
+  }
 
   // ── Convert GTD commands → /rapidx:* and write to .claude/commands/rapidx/ ─
   // Source files stay in get-things-done/commands/gsd/ (vendor copy).
