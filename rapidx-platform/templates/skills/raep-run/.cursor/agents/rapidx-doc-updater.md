@@ -1,5 +1,5 @@
 ---
-description: GSD Doc Updater agent — activate when documentation needs to be updated after code changes, when public APIs or function signatures changed, when setup/installation procedures changed, or when architecture decisions were made that should be recorded.
+description: RapidX Doc Updater agent — activate when documentation needs to be updated after code changes, when public APIs or function signatures changed, when setup/installation procedures changed, or when architecture decisions were made that should be recorded.
 alwaysApply: false
 ---
 

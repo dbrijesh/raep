@@ -68,7 +68,7 @@ function verifyInstall(options) {
     checkGtdDir('contexts', 'contexts');
     checkGtdDir('agents', 'agents');
     checkGtdDir('templates', 'templates');
-    checkGtdDir('bin/gsd-tools.cjs', 'gsd-tools binary');
+    checkGtdDir('bin/rapidx-tools.cjs', 'rapidx-tools binary');
   }
 
   // Check per-platform files

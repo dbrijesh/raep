@@ -32,7 +32,7 @@ Uses ROADMAP.md phase discovery and Skill() flat invocations for each phase comm
 <context>
 Optional flag: `--from N` — start from phase N instead of the first incomplete phase.
 
-Project context, phase list, and state are resolved inside the workflow using init commands (`gsd-tools.cjs init milestone-op`, `gsd-tools.cjs roadmap analyze`). No upfront context loading needed.
+Project context, phase list, and state are resolved inside the workflow using init commands (`rapidx-tools.cjs init milestone-op`, `rapidx-tools.cjs roadmap analyze`). No upfront context loading needed.
 </context>
 
 <process>

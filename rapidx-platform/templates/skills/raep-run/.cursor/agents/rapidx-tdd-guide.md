@@ -1,5 +1,5 @@
 ---
-description: GSD TDD Guide agent — activate when writing tests first, doing test-driven development, implementing features with TDD cycle (red-green-refactor), or when asked to write a failing test before implementation.
+description: RapidX TDD Guide agent — activate when writing tests first, doing test-driven development, implementing features with TDD cycle (red-green-refactor), or when asked to write a failing test before implementation.
 alwaysApply: false
 ---
 

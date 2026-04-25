@@ -16,7 +16,7 @@ allowed-tools:
 Execute small, ad-hoc tasks with Get Things Done guarantees (atomic commits, STATE.md tracking).
 
 Quick mode is the same system with a shorter path:
-- Spawns gsd-planner (quick mode) + gsd-executor(s)
+- Spawns rapidx-planner (quick mode) + rapidx-executor(s)
 - Quick tasks live in `.planning/quick/` separate from planned phases
 - Updates STATE.md "Quick Tasks Completed" table (NOT ROADMAP.md)
 

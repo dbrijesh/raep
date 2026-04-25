@@ -1,5 +1,5 @@
 ---
-description: GSD E2E Runner agent — activate when writing end-to-end tests, testing user flows with Playwright or Cypress, debugging E2E test failures, or setting up E2E test infrastructure.
+description: RapidX E2E Runner agent — activate when writing end-to-end tests, testing user flows with Playwright or Cypress, debugging E2E test failures, or setting up E2E test infrastructure.
 alwaysApply: false
 ---
 

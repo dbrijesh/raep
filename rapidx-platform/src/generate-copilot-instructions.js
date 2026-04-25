@@ -69,11 +69,11 @@ function generateCopilotInstructions(profile, stack, components) {
   const skillRefs = skills.map(s => `- [\`${s}\`](.github/skills/${s}.md) — attach with \`#file:.github/skills/${s}.md\``).join('\n');
 
   // Agent refs — only include agents that have a Copilot agent file
-  const GSD_AGENT_NAMES = [
+  const GTD_AGENT_NAMES = [
     'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
     'build-error-resolver', 'doc-updater', 'e2e-runner', 'refactor-cleaner', 'database-reviewer',
   ];
-  const agents = components ? Array.from(components.agents).filter(a => GSD_AGENT_NAMES.includes(a)) : GSD_AGENT_NAMES;
+  const agents = components ? Array.from(components.agents).filter(a => GTD_AGENT_NAMES.includes(a)) : GTD_AGENT_NAMES;
   const agentRefs = agents.map(a => `- [\`${a}\`](.github/agents/rapidx-${a}.md) — attach with \`#file:.github/agents/rapidx-${a}.md\``).join('\n');
 
   return `# GitHub Copilot Instructions — ${clientName}

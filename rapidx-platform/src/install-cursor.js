@@ -95,10 +95,10 @@ function writeMcpJson(cursorDir, stack) {
 }
 
 // Shared agent list — see src/constants.js
-const GSD_AGENT_NAMES = AGENT_NAMES;
+const GTD_AGENT_NAMES = AGENT_NAMES;
 
 /**
- * Copy GSD agent MDC files to .cursor/agents/.
+ * Copy agent MDC files to .cursor/agents/.
  * Cursor auto-suggests these when the description matches the task context.
  * @param {string} agentsDir
  * @param {object} components
@@ -106,8 +106,8 @@ const GSD_AGENT_NAMES = AGENT_NAMES;
 function installCursorAgents(agentsDir, components) {
   fs.mkdirSync(agentsDir, { recursive: true });
 
-  const requestedAgents = components ? Array.from(components.agents) : GSD_AGENT_NAMES;
-  const toInstall = requestedAgents.filter(a => GSD_AGENT_NAMES.includes(a));
+  const requestedAgents = components ? Array.from(components.agents) : GTD_AGENT_NAMES;
+  const toInstall = requestedAgents.filter(a => GTD_AGENT_NAMES.includes(a));
 
   const agentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.cursor', 'agents');
 
@@ -145,11 +145,11 @@ function installCursor(options) {
   // Generate mcp.json
   writeMcpJson(cursorDir, stack);
 
-  // Copy GSD agent MDC files to .cursor/agents/
+  // Copy Get Things Done agent MDC files to .cursor/agents/
   installCursorAgents(path.join(cursorDir, 'agents'), components);
 
-  // ── Generate Cursor command files from all GSD commands ───────────────────
-  const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
+  // ── Generate Cursor command files from Get Things Done source ─────────────
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const cursorCommandsDir = path.join(cursorDir, 'commands', 'rapidx');
   const cursorCommandsResult = generateAllCommands(gtdSrc, {
     cursor: cursorCommandsDir,

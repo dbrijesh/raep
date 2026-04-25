@@ -166,7 +166,7 @@ One installer run configures all your tools simultaneously:
 
 | Platform | What gets configured |
 |----------|---------------------|
-| Claude Code | `/rapidx:*` commands, `/gsd:*` commands, settings.json hooks, CLAUDE.md, COMMANDS.md |
+| Claude Code | `/rapidx:*` commands, GTD engine (`~/.claude/get-things-done/`), settings.json hooks, CLAUDE.md, COMMANDS.md |
 | VS Code + Copilot | copilot-instructions.md, settings.json merge, extensions.json, `.github/agents/rapidx-*.md`, `.github/prompts/*.prompt.md` |
 | Cursor | Rules with YAML frontmatter, skills, hooks, mcp.json, `.cursor/agents/rapidx-*.md`, `.cursor/commands/rapidx/*.md` |
 | Codex | config.toml, AGENTS.md, skill files |
@@ -238,7 +238,7 @@ Re-runs the tech stack questionnaire for a new category only, computes the delta
 
 | Platform | Detection method | Config written |
 |----------|-----------------|---------------|
-| **Claude Code CLI** | `claude --version` | `.claude/commands/rapidx/` (53 `/rapidx:*` aliases), `.claude/commands/gsd/` (53 originals), `.claude/settings.json`, `CLAUDE.md`, `COMMANDS.md` |
+| **Claude Code CLI** | `claude --version` | `.claude/commands/rapidx/` (53 `/rapidx:*` commands), `~/.claude/get-things-done/` (GTD engine: workflows, agents, references, templates, bin), `.claude/settings.json`, `CLAUDE.md`, `COMMANDS.md` |
 | **VS Code + GitHub Copilot** | `code --version` + `code --list-extensions` | `.github/copilot-instructions.md`, `.vscode/settings.json`, `.vscode/extensions.json`, `.github/agents/rapidx-*.md` (10 agents), `.github/prompts/*.prompt.md` (53 prompt files, type `/<name>` in Copilot Chat), `.github/skills/` |
 | **Cursor IDE** | App path detection + `.cursor/` dir | `.cursor/rules/`, `.cursor/skills/`, `.cursor/agents/rapidx-*.md` (10 agents), `.cursor/commands/rapidx/` (53 MDC files), `.cursor/mcp.json` |
 | **GitHub Copilot CLI** | `gh copilot --version` | `.github/copilot/instructions.md`, `.github/skills/` |
@@ -430,7 +430,7 @@ node bin/install.js --profile enterprise-standard
 
 ### Get Things Done workflow commands — `/rapidx:*`
 
-These are the 53 SDLC workflow commands from the Get Things Done engine, available on every supported platform under the `/rapidx:*` namespace. The original `/gsd:*` names are kept as aliases in Claude Code for backward compatibility.
+These are the 53 SDLC workflow commands from the Get Things Done engine, available on every supported platform under the `/rapidx:*` namespace.
 
 | Command | Description |
 |---------|-------------|
@@ -458,7 +458,7 @@ These are the 53 SDLC workflow commands from the Get Things Done engine, availab
 | `/rapidx:stats` | Show project statistics |
 | ... | 31 additional workflow commands (see `COMMANDS.md` for full list) |
 
-> **Backward compatibility:** Claude Code also installs `/gsd:*` aliases for all commands (e.g. `/gsd:new-project` still works). All Copilot and Cursor formats use `/rapidx:*` names only.
+> All commands are installed under `/rapidx:*` on every platform. Copilot uses `/rapidx-<name>`, Cursor uses `@.cursor/commands/rapidx/<name>.md`.
 
 ### RapidX enterprise commands (`/rapidx:*`)
 
@@ -479,7 +479,7 @@ These are the 53 SDLC workflow commands from the Get Things Done engine, availab
 | Platform | Format | Location | How to invoke |
 |----------|--------|----------|---------------|
 | **Claude Code** | Slash commands (`.md`) | `.claude/commands/rapidx/` | `/rapidx:new-project` |
-| **Claude Code** | Legacy aliases | `.claude/commands/gsd/` | `/gsd:new-project` (backward compat) |
+| **Claude Code** | GTD engine (workflows, agents, refs) | `~/.claude/get-things-done/` | Referenced automatically by commands via `@~/.claude/get-things-done/workflows/` |
 | **VS Code + Copilot** | Prompt files (`.prompt.md`) | `.github/prompts/` | Type `/rapidx-<command>` in Copilot Chat (e.g. `/rapidx-new-project`, `/rapidx-fine-tune`), or open file → **Run in Copilot Chat** |
 | **Cursor** | MDC files (`.md`) | `.cursor/commands/rapidx/` | `@.cursor/commands/rapidx/new-project.md` in Composer |
 | **GitHub Copilot CLI** | Instructions | `.github/copilot/instructions.md` | `gh copilot suggest "/rapidx:quick fix the auth bug"` |
@@ -974,7 +974,7 @@ rapidx-platform/
 │   ├── generate-claude-md.js         # CLAUDE.md generator
 │   ├── generate-agents-md.js         # AGENTS.md generator
 │   ├── generate-copilot-instructions.js  # copilot-instructions.md generator
-│   ├── generate-commands.js          # GSD → multi-IDE command converter (Claude rapidx:*, Copilot .prompt.md, Cursor MDC)
+│   ├── generate-commands.js          # GTD command converter (Claude rapidx:*, Copilot .prompt.md, Cursor MDC)
 │   ├── generate-commands-index.js    # Generates COMMANDS.md and Copilot index prompt
 │   ├── generate-copilot-agents.js    # Generates Copilot-native agent files (.github/agents/)
 │   ├── generate-instruction-files.js # Generates pattern-based instruction files for VS Code Copilot
@@ -999,7 +999,7 @@ rapidx-platform/
 │   └── workflows/                    # GitHub Actions workflows (rapidx-spec-check.yml, rapidx-pr-review.yml, rapidx-knowledge-sync.yml)
 │
 ├── get-things-done/
-│   ├── commands/gsd/                 # 53 Get Things Done workflow commands (source for conversion)
+│   ├── commands/gtd/                 # Get Things Done workflow commands (source for conversion) (source for conversion)
 │   └── agents/                       # 19 GTD agents
 │
 ├── profiles/
@@ -1213,8 +1213,8 @@ The same SDLC workflow works across all AI coding platforms:
 | Intent | Claude Code | VS Code Copilot | Cursor | Codex |
 |--------|-------------|-----------------|--------|-------|
 | New feature spec | `/rapidx:spec` | `@spec-writer` | "Create spec for..." | `codex spec` |
-| Execute phase | `/gsd:execute-phase` | `@workflow-orchestrator execute` | "Execute phase" | `codex execute` |
-| Code review | `/gsd:review` | `@code-reviewer review` | "Review changes" | `codex review` |
+| Execute phase | `/rapidx:execute-phase` | `@workflow-orchestrator execute` | "Execute phase" | `codex execute` |
+| Code review | `/rapidx:review` | `@code-reviewer review` | "Review changes" | `codex review` |
 | Learn codebase | `/rapidx:learn` | `@knowledge-curator learn` | "Learn from codebase" | `codex learn` |
 | Governance | `/rapidx:governance-check` | `@security-reviewer governance` | "Governance check" | `codex governance` |
 

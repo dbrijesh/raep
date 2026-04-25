@@ -2,7 +2,7 @@
   "project": "ToDo App",
   "initialized": "2026-03-21",
   "profile": "enterprise-standard",
-  "workflow": "gsd",
+  "workflow": "rapidx",
   "maturity": "L2",
   "stack": {
     "frontend": "react@19",

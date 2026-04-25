@@ -3,7 +3,7 @@
 /**
  * generate-commands.js
  *
- * Converts GSD Claude Code command files into equivalent formats for:
+ * Converts Get Things Done command files into equivalent formats for:
  *   - Claude Code /rapidx:* aliases
  *   - GitHub Copilot .prompt.md files (.github/prompts/)
  *   - Cursor MDC command files (.cursor/commands/rapidx/)
@@ -17,11 +17,11 @@ const path = require('path');
 // ─── Parsers ──────────────────────────────────────────────────────────────────
 
 /**
- * Parse a GSD Claude Code command markdown file into its components.
+ * Parse a Get Things Done command file into its components.
  * @param {string} content — raw file content
  * @returns {{ name, description, argumentHint, allowedTools, objective, contextBlock, processBlock, raw }}
  */
-function parseGsdCommand(content) {
+function parseCommandFile(content) {
   // YAML frontmatter
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   const frontmatter = fmMatch ? fmMatch[1] : '';
@@ -56,8 +56,8 @@ function parseGsdCommand(content) {
 }
 
 /**
- * Extract the short command slug from a full GSD command name.
- * "gsd:new-project" → "new-project"
+ * Extract the short command slug from a full command name.
+ * "rapidx:new-project" → "new-project"
  */
 function slug(commandName) {
   return commandName.replace(/^gsd:/, '').replace(/^rapidx:/, '');
@@ -86,16 +86,16 @@ const NATIVE_RAPIDX_COMMANDS = new Set([
 ]);
 
 /**
- * Rewrite all /gsd: command references in content to /rapidx:.
+ * Rewrite all legacy /gsd: command references in content to /rapidx:.
  * @param {string} text
  * @returns {string}
  */
-function rewriteGsdRefs(text) {
+function rewriteCommandRefs(text) {
   return text.replace(/\/gsd:/g, '/rapidx:');
 }
 
 /**
- * Generate a Claude Code /rapidx:* command from a parsed GSD command.
+ * Generate a Claude Code /rapidx:* command from a parsed Get Things Done command.
  * All internal /gsd: cross-references are rewritten to /rapidx:.
  */
 function toRapidxAlias(parsed) {
@@ -108,11 +108,11 @@ function toRapidxAlias(parsed) {
   // Preserve all execution_context and context sections from original
   const execCtxMatch = parsed.raw.match(/<execution_context>([\s\S]*?)<\/execution_context>/);
   const execCtx = execCtxMatch
-    ? `\n<execution_context>${rewriteGsdRefs(execCtxMatch[1])}</execution_context>\n`
+    ? `\n<execution_context>${rewriteCommandRefs(execCtxMatch[1])}</execution_context>\n`
     : '';
 
   const ctxBlock = parsed.contextBlock
-    ? `\n<context>\n${rewriteGsdRefs(parsed.contextBlock)}\n</context>\n`
+    ? `\n<context>\n${rewriteCommandRefs(parsed.contextBlock)}\n</context>\n`
     : '';
 
   const fallbackProcess = `Execute the ${name} workflow from @~/.claude/commands/rapidx/${name}.md end-to-end.\nPreserve all workflow gates.`;
@@ -122,11 +122,11 @@ name: rapidx:${name}
 description: "[RapidX] ${parsed.description}"${hintLine}${toolsBlock}
 ---
 <objective>
-${rewriteGsdRefs(parsed.objective)}
+${rewriteCommandRefs(parsed.objective)}
 </objective>
 ${execCtx}${ctxBlock}
 <process>
-${rewriteGsdRefs(parsed.processBlock) || fallbackProcess}
+${rewriteCommandRefs(parsed.processBlock) || fallbackProcess}
 </process>
 `;
 }
@@ -146,7 +146,7 @@ const COPILOT_AGENT_TOOLS = [
 ];
 
 /**
- * Generate a GitHub Copilot .prompt.md file from a parsed GSD/RapidX command.
+ * Generate a GitHub Copilot .prompt.md file from a parsed Get Things Done command.
  * Output filename: rapidx-<name>.prompt.md — placed in .github/prompts/
  * VS Code auto-discovers that folder; type /rapidx-<name> in Copilot Chat to invoke.
  *
@@ -161,7 +161,7 @@ function toCopilotPrompt(parsed) {
     : '';
 
   // Inline the process — strip @workflow references since Copilot can't resolve them
-  const processText = rewriteGsdRefs(
+  const processText = rewriteCommandRefs(
     parsed.processBlock
       .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
       .replace(/@~\/\.claude\/commands\/rapidx\/[^\s]+/g, '')
@@ -172,7 +172,7 @@ function toCopilotPrompt(parsed) {
   const fallbackProcess = `Read \`.planning/\` state files to understand current project state.\nThen execute the "${name}" RapidX workflow: ${parsed.description.toLowerCase()}.`;
 
   const contextSection = parsed.contextBlock && !parsed.contextBlock.includes('$ARGUMENTS')
-    ? `\n## Context\n\n${rewriteGsdRefs(parsed.contextBlock)}\n`
+    ? `\n## Context\n\n${rewriteCommandRefs(parsed.contextBlock)}\n`
     : '';
 
   const toolsList = COPILOT_AGENT_TOOLS.map(t => `  - ${t}`).join('\n');
@@ -199,7 +199,7 @@ ${processText || fallbackProcess}
 }
 
 /**
- * Generate a Cursor MDC command file from a parsed GSD command.
+ * Generate a Cursor MDC command file from a parsed Get Things Done command.
  * Placed in .cursor/commands/rapidx/<name>.md
  * Users reference with @.cursor/commands/rapidx/<name>.md in Composer.
  */
@@ -210,7 +210,7 @@ function toCursorCommand(parsed) {
     : '';
 
   // Strip @workflow file references — Cursor can't resolve ~/.claude paths
-  const processText = rewriteGsdRefs(
+  const processText = rewriteCommandRefs(
     parsed.processBlock
       .replace(/@~\/\.claude\/get-things-done\/[^\s]+/g, '')
       .replace(/@~\/\.claude\/commands\/rapidx\/[^\s]+/g, '')
@@ -221,7 +221,7 @@ function toCursorCommand(parsed) {
   const fallbackProcess = `Read \`.planning/\` state files to understand current project state.\nExecute the "${name}" workflow: ${parsed.description.toLowerCase()}.`;
 
   const contextSection = parsed.contextBlock && !parsed.contextBlock.includes('$ARGUMENTS')
-    ? `\n## Context\n\n${rewriteGsdRefs(parsed.contextBlock)}\n`
+    ? `\n## Context\n\n${rewriteCommandRefs(parsed.contextBlock)}\n`
     : '';
 
   return `---
@@ -253,22 +253,22 @@ Then describe what you want or provide the required arguments.
 // ─── Batch generator ──────────────────────────────────────────────────────────
 
 /**
- * Convert all GSD command files into Claude Code, Copilot, and Cursor formats.
+ * Convert all Get Things Done command files into Claude Code, Copilot, and Cursor formats.
  *
- * @param {string} gsdSourceDir — directory containing source gsd/*.md files
+ * @param {string} commandsDir — directory containing source command .md files
  * @param {object} outputDirs
  * @param {string} [outputDirs.rapidx]  — Claude Code rapidx commands dir
  * @param {string} [outputDirs.copilot] — Copilot prompts dir
  * @param {string} [outputDirs.cursor]  — Cursor commands dir
  * @returns {{ generated: number, skipped: number, names: string[] }}
  */
-function generateAllCommands(gsdSourceDir, outputDirs) {
-  if (!fs.existsSync(gsdSourceDir)) {
-    process.stderr.write(`[RapidX] GSD commands source not found: ${gsdSourceDir}\n`);
+function generateAllCommands(commandsDir, outputDirs) {
+  if (!fs.existsSync(commandsDir)) {
+    process.stderr.write(`[RapidX] Get Things Done commands source not found: ${commandsDir}\n`);
     return { generated: 0, skipped: 0, names: [] };
   }
 
-  const files = fs.readdirSync(gsdSourceDir)
+  const files = fs.readdirSync(commandsDir)
     .filter(f => f.endsWith('.md'))
     .sort();
 
@@ -277,8 +277,8 @@ function generateAllCommands(gsdSourceDir, outputDirs) {
   const names = [];
 
   for (const file of files) {
-    const content = fs.readFileSync(path.join(gsdSourceDir, file), 'utf8');
-    const parsed = parseGsdCommand(content);
+    const content = fs.readFileSync(path.join(commandsDir, file), 'utf8');
+    const parsed = parseCommandFile(content);
 
     if (!parsed.name) {
       skipped++;
@@ -331,8 +331,8 @@ function generateAllCommands(gsdSourceDir, outputDirs) {
 }
 
 module.exports = {
-  parseGsdCommand,
-  rewriteGsdRefs,
+  parseCommandFile,
+  rewriteCommandRefs,
   toRapidxAlias,
   toCopilotPrompt,
   toCursorCommand,

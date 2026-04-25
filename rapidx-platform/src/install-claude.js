@@ -33,11 +33,65 @@ function copyDirRecursive(src, dest) {
   }
 }
 
-// Text file extensions whose content should have /gsd: rewritten to /rapidx:
+// Text file extensions to rewrite during GTD engine installation
 const TEXT_EXTS = new Set(['.md', '.txt', '.json', '.toml', '.yaml', '.yml']);
 
+// All substitutions applied to GTD engine text files when installing to ~/.claude/
+// Order matters: longer/more-specific patterns before shorter ones to avoid partial matches.
+const GTD_REWRITES = [
+  [/\/gsd:/g,                          '/rapidx:'],
+  [/gsd-tools\.cjs/g,                  'rapidx-tools.cjs'],
+  [/gsd-advisor-researcher/g,          'rapidx-advisor-researcher'],
+  [/gsd-ai-researcher/g,               'rapidx-ai-researcher'],
+  [/gsd-assumptions-analyzer/g,        'rapidx-assumptions-analyzer'],
+  [/gsd-code-fixer/g,                  'rapidx-code-fixer'],
+  [/gsd-code-reviewer/g,               'rapidx-code-reviewer'],
+  [/gsd-codebase-mapper/g,             'rapidx-codebase-mapper'],
+  [/gsd-debug-session-manager/g,       'rapidx-debug-session-manager'],
+  [/gsd-debugger/g,                    'rapidx-debugger'],
+  [/gsd-doc-classifier/g,              'rapidx-doc-classifier'],
+  [/gsd-doc-synthesizer/g,             'rapidx-doc-synthesizer'],
+  [/gsd-doc-verifier/g,                'rapidx-doc-verifier'],
+  [/gsd-doc-writer/g,                  'rapidx-doc-writer'],
+  [/gsd-domain-researcher/g,           'rapidx-domain-researcher'],
+  [/gsd-eval-auditor/g,                'rapidx-eval-auditor'],
+  [/gsd-eval-planner/g,                'rapidx-eval-planner'],
+  [/gsd-executor/g,                    'rapidx-executor'],
+  [/gsd-framework-selector/g,          'rapidx-framework-selector'],
+  [/gsd-integration-checker/g,         'rapidx-integration-checker'],
+  [/gsd-intel-updater/g,               'rapidx-intel-updater'],
+  [/gsd-nyquist-auditor/g,             'rapidx-nyquist-auditor'],
+  [/gsd-pattern-mapper/g,              'rapidx-pattern-mapper'],
+  [/gsd-phase-researcher/g,            'rapidx-phase-researcher'],
+  [/gsd-plan-checker/g,                'rapidx-plan-checker'],
+  [/gsd-planner/g,                     'rapidx-planner'],
+  [/gsd-project-researcher/g,          'rapidx-project-researcher'],
+  [/gsd-research-synthesizer/g,        'rapidx-research-synthesizer'],
+  [/gsd-roadmapper/g,                  'rapidx-roadmapper'],
+  [/gsd-security-auditor/g,            'rapidx-security-auditor'],
+  [/gsd-ui-auditor/g,                  'rapidx-ui-auditor'],
+  [/gsd-ui-checker/g,                  'rapidx-ui-checker'],
+  [/gsd-ui-researcher/g,               'rapidx-ui-researcher'],
+  [/gsd-user-profiler/g,               'rapidx-user-profiler'],
+  [/gsd-verifier/g,                    'rapidx-verifier'],
+  [/gsd-sdk/g,                         'rapidx-sdk'],
+  [/gsd-workspaces/g,                  'rapidx-workspaces'],
+  [/gsd-local-patches/g,               'rapidx-local-patches'],
+];
+
 /**
- * Copy the GTD engine directory to dest, rewriting /gsd: → /rapidx: in text files.
+ * Apply all GTD→RapidX substitutions to a text file's content.
+ */
+function rewriteGtdContent(content) {
+  let out = content;
+  for (const [pattern, replacement] of GTD_REWRITES) {
+    out = out.replace(pattern, replacement);
+  }
+  return out;
+}
+
+/**
+ * Copy the GTD engine directory to dest, rewriting legacy gsd- refs in text files.
  * Binary files (.cjs, .js, etc.) are copied as-is.
  */
 function copyGtdEngine(src, dest) {
@@ -51,7 +105,7 @@ function copyGtdEngine(src, dest) {
       copyGtdEngine(srcPath, destPath);
     } else if (TEXT_EXTS.has(path.extname(entry.name).toLowerCase())) {
       const content = fs.readFileSync(srcPath, 'utf8');
-      fs.writeFileSync(destPath, content.replace(/\/gsd:/g, '/rapidx:'), 'utf8');
+      fs.writeFileSync(destPath, rewriteGtdContent(content), 'utf8');
     } else {
       fs.copyFileSync(srcPath, destPath);
     }
@@ -152,9 +206,9 @@ function installClaude(options) {
   }
 
   // ── Convert GTD commands → /rapidx:* and write to .claude/commands/rapidx/ ─
-  // Source files stay in get-things-done/commands/gsd/ (vendor copy).
-  // generateAllCommands rewrites all internal /gsd: refs to /rapidx: on output.
-  const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
+  // Source files stay in get-things-done/commands/gtd/ (vendor source).
+  // generateAllCommands rewrites all legacy /gsd: command refs to /rapidx: on output.
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const gtdResult = generateAllCommands(gtdSrc, {
     rapidx: rapidxCommandsDir,
   });

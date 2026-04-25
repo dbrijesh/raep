@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { generateAgentsMd } = require('./generate-agents-md');
-const { generateAllCommands, rewriteGsdRefs } = require('./generate-commands');
+const { generateAllCommands, rewriteCommandRefs } = require('./generate-commands');
 
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
@@ -391,8 +391,8 @@ function installKiroSkills(kiroSkillsDir, components) {
 
     if (fs.existsSync(srcSkillMd)) {
       const raw = fs.readFileSync(srcSkillMd, 'utf8');
-      // Strip any existing frontmatter, rewrite /gsd: refs to /rapidx:
-      skillBody = rewriteGsdRefs(raw.replace(/^---[\s\S]*?---\n?/, '').trim());
+      // Strip any existing frontmatter, rewrite legacy /gsd: refs to /rapidx:
+      skillBody = rewriteCommandRefs(raw.replace(/^---[\s\S]*?---\n?/, '').trim());
     } else {
       skillBody = `## ${skillName}\n\nSee RapidX documentation for full guidance on this skill.`;
     }
@@ -606,7 +606,7 @@ function installKiroHooks(kiroHooksDir, components) {
  * skills that proxy to the GTD command descriptions.
  */
 function installKiroCommands(kiroSkillsDir) {
-  const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
 
   // Generate command index for both GTD and RapidX commands

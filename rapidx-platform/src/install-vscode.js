@@ -126,10 +126,10 @@ function createSkillRefs(githubDir, components) {
 }
 
 // Shared agent list — see src/constants.js
-const GSD_AGENT_NAMES = AGENT_NAMES;
+const GTD_AGENT_NAMES = AGENT_NAMES;
 
 /**
- * Copy GSD agent files to .github/agents/.
+ * Copy agent files to .github/agents/.
  * These are referenced via #file: in Copilot Chat.
  * @param {string} githubDir  — path to .github/
  * @param {object} components  — { agents: Set<string>, ... }
@@ -138,9 +138,9 @@ function createAgentRefs(githubDir, components) {
   const agentsDir = path.join(githubDir, 'agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
-  // Determine which agents to install — intersection of mapped agents and GSD agent files
-  const requestedAgents = components ? Array.from(components.agents) : GSD_AGENT_NAMES;
-  const toInstall = requestedAgents.filter(a => GSD_AGENT_NAMES.includes(a));
+  // Determine which agents to install — intersection of mapped agents and Get Things Done agent files
+  const requestedAgents = components ? Array.from(components.agents) : GTD_AGENT_NAMES;
+  const toInstall = requestedAgents.filter(a => GTD_AGENT_NAMES.includes(a));
 
   // Source: pre-built Copilot agent files in templates (named without prefix, e.g. planner.md)
   const agentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.github', 'copilot', 'agents');
@@ -205,13 +205,13 @@ function installVSCode(options) {
   // ── Create skill reference files in .github/skills/ ───────────────────────
   createSkillRefs(githubDir, components);
 
-  // ── Copy GSD agent files to .github/agents/ ───────────────────────────────
+  // ── Copy agent files to .github/agents/ ──────────────────────────────────
   createAgentRefs(githubDir, components);
 
-  // ── Generate Copilot .prompt.md files from all GSD commands ───────────────
+  // ── Generate Copilot .prompt.md files from Get Things Done source ─────────
   // Files go to .github/prompts/ — VS Code auto-discovers this location.
   // Type /<command-name> in Copilot Chat to invoke any prompt.
-  const gtdSrc = path.join(GTD_DIR, 'commands', 'gsd');
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const copilotPromptsResult = generateAllCommands(gtdSrc, {
     copilot: promptsDir,
   });
