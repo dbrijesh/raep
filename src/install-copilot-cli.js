@@ -2,8 +2,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const { generateAgentsMd } = require('./generate-agents-md');
+const { generateAllCommands } = require('./generate-commands');
+const { injectAgentSkills } = require('./inject-agent-skills');
+const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
 /**
  * Install RapidX for GitHub Copilot CLI (standalone, not in VS Code).
@@ -13,8 +18,12 @@ function installCopilotCli(options) {
 
   const copilotDir = path.join(targetDir, '.github', 'copilot');
   const skillsDir = path.join(copilotDir, 'skills');
+  const agentsDir = path.join(copilotDir, 'agents');
+  const promptsDir = path.join(copilotDir, 'prompts');
   fs.mkdirSync(copilotDir, { recursive: true });
   fs.mkdirSync(skillsDir, { recursive: true });
+  fs.mkdirSync(agentsDir, { recursive: true });
+  fs.mkdirSync(promptsDir, { recursive: true });
 
   // Generate standalone instructions.md
   const fe = stack.frontend || {};
@@ -44,17 +53,24 @@ function installCopilotCli(options) {
 
 ${components ? Array.from(components.skills).map(s => `- ${s} (see skills/${s}.md)`).join('\n') : ''}
 
+## Agents
+
+${components ? Array.from(components.agents).map(a => `- rapidx-${a} (see agents/rapidx-${a}.md)`).join('\n') : ''}
+
 ## Workflow
 
-This project uses Get Things Done workflow engine. Key commands:
+This project uses Get Things Done workflow engine. Key commands (see prompts/ directory):
 - \`/rapidx:new-project\` — Initialize project
 - \`/rapidx:plan-phase\` — Plan phase
 - \`/rapidx:execute-phase\` — Execute phase
 - \`/rapidx:verify-work\` — Verify work
-(Also available as \`/gsd:*\` for backward compatibility.)
 `;
 
   fs.writeFileSync(path.join(copilotDir, 'instructions.md'), instructions, 'utf8');
+
+  // Write AGENTS.md for agent delegation context
+  const agentsMd = generateAgentsMd(profile, stack, components);
+  fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
 
   // Copy skill files
   const skills = components ? Array.from(components.skills) : [];
@@ -65,6 +81,55 @@ This project uses Get Things Done workflow engine. Key commands:
       fs.copyFileSync(skillSrc, destPath);
     } else {
       fs.writeFileSync(destPath, `# Skill: ${skill}\n\nSee full skill documentation.\n`, 'utf8');
+    }
+  }
+
+  // Install agent files to .github/copilot/agents/
+  const requestedAgents = components ? Array.from(components.agents) : AGENT_NAMES;
+  const installedSkills = components ? components.skills : new Set();
+  let agentCount = 0;
+
+  // Core agents — use pre-built Copilot agent files from raep-run skill if available,
+  // otherwise fall back to templates/agents/
+  const copilotAgentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.github', 'copilot', 'agents');
+  for (const agentName of requestedAgents.filter(a => AGENT_NAMES.includes(a))) {
+    const prebuiltSrc = path.join(copilotAgentsSrc, `${agentName}.md`);
+    const fallbackSrc = path.join(TEMPLATES_DIR, 'agents', `${agentName}.md`);
+    const srcFile = fs.existsSync(prebuiltSrc) ? prebuiltSrc : fallbackSrc;
+    if (!fs.existsSync(srcFile)) continue;
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'copilot');
+    fs.writeFileSync(path.join(agentsDir, `rapidx-${agentName}.md`), augmented, 'utf8');
+    agentCount++;
+  }
+
+  // Enterprise agents
+  for (const agentName of requestedAgents.filter(a => ENTERPRISE_AGENT_NAMES.includes(a))) {
+    const srcFile = path.join(TEMPLATES_DIR, 'agents', 'rapidx', `${agentName}.md`);
+    if (!fs.existsSync(srcFile)) continue;
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'copilot');
+    fs.writeFileSync(path.join(agentsDir, `rapidx-${agentName}.md`), augmented, 'utf8');
+    agentCount++;
+  }
+
+  if (agentCount > 0) {
+    process.stdout.write(`  [RapidX] Installed ${agentCount} agent definitions → .github/copilot/agents/\n`);
+  }
+
+  // Generate Get Things Done prompt files in .github/copilot/prompts/
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
+  const gtdResult = generateAllCommands(gtdSrc, { copilot: promptsDir });
+  if (gtdResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Generated ${gtdResult.generated} Get Things Done prompt files → .github/copilot/prompts/\n`);
+  }
+
+  // Generate RapidX enterprise prompt files
+  const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
+  if (fs.existsSync(rapidxSrc)) {
+    const rapidxResult = generateAllCommands(rapidxSrc, { copilot: promptsDir });
+    if (rapidxResult.generated > 0) {
+      process.stdout.write(`  [RapidX] Generated ${rapidxResult.generated} RapidX enterprise prompt files → .github/copilot/prompts/\n`);
     }
   }
 

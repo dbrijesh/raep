@@ -135,5 +135,90 @@
       "jpa-patterns"
     ],
     "reason": "Database Reviewer uses postgres-patterns for query and schema checks, database-migrations for migration safety, jpa-patterns for ORM-specific issues."
+  },
+
+  "spec-writer": {
+    "skills": [
+      "spec-driven-dev",
+      "coding-standards",
+      "api-design",
+      "frontend-patterns",
+      "backend-patterns"
+    ],
+    "reason": "Spec Writer uses spec-driven-dev for EARS notation and spec structure, plus stack-specific patterns to generate version-correct API contracts and data models."
+  },
+
+  "knowledge-curator": {
+    "skills": [
+      "codebase-learning",
+      "coding-standards",
+      "adr-management",
+      "architecture-copilot"
+    ],
+    "reason": "Knowledge Curator uses codebase-learning for discovery patterns, adr-management for decision recording, and architecture-copilot for system design context."
+  },
+
+  "workflow-orchestrator": {
+    "skills": [
+      "strategic-compact",
+      "verification-loop",
+      "coding-standards",
+      "review-gates",
+      "ai-governance"
+    ],
+    "reason": "Workflow Orchestrator uses strategic-compact for phase planning, verification-loop to confirm gate satisfaction, review-gates for compliance, and ai-governance for audit trail."
+  },
+
+  "adr-writer": {
+    "skills": [
+      "adr-management",
+      "architecture-copilot",
+      "coding-standards"
+    ],
+    "reason": "ADR Writer uses adr-management for MADR format and lifecycle, architecture-copilot for design context, and coding-standards to understand what decisions matter."
+  },
+
+  "csharp-reviewer": {
+    "skills": [
+      "dotnet-patterns",
+      "dotnet-security",
+      "dotnet-tdd",
+      "coding-standards",
+      "security-review",
+      "database-migrations"
+    ],
+    "reason": "C# Reviewer uses dotnet-patterns for idiomatic .NET patterns, dotnet-security for ASP.NET Core security checks, dotnet-tdd for test quality, and security-review for OWASP checks."
+  },
+
+  "go-reviewer": {
+    "skills": [
+      "golang-patterns",
+      "golang-testing",
+      "coding-standards",
+      "security-review"
+    ],
+    "reason": "Go Reviewer uses golang-patterns for idiomatic Go checks, golang-testing for test quality, and security-review for common vulnerability patterns in Go services."
+  },
+
+  "go-build-resolver": {
+    "skills": [
+      "golang-patterns",
+      "verification-loop",
+      "coding-standards"
+    ],
+    "reason": "Go Build Resolver uses golang-patterns to understand correct Go structure, verification-loop to confirm fixes compile and pass tests."
+  },
+
+  "python-reviewer": {
+    "skills": [
+      "python-patterns",
+      "python-testing",
+      "coding-standards",
+      "security-review",
+      "django-patterns",
+      "django-security",
+      "django-tdd"
+    ],
+    "reason": "Python Reviewer uses python-patterns for idiomatic checks, python-testing for test quality, security-review for OWASP, and Django-specific skills when the active framework is Django."
   }
 }

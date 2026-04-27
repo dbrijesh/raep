@@ -1,5 +1,5 @@
 ---
-description: GSD Planner agent — activate when planning a new project, feature, roadmap, milestone, or development phase. Generates requirements, phase breakdowns, and structured plans.
+description: RapidX Planner agent — activate when planning a new project, feature, roadmap, milestone, or development phase. Generates requirements, phase breakdowns, and structured plans.
 alwaysApply: false
 ---
 

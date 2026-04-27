@@ -73,12 +73,12 @@ When generating code, always use the exact versions above:
 Use these commands in Copilot Chat or Claude Code:
 
 ```
-/gsd:new-project      Start a new project with structured planning
-/gsd:plan-phase       Plan the next development phase
-/gsd:execute-phase    Execute current phase tasks
-/gsd:verify-work      Verify completed work
-/gsd:review           Code review and quality check
-/gsd:ship             Prepare for release
+/rapidx:new-project      Start a new project with structured planning
+/rapidx:plan-phase       Plan the next development phase
+/rapidx:execute-phase    Execute current phase tasks
+/rapidx:verify-work      Verify completed work
+/rapidx:review           Code review and quality check
+/rapidx:ship             Prepare for release
 /rapidx:help          Show all RapidX commands
 /rapidx:switch-client Change active client profile
 ```

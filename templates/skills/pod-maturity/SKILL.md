@@ -16,13 +16,13 @@ Tracks and improves a delivery team's maturity in using AI-assisted engineering 
 - AI tools installed but no structured workflow
 - No coding standards enforced
 - No audit trail
-- **Upgrade path:** Install RapidX, run `/gsd:new-project`
+- **Upgrade path:** Install RapidX, run `/rapidx:new-project`
 
 ### L1 — Structured
 - Get Things Done workflow active
 - Basic coding standards installed
 - Session audit trail active
-- **Indicators:** Team uses `/gsd:*` commands regularly
+- **Indicators:** Team uses `/rapidx:*` commands regularly
 - **Upgrade path:** Configure review gates, add security scanning
 
 ### L2 — Governed

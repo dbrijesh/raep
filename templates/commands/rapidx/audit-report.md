@@ -34,9 +34,9 @@ Profile: [profile_id] | Period: [date range]
 Sessions: X  |  Commands: Y  |  Review gates: Z
 
 Commands used:
-  /gsd:new-project     2 times
-  /gsd:execute-phase   8 times
-  /gsd:review          5 times
+  /rapidx:new-project     2 times
+  /rapidx:execute-phase   8 times
+  /rapidx:review          5 times
   /rapidx:governance-check  1 time
 
 Review gates triggered:

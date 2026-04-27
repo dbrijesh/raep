@@ -11,7 +11,7 @@ Analyzes legacy codebases and plans migration strategies. Used in modernization 
 
 ## Analysis process
 
-1. **Codebase mapping** — Run `/gsd:map-codebase`, analyze structure and patterns
+1. **Codebase mapping** — Run `/rapidx:map-codebase`, analyze structure and patterns
 2. **Dependency audit** — Catalog all dependencies and their versions
 3. **Technical debt assessment** — Identify code smells, anti-patterns, and risk areas
 4. **Migration complexity scoring** — Rate each component for migration effort

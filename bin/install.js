@@ -27,6 +27,7 @@ const { installCodex } = require('../src/install-codex');
 const { installOpencode } = require('../src/install-opencode');
 const { installGemini } = require('../src/install-gemini');
 const { installAntigravity } = require('../src/install-antigravity');
+const { installKiro } = require('../src/install-kiro');
 
 // ── CLI Flag parsing ───────────────────────────────────────────────────────────
 function parseArgs(argv) {
@@ -41,6 +42,7 @@ function parseArgs(argv) {
     opencode: false,
     gemini: false,
     antigravity: false,
+    kiro: false,
     all: false,
 
     // Scope
@@ -81,6 +83,7 @@ function parseArgs(argv) {
     else if (arg === '--opencode') flags.opencode = true;
     else if (arg === '--gemini') flags.gemini = true;
     else if (arg === '--antigravity') flags.antigravity = true;
+    else if (arg === '--kiro') flags.kiro = true;
     else if (arg === '--all') flags.all = true;
     else if (arg === '--global' || arg === '-g') flags.global = true;
     else if (arg === '--local' || arg === '-l') flags.local = true;
@@ -108,7 +111,7 @@ function parseArgs(argv) {
  */
 function isNonInteractive(flags) {
   const hasPlatform = flags.claude || flags.cursor || flags.vscode || flags.codex ||
-    flags.opencode || flags.gemini || flags.antigravity || flags['copilot-cli'] || flags.all;
+    flags.opencode || flags.gemini || flags.antigravity || flags.kiro || flags['copilot-cli'] || flags.all;
   const hasScope = flags.global || flags.local || flags.both;
   const hasProfile = !!flags.profile;
   return hasPlatform && hasScope && hasProfile;
@@ -136,6 +139,7 @@ function printPlatformResults(platforms) {
     : '';
   ui.writeln(`    ${check(platforms.vscode.detected)} VS Code               ${ver(platforms.vscode.version)}${vsExt}`);
   ui.writeln(`    ${check(platforms.cursor.detected)} Cursor IDE             ${ver(platforms.cursor.version)}`);
+  ui.writeln(`    ${check(platforms.kiro.detected)} Kiro IDE               ${ver(platforms.kiro.version)}`);
   ui.writeln(`    ${check(platforms.jetbrains.detected)} JetBrains             ${ver(platforms.jetbrains.version)}`);
   ui.writeln('');
   ui.writeln(`  ${ui.colored('Other:', ui.BOLD)}`);
@@ -421,8 +425,8 @@ async function showInstallPlan(platforms, profileId, stackSelections, components
 /**
  * Run per-platform installers.
  */
-async function runInstallers(platforms, targetDir, profile, stack, components) {
-  const total = platforms.length + 5; // extra steps for init, stack.json, generators, verify
+async function runInstallers(platforms, targetDir, profile, stack, components, skipVerify = false) {
+  const total = platforms.length + 4; // init, stack.json, verify, done
   const progress = ui.progressBar(total);
 
   ui.writeln('');
@@ -430,9 +434,9 @@ async function runInstallers(platforms, targetDir, profile, stack, components) {
   fs.mkdirSync(path.join(targetDir, '.rapidx'), { recursive: true });
   progress.done('Creating directory structure...');
 
+  let allSucceeded = true;
   for (const platform of platforms) {
     progress.advance(`Configuring ${platform}...`);
-
     try {
       const opts = { targetDir, profile, stack, components };
       switch (platform) {
@@ -444,33 +448,40 @@ async function runInstallers(platforms, targetDir, profile, stack, components) {
         case 'opencode': installOpencode(opts); break;
         case 'gemini': installGemini(opts); break;
         case 'antigravity': installAntigravity(opts); break;
+        case 'kiro': installKiro(opts); break;
       }
       progress.done(`Configuring ${platform}...`);
     } catch (e) {
+      allSucceeded = false;
       process.stderr.write(`\n  [RapidX] Error configuring ${platform}: ${e.message}\n`);
-      progress.done(`Configuring ${platform} (with errors)...`);
+      progress.done(`Configuring ${platform} (failed)...`);
     }
   }
-
-  progress.advance('Loading client profile...');
-  // Profile already loaded
-  progress.done('Loading client profile...');
 
   progress.advance('Saving stack configuration...');
   saveStackJson(targetDir, stack, components, profile.profile_id);
   progress.done('Saving stack configuration...');
 
   progress.advance('Running verification...');
-  const verification = verifyInstall({ targetDir, platforms });
-  if (verification.errors.length) {
-    verification.errors.forEach(e => process.stderr.write(`  [RapidX] Verification error: ${e}\n`));
+  let verification = { success: true, errors: [] };
+  if (!skipVerify) {
+    verification = verifyInstall({ targetDir, platforms });
+    if (verification.errors.length) {
+      verification.errors.forEach(e => process.stderr.write(`  [RapidX] Verification error: ${e}\n`));
+    }
   }
   progress.done('Running verification...');
 
   ui.writeln('');
-  ui.writeln(ui.colored('  Installation complete!', ui.GREEN, ui.BOLD));
+  if (allSucceeded && verification.errors.length === 0) {
+    ui.writeln(ui.colored('  Installation complete!', ui.GREEN, ui.BOLD));
+  } else if (allSucceeded) {
+    ui.writeln(ui.colored('  Installation complete with verification warnings.', ui.YELLOW, ui.BOLD));
+  } else {
+    ui.writeln(ui.colored('  Installation completed with errors — see above.', ui.YELLOW, ui.BOLD));
+  }
 
-  return verification;
+  return { ...verification, allSucceeded };
 }
 
 /**
@@ -502,19 +513,22 @@ function printQuickStart(platforms, profileId, stack, targetDir, components) {
 
   ui.writeln(ui.colored('  Quick start:', ui.BOLD));
   if (platforms.includes('claude')) {
-    ui.writeln(`    ${ui.colored('Claude Code:', ui.CYAN)}    claude → /gsd:new-project`);
+    ui.writeln(`    ${ui.colored('Claude Code:', ui.CYAN)}    claude → /rapidx:new-project`);
   }
   if (platforms.includes('vscode')) {
-    ui.writeln(`    ${ui.colored('VS Code:', ui.CYAN)}        Open project → Copilot Chat → type /gsd:new-project`);
+    ui.writeln(`    ${ui.colored('VS Code:', ui.CYAN)}        Open project → Copilot Chat → type /rapidx-new-project`);
   }
   if (platforms.includes('cursor')) {
     ui.writeln(`    ${ui.colored('Cursor:', ui.CYAN)}         Open project → AI chat → commands available`);
   }
+  if (platforms.includes('kiro')) {
+    ui.writeln(`    ${ui.colored('Kiro:', ui.CYAN)}           Open project → type / to browse skills or mention a keyword to activate a power`);
+  }
   ui.writeln('');
   ui.writeln(ui.colored('  Key commands:', ui.BOLD));
-  ui.writeln(`    ${ui.colored('/gsd:new-project', ui.CYAN)}       Start a new project with Get Things Done workflow`);
-  ui.writeln(`    ${ui.colored('/gsd:map-codebase', ui.CYAN)}      Analyze existing codebase`);
-  ui.writeln(`    ${ui.colored('/gsd:quick', ui.CYAN)}             Quick ad-hoc task or bug fix`);
+  ui.writeln(`    ${ui.colored('/rapidx:new-project', ui.CYAN)}    Start a new project with Get Things Done workflow`);
+  ui.writeln(`    ${ui.colored('/rapidx:map-codebase', ui.CYAN)}   Analyze existing codebase`);
+  ui.writeln(`    ${ui.colored('/rapidx:quick', ui.CYAN)}          Quick ad-hoc task or bug fix`);
   ui.writeln(`    ${ui.colored('/rapidx:help', ui.CYAN)}           Show all RapidX commands`);
   ui.writeln(`    ${ui.colored('/rapidx:switch-client', ui.CYAN)}  Change client profile`);
   ui.writeln(`    ${ui.colored('/rapidx:add-tech', ui.CYAN)}       Add a technology to your stack`);
@@ -527,8 +541,8 @@ function printQuickStart(platforms, profileId, stack, targetDir, components) {
 async function main() {
   const flags = parseArgs(process.argv);
 
-  // Show banner
-  ui.banner();
+  // Show animated banner
+  await ui.banner();
 
   // Handle --check-update
   if (flags['check-update']) {
@@ -579,9 +593,9 @@ async function main() {
     const existingStack = JSON.parse(fs.readFileSync(stackPath, 'utf8'));
     const profileId = existingStack.profile || 'default';
     const profile = loadAndValidate(profileId, existingStack);
-    const components = mapComponents(existingStack);
+    const components = mapComponents(existingStack, profile);
     const installedPlatforms = buildPlatformList(flags, platforms);
-    await runInstallers(installedPlatforms, targetDir, profile, existingStack, components);
+    await runInstallers(installedPlatforms, targetDir, profile, existingStack, components, flags['skip-verify']);
     printQuickStart(installedPlatforms, profileId, existingStack, targetDir, components);
     process.exit(0);
   }
@@ -614,6 +628,7 @@ async function main() {
       { label: `Claude Code CLI${platforms.claude.detected ? ' (detected v' + (platforms.claude.version || '?') + ')' : ''}`, value: 'claude', checked: platforms.claude.detected },
       { label: `VS Code + GitHub Copilot${platforms.vscode.detected ? ' (detected)' : ''}`, value: 'vscode', checked: platforms.vscode.detected },
       { label: `Cursor IDE${platforms.cursor.detected ? ' (detected v' + (platforms.cursor.version || '?') + ')' : ''}`, value: 'cursor', checked: platforms.cursor.detected },
+      { label: `Kiro IDE${platforms.kiro.detected ? ' (detected)' : ''}`, value: 'kiro', checked: platforms.kiro.detected },
       { label: 'Codex CLI / App', value: 'codex', checked: false },
       { label: 'OpenCode', value: 'opencode', checked: false },
       { label: 'GitHub Copilot CLI (standalone)', value: 'copilot-cli', checked: platforms.copilotCli.detected },
@@ -660,13 +675,15 @@ async function main() {
 
     if (profileId === 'custom') {
       profileId = await ui.textInput('Enter a custom profile ID', 'my-client');
-      // Use default as base
-      profileId = 'default';
     }
   }
 
-  // Map components
-  const components = mapComponents(stackSelections);
+  // Load profile before mapping components so profile JSON arrays
+  // (skills, agents, hooks) are available to the component mapper.
+  const profile = loadAndValidate(profileId, stackSelections);
+
+  // Map components — profile object passed so profile.skills/agents/hooks are merged
+  const components = mapComponents(stackSelections, profile);
 
   // Show install plan and confirm
   const proceed = await showInstallPlan(selectedPlatforms, profileId, stackSelections, components);
@@ -674,9 +691,6 @@ async function main() {
     ui.writeln(ui.colored('  Installation cancelled.', ui.YELLOW));
     process.exit(0);
   }
-
-  // Load profile
-  const profile = loadAndValidate(profileId, stackSelections);
 
   // Determine actual install dir(s)
   const installDirs = installScope === 'both'
@@ -686,11 +700,11 @@ async function main() {
   // Run installers
   for (const dir of installDirs) {
     ui.writeln(ui.colored(`\n  Installing RapidX to ${dir}...`, ui.CYAN));
-    const verification = await runInstallers(selectedPlatforms, dir, profile, stackSelections, components);
+    const result = await runInstallers(selectedPlatforms, dir, profile, stackSelections, components, flags['skip-verify']);
 
-    if (!verification.success) {
-      ui.writeln(ui.colored('  Some verification checks failed:', ui.YELLOW));
-      verification.errors.forEach(e => ui.writeln(`  - ${e}`));
+    if (!result.allSucceeded || result.errors.length > 0) {
+      ui.writeln(ui.colored('  Some checks failed — review output above.', ui.YELLOW));
+      result.errors.forEach(e => ui.writeln(`  - ${e}`));
     }
   }
 
@@ -714,11 +728,13 @@ function buildPlatformList(flags, platforms) {
   if (flags.opencode) list.push('opencode');
   if (flags.gemini) list.push('gemini');
   if (flags.antigravity) list.push('antigravity');
+  if (flags.kiro) list.push('kiro');
   // Defaults to detected platforms if nothing specified
   if (list.length === 0) {
     if (platforms.claude.detected) list.push('claude');
     if (platforms.vscode.detected) list.push('vscode');
     if (platforms.cursor.detected) list.push('cursor');
+    if (platforms.kiro.detected) list.push('kiro');
   }
   return list;
 }

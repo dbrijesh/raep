@@ -31,8 +31,8 @@ Analyze an existing codebase and configure RapidX for it. This is the first step
    - Create `.planning/RISKS.md` with identified technical debt
 
 5. Recommend Get Things Done workflow starting point:
-   - If greenfield: `/gsd:new-project`
-   - If brownfield/migration: `/gsd:map-codebase`
+   - If greenfield: `/rapidx:new-project`
+   - If brownfield/migration: `/rapidx:map-codebase`
 
 Output a structured onboarding summary.
 </process>

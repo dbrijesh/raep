@@ -1,5 +1,5 @@
 ---
-description: GSD Database Reviewer agent — activate when reviewing database migrations, schema changes, SQL queries, ORM usage, index design, or any change that touches the database layer.
+description: RapidX Database Reviewer agent — activate when reviewing database migrations, schema changes, SQL queries, ORM usage, index design, or any change that touches the database layer.
 alwaysApply: false
 ---
 

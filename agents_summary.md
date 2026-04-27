@@ -1,6 +1,6 @@
 # RapidX — Agents & Skills Summary
 
-> **RapidX Agentic Engineering Platform v1.0.0**
+> **RapidX Agentic Engineering Platform v2.0.0**
 > A unified enterprise-grade SDLC orchestration framework for AI-assisted software delivery.
 
 ---
@@ -79,6 +79,15 @@ These agents handle governance, compliance, and client management concerns.
 | **Client Onboarder** | Guides onboarding of new client engagements through a 6-step workflow: discovery (industry, size, tech stack, compliance requirements), profile selection, stack detection, component installation, documentation generation, and team briefing. Asks structured context questions to configure the right profile. Produces specific handoff deliverables: `.rapidx/stack.json`, `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`, and an onboarding summary for the engineering team. |
 
 ---
+
+### SDD & Knowledge Agents — Active when SDD or Knowledge plugins are installed
+
+| Agent | Role |
+|-------|------|
+| **Spec Writer** | Creates structured feature specifications following the SDD template (Problem Statement, User Scenarios with Given/When/Then acceptance criteria, Technical Design, NFRs, Constitution Check, Open Questions). Version-aware: designs against the project's actual stack versions from `stack.json`. Produces specs in `specs/{###-feature-slug}/spec.md`. |
+| **ADR Writer** | Creates and manages Architecture Decision Records at `docs/adr/`. Handles numbering, slug generation, and index updates automatically. Integrates with the knowledge system — accepted ADRs become enforcement rules, deprecated ADRs become anti-patterns in `anti-patterns.md`. |
+| **Knowledge Curator** | Extracts and maintains codebase knowledge in `.rapidx/knowledge/`. Processes source code (naming conventions, API patterns, error handling), architecture documents, linting rules, domain documentation, and user-provided inputs from `.rapidx/inputs/`. Produces `code-patterns.md`, `architecture.md`, `guidelines.md`, `domain.md`, and `anti-patterns.md`. Invoked via `/rapidx:learn` or `node scripts/learn-codebase.js`. |
+| **Workflow Orchestrator** | Coordinates multi-agent SDLC workflows across platforms. Manages phase transitions, delegates to specialist agents based on task type and tech stack, tracks progress via `.planning/`, and ensures governance gates are honoured before phase advancement. Invocable in VS Code Copilot Chat and Cursor Composer as a cross-platform workflow entry point. |
 
 ---
 
@@ -291,7 +300,8 @@ Skills are reusable prompt modules that provide domain-specific knowledge and pa
 | Core agents (always active) | 7 |
 | Stack-conditional agents | 6 |
 | RapidX enterprise agents | 4 |
-| **Total agents** | **17** |
+| SDD & Knowledge agents | 4 |
+| **Total agents** | **21** |
 | Core skills (always loaded) | 6 |
 | .NET / C# skills | 4 |
 | Python skills | 6 |

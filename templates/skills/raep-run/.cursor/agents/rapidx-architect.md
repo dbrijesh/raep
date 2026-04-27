@@ -1,5 +1,5 @@
 ---
-description: GSD Architect agent — activate when designing system architecture, making technology decisions, writing ADRs, defining API contracts, or reviewing architectural implications of features.
+description: RapidX Architect agent — activate when designing system architecture, making technology decisions, writing ADRs, defining API contracts, or reviewing architectural implications of features.
 alwaysApply: false
 ---
 

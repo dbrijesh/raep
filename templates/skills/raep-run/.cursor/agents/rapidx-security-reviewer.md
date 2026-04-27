@@ -1,5 +1,5 @@
 ---
-description: GSD Security Reviewer agent — activate when reviewing authentication, authorization, user input handling, API endpoints, SQL queries, file uploads, payment code, secrets management, or any security-sensitive code changes.
+description: RapidX Security Reviewer agent — activate when reviewing authentication, authorization, user input handling, API endpoints, SQL queries, file uploads, payment code, secrets management, or any security-sensitive code changes.
 alwaysApply: false
 ---
 

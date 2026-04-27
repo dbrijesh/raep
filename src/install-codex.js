@@ -3,8 +3,12 @@
 const fs = require('fs');
 const path = require('path');
 const { generateAgentsMd } = require('./generate-agents-md');
+const { generateAllCommands } = require('./generate-commands');
+const { injectAgentSkills } = require('./inject-agent-skills');
+const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
 /**
  * Install RapidX for Codex CLI/App.
@@ -14,8 +18,12 @@ function installCodex(options) {
 
   const codexDir = path.join(targetDir, '.codex');
   const agentsSkillsDir = path.join(targetDir, '.agents', 'skills');
+  const agentsAgentsDir = path.join(targetDir, '.agents', 'agents');
+  const commandsDir = path.join(codexDir, 'commands', 'rapidx');
   fs.mkdirSync(codexDir, { recursive: true });
   fs.mkdirSync(agentsSkillsDir, { recursive: true });
+  fs.mkdirSync(agentsAgentsDir, { recursive: true });
+  fs.mkdirSync(commandsDir, { recursive: true });
 
   const fe = stack.frontend || {};
   const be = stack.backend || {};
@@ -47,7 +55,7 @@ agents = [${components ? Array.from(components.agents).map(a => `"${a}"`).join('
 
 [workflow]
 engine = "get-things-done"
-commands_dir = ".claude/commands"
+commands_dir = ".codex/commands/rapidx"
 `;
 
   fs.writeFileSync(path.join(codexDir, 'config.toml'), configToml, 'utf8');
@@ -65,6 +73,49 @@ commands_dir = ".claude/commands"
       fs.copyFileSync(skillSrc, destPath);
     } else {
       fs.writeFileSync(destPath, `# Skill: ${skill}\n\nSee full skill documentation.\n`, 'utf8');
+    }
+  }
+
+  // Install agent definition files to .agents/agents/
+  const requestedAgents = components ? Array.from(components.agents) : AGENT_NAMES;
+  const installedSkills = components ? components.skills : new Set();
+  let agentCount = 0;
+
+  for (const agentName of requestedAgents.filter(a => AGENT_NAMES.includes(a))) {
+    const srcFile = path.join(TEMPLATES_DIR, 'agents', `${agentName}.md`);
+    if (!fs.existsSync(srcFile)) continue;
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'codex');
+    fs.writeFileSync(path.join(agentsAgentsDir, `rapidx-${agentName}.md`), augmented, 'utf8');
+    agentCount++;
+  }
+
+  for (const agentName of requestedAgents.filter(a => ENTERPRISE_AGENT_NAMES.includes(a))) {
+    const srcFile = path.join(TEMPLATES_DIR, 'agents', 'rapidx', `${agentName}.md`);
+    if (!fs.existsSync(srcFile)) continue;
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'codex');
+    fs.writeFileSync(path.join(agentsAgentsDir, `rapidx-${agentName}.md`), augmented, 'utf8');
+    agentCount++;
+  }
+
+  if (agentCount > 0) {
+    process.stdout.write(`  [RapidX] Installed ${agentCount} agent definitions → .agents/agents/\n`);
+  }
+
+  // Generate Get Things Done command files in .codex/commands/rapidx/
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
+  const gtdResult = generateAllCommands(gtdSrc, { cursor: commandsDir }, { gtdDir: GTD_DIR });
+  if (gtdResult.generated > 0) {
+    process.stdout.write(`  [RapidX] Generated ${gtdResult.generated} Get Things Done commands → .codex/commands/rapidx/\n`);
+  }
+
+  // Generate RapidX enterprise command files
+  const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
+  if (fs.existsSync(rapidxSrc)) {
+    const rapidxResult = generateAllCommands(rapidxSrc, { cursor: commandsDir }, { gtdDir: GTD_DIR });
+    if (rapidxResult.generated > 0) {
+      process.stdout.write(`  [RapidX] Generated ${rapidxResult.generated} RapidX enterprise commands → .codex/commands/rapidx/\n`);
     }
   }
 

@@ -1,6 +1,6 @@
 # Agent: Doc Updater — Get Things Done
 
-<!-- RapidX GSD Agent | Invoke: attach with #file: in Copilot Chat -->
+<!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 
 ## Role
 

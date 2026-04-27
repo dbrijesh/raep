@@ -1,5 +1,5 @@
 ---
-description: GSD Build Error Resolver agent — activate when there is a build failure, compilation error, type error, module resolution error, CI/CD pipeline failure, or any error that prevents the project from building or running.
+description: RapidX Build Error Resolver agent — activate when there is a build failure, compilation error, type error, module resolution error, CI/CD pipeline failure, or any error that prevents the project from building or running.
 alwaysApply: false
 ---
 

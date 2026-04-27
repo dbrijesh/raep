@@ -20,7 +20,7 @@ Provides a structured framework for legacy system modernization and migration pr
 ## Migration phases
 
 ### Phase 1: Discovery and mapping
-1. Run `/gsd:map-codebase` to analyze the existing system
+1. Run `/rapidx:map-codebase` to analyze the existing system
 2. Document current architecture and data flows
 3. Identify seams and boundaries for decomposition
 4. Assess technical debt and risk areas

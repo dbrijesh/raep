@@ -44,20 +44,102 @@ function clearLines(n) {
 
 // ── Banner ────────────────────────────────────────────────────────────────────
 
+const BRIGHT_CYAN   = `${ESC}[96m`;
+const BRIGHT_WHITE  = `${ESC}[97m`;
+const BRIGHT_BLUE   = `${ESC}[94m`;
+
+/** Resolves after `ms` milliseconds — used by the animated banner. */
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 /**
- * Print the RapidX ASCII art welcome banner.
+ * Animated RapidX ASCII art welcome banner.
+ *
+ * Phases:
+ *   1. Braille spinner with "Initializing RapidX..." (~650 ms)
+ *   2. ASCII logo paints in line-by-line
+ *   3. Subtitle + typewriter tagline
+ *
+ * Returns a Promise so callers should `await ui.banner()`.
+ * Falls back gracefully if stdout is not a TTY (CI / pipe).
  */
-function banner() {
+async function banner() {
+  // ── Non-TTY fallback (CI, piped output) ────────────────────────────────────
+  if (!process.stdout.isTTY) {
+    writeln('');
+    writeln('  RapidX Agentic Engineering Platform');
+    writeln('  Powered by best-of-breed open source harness engineering');
+    writeln('');
+    return;
+  }
+
+  write(HIDE_CURSOR);
+
+  // ── Phase 1: spinner ────────────────────────────────────────────────────────
+  const spinFrames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  const spinLabel  = colored('  Initializing RapidX...', DIM);
+
+  writeln(`  ${colored(spinFrames[0], CYAN, BOLD)} ${spinLabel}`);
+  for (let i = 1; i <= 11; i++) {
+    await delay(60);
+    write(CURSOR_UP(1) + CLEAR_LINE);
+    write(`  ${colored(spinFrames[i % spinFrames.length], CYAN, BOLD)} ${spinLabel}\n`);
+  }
+  write(CURSOR_UP(1) + CLEAR_LINE);
+
+  // ── Phase 2: ASCII art logo (paints line-by-line) ──────────────────────────
+  //
+  //   ██████╗  █████╗ ██████╗ ██╗██████╗ ██╗  ██╗
+  //   ██╔══██╗██╔══██╗██╔══██╗██║██╔══██╗╚██╗██╔╝
+  //   ██████╔╝███████║██████╔╝██║██║  ██║ ╚███╔╝
+  //   ██╔══██╗██╔══██║██╔═══╝ ██║██║  ██║ ██╔██╗
+  //   ██║  ██║██║  ██║██║     ██║██████╔╝██╔╝ ██╗
+  //   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝
+  //
+  const logoLines = [
+    '',
+    `  ${colored('██████╗  █████╗ ██████╗ ██╗██████╗ ██╗  ██╗', BRIGHT_CYAN, BOLD)}`,
+    `  ${colored('██╔══██╗██╔══██╗██╔══██╗██║██╔══██╗╚██╗██╔╝', BRIGHT_CYAN, BOLD)}`,
+    `  ${colored('██████╔╝███████║██████╔╝██║██║  ██║ ╚███╔╝ ', CYAN, BOLD)}`,
+    `  ${colored('██╔══██╗██╔══██║██╔═══╝ ██║██║  ██║ ██╔██╗ ', CYAN, BOLD)}`,
+    `  ${colored('██║  ██║██║  ██║██║     ██║██████╔╝██╔╝ ██╗', BRIGHT_BLUE, BOLD)}`,
+    `  ${colored('╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝╚═════╝ ╚═╝  ╚═╝', BRIGHT_BLUE, BOLD)}`,
+    '',
+  ];
+
+  for (const line of logoLines) {
+    writeln(line);
+    await delay(48);
+  }
+
+  // ── Phase 3: subtitle ───────────────────────────────────────────────────────
+  writeln(`  ${colored('Agentic Engineering Platform', BRIGHT_WHITE, BOLD)}  ${colored('v2.0', DIM)}`);
+  await delay(80);
   writeln('');
-  writeln(colored('╔══════════════════════════════════════════════════════════════╗', CYAN, BOLD));
-  writeln(colored('║                                                              ║', CYAN, BOLD));
-  writeln(colored('║   RapidX Agentic Engineering Platform                        ║', CYAN, BOLD));
-  writeln(colored('║   Enterprise-grade SDLC orchestration                        ║', CYAN, BOLD));
-  writeln(colored('║                                                              ║', CYAN, BOLD));
-  writeln(colored('║   Powered by Get Things Done + Everything Claude Code        ║', CYAN, BOLD));
-  writeln(colored('║                                                              ║', CYAN, BOLD));
-  writeln(colored('╚══════════════════════════════════════════════════════════════╝', CYAN, BOLD));
+
+  // ── Phase 4: typewriter tagline ─────────────────────────────────────────────
+  const tagline = 'Powered by best-of-breed open source harness engineering';
+  write('  ');
+  for (const ch of tagline) {
+    write(colored(ch, DIM));
+    await delay(14);
+  }
   writeln('');
+
+  await delay(120);
+
+  // ── Phase 5: component credits (fade in as one block) ──────────────────────
+  const sep = colored('  ·  ', DIM);
+  writeln(
+    colored('  ◈ ', CYAN) +
+    colored('RapidX Enterprise', BRIGHT_WHITE) +
+    sep +
+    colored('Everything Claude Code', WHITE) +
+    sep +
+    colored('Get Things Done', WHITE)
+  );
+  writeln('');
+
+  write(SHOW_CURSOR);
 }
 
 // ── Section header ────────────────────────────────────────────────────────────

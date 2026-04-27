@@ -7,7 +7,11 @@
       "tdd-workflow",
       "strategic-compact",
       "search-first",
-      "verification-loop"
+      "verification-loop",
+      "spec-driven-dev",
+      "codebase-learning",
+      "cross-platform-commands",
+      "adr-management"
     ],
     "agents": [
       "planner",
@@ -16,13 +20,19 @@
       "code-reviewer",
       "security-reviewer",
       "build-error-resolver",
-      "doc-updater"
+      "doc-updater",
+      "spec-writer",
+      "knowledge-curator",
+      "workflow-orchestrator",
+      "adr-writer"
     ],
     "hooks": [
       "session-start",
       "session-end",
       "audit-trail",
-      "secret-scanner"
+      "secret-scanner",
+      "codebase-context",
+      "knowledge-sync"
     ]
   },
   "languages": {
@@ -234,11 +244,22 @@
         "client-onboarding",
         "review-gates",
         "pod-maturity",
-        "architecture-copilot"
-      ]
+        "architecture-copilot",
+        "spec-driven-dev",
+        "adr-management",
+        "codebase-learning",
+        "cross-platform-commands"
+      ],
+      "agents": ["client-onboarder"]
     },
-    "regulated": { "skills": [] },
-    "modernization": { "skills": ["migration-framework"] }
+    "regulated": {
+      "skills": [],
+      "agents": ["compliance-checker", "governance-auditor"]
+    },
+    "modernization": {
+      "skills": ["migration-framework"],
+      "agents": ["migration-analyst"]
+    }
   },
   "allKnown": {
     "rules": [
@@ -302,7 +323,11 @@
       "dotnet-patterns",
       "dotnet-security",
       "dotnet-tdd",
-      "dotnet-verification"
+      "dotnet-verification",
+      "adr-management",
+      "codebase-learning",
+      "cross-platform-commands",
+      "spec-driven-dev"
     ],
     "agents": [
       "planner",
@@ -318,7 +343,15 @@
       "go-reviewer",
       "go-build-resolver",
       "python-reviewer",
-      "csharp-reviewer"
+      "csharp-reviewer",
+      "spec-writer",
+      "knowledge-curator",
+      "workflow-orchestrator",
+      "adr-writer",
+      "client-onboarder",
+      "compliance-checker",
+      "governance-auditor",
+      "migration-analyst"
     ]
   }
 }

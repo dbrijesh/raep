@@ -1,8 +1,9 @@
 # RapidX Agentic Engineering Platform — Documentation
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 **License:** MIT
 **Package:** `rapidx-platform`
+**Last Updated:** 2026-04-09
 
 ---
 
@@ -27,6 +28,15 @@
 17. [Adding Technologies Later](#17-adding-technologies-later)
 18. [Directory Structure](#18-directory-structure)
 19. [Running Tests](#19-running-tests)
+20. [Spec-Driven Development (SDD)](#20-spec-driven-development-sdd)
+21. [Codebase Learning System](#21-codebase-learning-system)
+22. [Cross-Platform Commands](#22-cross-platform-commands)
+23. [Plugin System](#23-plugin-system)
+24. [Enhanced Hooks](#24-enhanced-hooks)
+25. [Agentic GitHub Workflows](#25-agentic-github-workflows)
+26. [Architecture Decision Records](#26-architecture-decision-records)
+27. [Scripts Reference](#27-scripts-reference)
+28. [Inspiration and Credits](#28-inspiration-and-credits)
 
 ---
 
@@ -40,7 +50,7 @@ RapidX Agentic Engineering Platform is a **unified, enterprise-grade agentic SDL
 | **Everything Claude Code** (ECC) | Open source component library | Coding standards, agents, skills, security rules, hooks |
 | **RapidX enterprise layer** | New code (this repo) | Interactive installer, client profiles, governance gates, compliance packs, multi-platform config generation |
 
-**The core problem it solves:** Enterprise engineering teams use multiple AI coding tools (Claude Code, Cursor, VS Code + Copilot, Codex) and switch between clients with different tech stacks, coding standards, and compliance requirements. RapidX installs the right context for each tool automatically — and only installs the skills and rules relevant to your actual stack. A React + TypeScript + PostgreSQL project gets ~18 skills. Not all 48.
+**The core problem it solves:** Enterprise engineering teams use multiple AI coding tools (Claude Code, Cursor, VS Code + Copilot, Codex) and switch between clients with different tech stacks, coding standards, and compliance requirements. RapidX installs the right context for each tool automatically — and only installs the skills and rules relevant to your actual stack. A React + TypeScript + PostgreSQL project gets ~18 skills. Not all 52.
 
 ---
 
@@ -156,8 +166,8 @@ One installer run configures all your tools simultaneously:
 
 | Platform | What gets configured |
 |----------|---------------------|
-| Claude Code | `/rapidx:*` commands, `/gsd:*` commands, settings.json hooks, CLAUDE.md, COMMANDS.md |
-| VS Code + Copilot | copilot-instructions.md, settings.json merge, extensions.json, `.github/copilot/agents/rapidx-*.md`, `.github/copilot/prompts/rapidx/*.prompt.md` |
+| Claude Code | `/rapidx:*` commands, GTD engine (`~/.claude/get-things-done/`), settings.json hooks, CLAUDE.md, COMMANDS.md |
+| VS Code + Copilot | copilot-instructions.md, settings.json merge, extensions.json, `.github/agents/rapidx-*.md`, `.github/prompts/*.prompt.md` |
 | Cursor | Rules with YAML frontmatter, skills, hooks, mcp.json, `.cursor/agents/rapidx-*.md`, `.cursor/commands/rapidx/*.md` |
 | Codex | config.toml, AGENTS.md, skill files |
 | OpenCode | opencode.json, instruction files |
@@ -228,10 +238,10 @@ Re-runs the tech stack questionnaire for a new category only, computes the delta
 
 | Platform | Detection method | Config written |
 |----------|-----------------|---------------|
-| **Claude Code CLI** | `claude --version` | `.claude/commands/rapidx/` (53 `/rapidx:*` aliases), `.claude/commands/gsd/` (53 originals), `.claude/settings.json`, `CLAUDE.md`, `COMMANDS.md` |
-| **VS Code + GitHub Copilot** | `code --version` + `code --list-extensions` | `.github/copilot-instructions.md`, `.vscode/settings.json`, `.vscode/extensions.json`, `.github/copilot/agents/rapidx-*.md` (10 agents), `.github/copilot/prompts/rapidx/*.prompt.md` (53 prompt files), `.github/copilot/skills/` |
+| **Claude Code CLI** | `claude --version` | `.claude/commands/rapidx/` (53 `/rapidx:*` commands), `~/.claude/get-things-done/` (GTD engine: workflows, agents, references, templates, bin), `.claude/settings.json`, `CLAUDE.md`, `COMMANDS.md` |
+| **VS Code + GitHub Copilot** | `code --version` + `code --list-extensions` | `.github/copilot-instructions.md`, `.vscode/settings.json`, `.vscode/extensions.json`, `.github/agents/rapidx-*.md` (10 agents), `.github/prompts/*.prompt.md` (53 prompt files, type `/<name>` in Copilot Chat), `.github/skills/` |
 | **Cursor IDE** | App path detection + `.cursor/` dir | `.cursor/rules/`, `.cursor/skills/`, `.cursor/agents/rapidx-*.md` (10 agents), `.cursor/commands/rapidx/` (53 MDC files), `.cursor/mcp.json` |
-| **GitHub Copilot CLI** | `gh copilot --version` | `.github/copilot/instructions.md`, `.github/copilot/skills/` |
+| **GitHub Copilot CLI** | `gh copilot --version` | `.github/copilot/instructions.md`, `.github/skills/` |
 | **Codex CLI/App** | `codex --version` | `.codex/config.toml`, `.codex/AGENTS.md`, `.agents/skills/` |
 | **OpenCode** | `opencode --version` | `.opencode/opencode.json`, `.opencode/instructions/` |
 | **Gemini CLI** | `gemini --version` | `.gemini/config.json` |
@@ -323,7 +333,7 @@ Scanning your development environment...
 | Go | `go.mod` | `backend-patterns`, `api-design`, `golang-patterns`, `golang-testing` |
 | PHP / Laravel | `composer.json` | `backend-patterns`, `api-design`, `laravel-patterns`, `laravel-security`, `laravel-tdd`, `laravel-verification` |
 | Rust | `Cargo.toml` | `backend-patterns`, `api-design` |
-| C# / .NET | (project scan) | `backend-patterns`, `api-design` |
+| C# / .NET / ASP.NET Core | `*.csproj`, `*.sln` | `backend-patterns`, `api-design`, `dotnet-patterns`, `dotnet-security`, `dotnet-tdd`, `dotnet-verification` |
 | C++ | (project scan) | `cpp-coding-standards`, `cpp-testing` |
 | Perl | (project scan) | `perl-patterns`, `perl-security`, `perl-testing` |
 
@@ -420,7 +430,7 @@ node bin/install.js --profile enterprise-standard
 
 ### Get Things Done workflow commands — `/rapidx:*`
 
-These are the 53 SDLC workflow commands from the Get Things Done engine, available on every supported platform under the `/rapidx:*` namespace. The original `/gsd:*` names are kept as aliases in Claude Code for backward compatibility.
+These are the 53 SDLC workflow commands from the Get Things Done engine, available on every supported platform under the `/rapidx:*` namespace.
 
 | Command | Description |
 |---------|-------------|
@@ -448,7 +458,7 @@ These are the 53 SDLC workflow commands from the Get Things Done engine, availab
 | `/rapidx:stats` | Show project statistics |
 | ... | 31 additional workflow commands (see `COMMANDS.md` for full list) |
 
-> **Backward compatibility:** Claude Code also installs `/gsd:*` aliases for all commands (e.g. `/gsd:new-project` still works). All Copilot and Cursor formats use `/rapidx:*` names only.
+> All commands are installed under `/rapidx:*` on every platform. Copilot uses `/rapidx-<name>`, Cursor uses `@.cursor/commands/rapidx/<name>.md`.
 
 ### RapidX enterprise commands (`/rapidx:*`)
 
@@ -469,8 +479,8 @@ These are the 53 SDLC workflow commands from the Get Things Done engine, availab
 | Platform | Format | Location | How to invoke |
 |----------|--------|----------|---------------|
 | **Claude Code** | Slash commands (`.md`) | `.claude/commands/rapidx/` | `/rapidx:new-project` |
-| **Claude Code** | Legacy aliases | `.claude/commands/gsd/` | `/gsd:new-project` (backward compat) |
-| **VS Code + Copilot** | Prompt files (`.prompt.md`) | `.github/copilot/prompts/rapidx/` | Open file → run via Copilot Chat, or `#file:.github/copilot/prompts/rapidx/new-project.prompt.md` |
+| **Claude Code** | GTD engine (workflows, agents, refs) | `~/.claude/get-things-done/` | Referenced automatically by commands via `@~/.claude/get-things-done/workflows/` |
+| **VS Code + Copilot** | Prompt files (`.prompt.md`) | `.github/prompts/` | Type `/rapidx-<command>` in Copilot Chat (e.g. `/rapidx-new-project`, `/rapidx-fine-tune`), or open file → **Run in Copilot Chat** |
 | **Cursor** | MDC files (`.md`) | `.cursor/commands/rapidx/` | `@.cursor/commands/rapidx/new-project.md` in Composer |
 | **GitHub Copilot CLI** | Instructions | `.github/copilot/instructions.md` | `gh copilot suggest "/rapidx:quick fix the auth bug"` |
 
@@ -480,13 +490,13 @@ A `COMMANDS.md` quick-reference file is generated at the project root listing al
 
 ## 10. Agent Catalog
 
-Agents are specialized subagents that perform specific roles within a task. They are loaded selectively based on task type and tech stack. The 10 core Get Things Done agents are available across all supported IDEs — not just Claude Code.
+Agents are specialized subagents that perform specific roles within a task. They are loaded selectively based on task type and tech stack. 21 agents total (7 core + 7 stack-conditional + 4 enterprise + 4 SDD/knowledge). The 10 base cross-IDE agents are available across Claude Code, VS Code + Copilot, and Cursor.
 
 ### Cross-IDE agent availability
 
 | Agent | Claude Code | VS Code + Copilot | Cursor |
 |-------|-------------|-------------------|--------|
-| `planner` | ✓ `.claude/agents/` | ✓ `.github/copilot/agents/rapidx-planner.md` | ✓ `.cursor/agents/rapidx-planner.md` |
+| `planner` | ✓ `.claude/agents/` | ✓ `.github/agents/rapidx-planner.md` | ✓ `.cursor/agents/rapidx-planner.md` |
 | `architect` | ✓ | ✓ `rapidx-architect.md` | ✓ `rapidx-architect.md` |
 | `tdd-guide` | ✓ | ✓ `rapidx-tdd-guide.md` | ✓ `rapidx-tdd-guide.md` |
 | `code-reviewer` | ✓ | ✓ `rapidx-code-reviewer.md` | ✓ `rapidx-code-reviewer.md` |
@@ -496,10 +506,11 @@ Agents are specialized subagents that perform specific roles within a task. They
 | `e2e-runner` | ✓ | ✓ `rapidx-e2e-runner.md` | ✓ `rapidx-e2e-runner.md` |
 | `refactor-cleaner` | ✓ | ✓ `rapidx-refactor-cleaner.md` | ✓ `rapidx-refactor-cleaner.md` |
 | `database-reviewer` | ✓ | ✓ `rapidx-database-reviewer.md` | ✓ `rapidx-database-reviewer.md` |
+| `csharp-reviewer` | ✓ (if .NET stack) | ✓ `rapidx-csharp-reviewer.md` (if .NET stack) | ✓ `rapidx-csharp-reviewer.md` (if .NET stack) |
 
 **Invoke in Copilot Chat:**
 ```
-#file:.github/copilot/agents/rapidx-code-reviewer.md
+#file:.github/agents/rapidx-code-reviewer.md
 Review the changes in src/auth/
 ```
 
@@ -562,6 +573,7 @@ These skills were installed for your tech stack. Reference them with @ in Compos
 | `go-reviewer` | Go backend |
 | `go-build-resolver` | Go backend |
 | `python-reviewer` | Python backend |
+| `csharp-reviewer` | C#, ASP.NET Core, .NET, Blazor, MAUI |
 
 ### RapidX enterprise agents
 
@@ -572,11 +584,20 @@ These skills were installed for your tech stack. Reference them with @ in Compos
 | `rapidx/compliance-checker` | Regulatory compliance validation (HIPAA, SOX, 21CFR) |
 | `rapidx/client-onboarder` | Client profile setup and discovery questionnaire |
 
+### SDD & Knowledge agents (installed with plugins)
+
+| Agent | Role |
+|-------|------|
+| `spec-writer` | Creates structured feature specs following the SDD template in `specs/{###-feature-slug}/spec.md` |
+| `adr-writer` | Creates and manages Architecture Decision Records at `docs/adr/`; integrates with knowledge system |
+| `knowledge-curator` | Extracts codebase knowledge into `.rapidx/knowledge/`; invoked via `/rapidx:learn` |
+| `workflow-orchestrator` | Coordinates multi-agent SDLC workflows; cross-platform entry point for Copilot/Cursor |
+
 ---
 
 ## 11. Skill Catalog
 
-Skills are reusable prompt modules injected into agent context. 48 skills total across two categories.
+Skills are reusable prompt modules injected into agent context. 52 skills total across two categories.
 
 ### Core skills (always installed)
 
@@ -601,6 +622,10 @@ Skills are reusable prompt modules injected into agent context. 48 skills total 
 | `database-migrations` | Any database |
 | `docker-patterns` | Docker or Kubernetes |
 | `deployment-patterns` | Docker, Kubernetes, or any CI/CD |
+| `dotnet-patterns` | C#, ASP.NET Core, .NET, Blazor, MAUI |
+| `dotnet-security` | C#, ASP.NET Core, .NET |
+| `dotnet-tdd` | C#, ASP.NET Core, .NET |
+| `dotnet-verification` | C#, ASP.NET Core, .NET |
 | `python-patterns` | Python (FastAPI, Flask) |
 | `python-testing` | Python (FastAPI, Flask) |
 | `django-patterns` | Django |
@@ -810,7 +835,7 @@ claude  # open Claude Code, then type /rapidx:new-project
 ```bash
 node bin/install.js --vscode --local --profile default
 # Open VS Code → Copilot Chat →
-# Attach: #file:.github/copilot/agents/rapidx-planner.md
+# Attach: #file:.github/agents/rapidx-planner.md
 # Then type your request, or open a .prompt.md file directly
 ```
 
@@ -949,8 +974,11 @@ rapidx-platform/
 │   ├── generate-claude-md.js         # CLAUDE.md generator
 │   ├── generate-agents-md.js         # AGENTS.md generator
 │   ├── generate-copilot-instructions.js  # copilot-instructions.md generator
-│   ├── generate-commands.js          # GSD → multi-IDE command converter (Claude rapidx:*, Copilot .prompt.md, Cursor MDC)
+│   ├── generate-commands.js          # GTD command converter (Claude rapidx:*, Copilot .prompt.md, Cursor MDC)
 │   ├── generate-commands-index.js    # Generates COMMANDS.md and Copilot index prompt
+│   ├── generate-copilot-agents.js    # Generates Copilot-native agent files (.github/agents/)
+│   ├── generate-instruction-files.js # Generates pattern-based instruction files for VS Code Copilot
+│   ├── plugin-manager.js             # Plugin install/remove/list logic
 │   ├── agent-skill-map.json          # Maps each agent to its candidate skills
 │   ├── inject-agent-skills.js        # Appends ## Active skills section to agent files at install time
 │   ├── verify-install.js             # Post-install verification
@@ -966,11 +994,12 @@ rapidx-platform/
 │   │   │   ├── .cursor/agents/       # 10 Cursor MDC agent files (rapidx-*.md)
 │   │   │   └── .github/copilot/
 │   │   │       └── agents/           # 10 Copilot agent files (planner.md, etc — prefixed rapidx- on copy)
-│   │   └── <skill-name>/             # 48 skill directories (SKILL.md + supporting files)
-│   └── hooks/                        # Hook scripts (audit-trail, secret-scanner, session-start, governance-gate)
+│   │   └── <skill-name>/             # 52 skill directories (SKILL.md + supporting files)
+│   ├── hooks/                        # Hook scripts (audit-trail, secret-scanner, session-start, governance-gate)
+│   └── workflows/                    # GitHub Actions workflows (rapidx-spec-check.yml, rapidx-pr-review.yml, rapidx-knowledge-sync.yml)
 │
 ├── get-things-done/
-│   ├── commands/gsd/                 # 53 Get Things Done workflow commands (source for conversion)
+│   ├── commands/gtd/                 # Get Things Done workflow commands (source for conversion) (source for conversion)
 │   └── agents/                       # 19 GTD agents
 │
 ├── profiles/
@@ -990,7 +1019,10 @@ rapidx-platform/
 │   ├── integration/                  # full-flow
 │   └── run-all.js
 │
-└── package.json                      # name: rapidx-platform, bin: rapidx
+├── scripts/
+│   └── learn-codebase.js             # CLI codebase learning script (also available as `rapidx-learn` bin)
+│
+└── package.json                      # name: rapidx-platform, bin: { rapidx, rapidx-learn }
 ```
 
 **Runtime state (gitignored):**
@@ -1042,9 +1074,377 @@ Tests use Node.js `assert` only — no test framework dependencies.
 - **All hooks** complete in under 5 seconds
 - **Works offline** for all core operations
 - **VS Code settings.json** is always merged, never overwritten
-- **Only stack-relevant components installed** — never all 48 skills
+- **Only stack-relevant components installed** — never all 52 skills
 
 ---
 
-*Generated by RapidX Agentic Engineering Platform v1.0.0*
+## 20. Spec-Driven Development (SDD)
+
+Spec-Driven Development inverts the traditional workflow: **specifications are the source of truth, and code is their expression**. Inspired by [github/spec-kit](https://github.com/github/spec-kit).
+
+### The SDD principle
+
+Before any code is written for a non-trivial feature:
+1. A spec exists (`specs/{###-feature-slug}/spec.md`)
+2. The spec has been reviewed and approved
+3. An implementation plan has been generated
+4. GTD tasks have been created from the plan
+5. Tests have been written (failing) from the acceptance criteria
+
+### SDD Commands
+
+| Command | Purpose |
+|---------|---------|
+| `/rapidx:spec [feature]` | Create a structured feature specification |
+| `/rapidx:spec-review [id]` | Review spec for completeness, constitution compliance, testability |
+| `/rapidx:plan-spec [id]` | Generate implementation plan from spec acceptance criteria |
+| `/rapidx:tasks-from-spec [id]` | Break plan into GTD tasks + write failing tests |
+| `/rapidx:constitution` | View/create/amend the project constitution |
+| `/rapidx:constitution create` | Interactively create the project constitution |
+| `/rapidx:constitution check` | Verify current diff against constitution |
+
+### Spec structure
+
+Every spec at `specs/{###-feature-slug}/spec.md`:
+
+```
+1. Problem Statement     — Why this feature?
+2. User Scenarios        — P1/P2/P3 stories, each independently testable
+   - Given/When/Then acceptance criteria
+3. Technical Design      — Version-aware design (from .rapidx/stack.json)
+4. Non-Functional NFRs   — Performance, security, accessibility targets
+5. Constitution Check    — Verified against .rapidx/CONSTITUTION.md
+6. Open Questions        — Blockers with owners
+```
+
+### Branch naming
+
+SDD branches follow: `{###-feature-slug}` matching the spec directory.
+
+The `spec-validator` hook checks this automatically on commit. Set `RAPIDX_STRICT_SPEC=1` to block commits without a reviewed spec.
+
+### Spec directory
+
+```
+specs/
+├── INDEX.md                          # Auto-generated index
+├── 001-user-authentication/
+│   ├── spec.md                       # Source of truth
+│   ├── review.md                     # spec-review output
+│   ├── plan.md                       # plan-spec output
+│   ├── tasks.md                      # GTD tasks
+│   └── checklist.md                  # Completion tracking
+└── 002-payment-integration/
+    └── ...
+```
+
+---
+
+## 21. Codebase Learning System
+
+The learning system makes RapidX agents understand YOUR codebase — not generic patterns.
+
+### Learning pipeline
+
+```
+Sources → /rapidx:learn → .rapidx/knowledge/ → /rapidx:fine-tune → All platforms
+```
+
+### What gets learned
+
+| Source | Knowledge extracted | Output file |
+|--------|---------------------|-------------|
+| `src/**` source code | Naming, structure, error handling, API patterns | `code-patterns.md` |
+| `ARCHITECTURE.md`, `docs/adr/` | Components, topology, ADR decisions | `architecture.md` |
+| `.eslintrc*`, `CONTRIBUTING.md` | Linting rules, git conventions | `guidelines.md` |
+| `README.md`, `docs/`, `specs/` | Domain, entities, terminology | `domain.md` |
+| Deprecated ADRs | Patterns to avoid | `anti-patterns.md` |
+
+### User-provided inputs
+
+Drop files into `.rapidx/inputs/` for the knowledge curator to process:
+```
+.rapidx/inputs/
+├── company-coding-standards.pdf
+├── enterprise-architecture-guide.md
+├── api-design-guidelines.pdf
+└── tech-radar.md
+```
+
+Run: `/rapidx:learn --dir .rapidx/inputs/`
+
+### Learning commands
+
+| Command | Description |
+|---------|-------------|
+| `/rapidx:learn` | Learn from entire codebase |
+| `/rapidx:learn --code` | Source code patterns only |
+| `/rapidx:learn --arch` | Architecture artifacts only |
+| `/rapidx:learn --docs` | Documentation only |
+| `/rapidx:learn --guidelines` | Linting + coding standards |
+| `/rapidx:learn --file <path>` | Specific file |
+| `/rapidx:learn --dir <path>` | Directory (e.g., `.rapidx/inputs/`) |
+| `/rapidx:learn-arch` | Deep ADR analysis + violation check |
+| `/rapidx:fine-tune` | Apply knowledge to all platform configs |
+| `/rapidx:fine-tune --preview` | Preview without applying |
+| `/rapidx:knowledge-sync` | Push to all installed platforms |
+
+### CLI script
+
+```bash
+node scripts/learn-codebase.js --all
+node scripts/learn-codebase.js --arch
+node scripts/learn-codebase.js --preview
+```
+
+### Automated sync
+
+- `knowledge-sync` hook: Detects new patterns at session end and prompts for refresh
+- `rapidx-knowledge-sync.yml`: GitHub Actions auto-syncs when architecture docs change
+
+---
+
+## 22. Cross-Platform Commands
+
+The same SDLC workflow works across all AI coding platforms:
+
+### Unified command table
+
+| Intent | Claude Code | VS Code Copilot | Cursor | Codex |
+|--------|-------------|-----------------|--------|-------|
+| New feature spec | `/rapidx:spec` | `@spec-writer` | "Create spec for..." | `codex spec` |
+| Execute phase | `/rapidx:execute-phase` | `@workflow-orchestrator execute` | "Execute phase" | `codex execute` |
+| Code review | `/rapidx:review` | `@code-reviewer review` | "Review changes" | `codex review` |
+| Learn codebase | `/rapidx:learn` | `@knowledge-curator learn` | "Learn from codebase" | `codex learn` |
+| Governance | `/rapidx:governance-check` | `@security-reviewer governance` | "Governance check" | `codex governance` |
+
+### Platform-specific features
+
+**VS Code + GitHub Copilot** (inspired by [github/awesome-copilot](https://github.com/github/awesome-copilot)):
+- `@agent-name` invocation via `.github/agents/*.agent.md`
+- Pattern-based instructions: `.github/copilot/*.instructions.md` (apply automatically by file glob)
+- Always-active context: `.github/copilot-instructions.md`
+
+**Cursor**: `.cursor/rules/*.mdc` with YAML frontmatter, `alwaysApply: true` for persistent rules
+
+**Shared state**: Workflow started in one tool continues in another via `.rapidx/`, `.planning/`, and `specs/`
+
+### src/generate-instruction-files.js
+
+Generates pattern-based instruction files for VS Code Copilot based on the detected tech stack:
+- `general.instructions.md` — always applies to all files
+- `security.instructions.md` — always applies to all files
+- `agents.instructions.md` — agent catalog and invocation guide
+- `frontend-{framework}.instructions.md` — applies to `.tsx`, `.jsx` etc.
+- `backend-{language}.instructions.md` — applies to source files
+- `database.instructions.md` — applies to migration and model files
+- `testing.instructions.md` — applies to test files
+- `cicd.instructions.md` — applies to workflow YAML files
+
+### src/generate-copilot-agents.js
+
+Generates Copilot-native agent files for all installed agents:
+- Agents have system prompts tailored to their role
+- All agents are version-aware (reference `.rapidx/stack.json`)
+- All agents reference `.rapidx/knowledge/` for project-specific context
+
+---
+
+## 23. Plugin System
+
+Plugins are curated bundles of agents + skills + instructions + hooks.
+
+### Built-in plugins
+
+| Plugin | Components |
+|--------|-----------|
+| `sdd-workflow` | spec-writer, adr-writer, SDD commands, spec-validator hook |
+| `knowledge-engine` | knowledge-curator, learn/fine-tune commands, context hooks |
+| `enterprise-governance` | governance-auditor, compliance-checker, governance hooks |
+| `frontend-react` | frontend-patterns, e2e-runner, React instructions |
+| `python-fastapi` | python-patterns, python-reviewer, Python instructions |
+| `github-actions-sdlc` | spec-check.yml, pr-review.yml, knowledge-sync.yml |
+| `full-sdlc` | All of the above |
+
+### Plugin commands
+
+```
+/rapidx:plugin list                     # See all plugins
+/rapidx:plugin install full-sdlc        # Install everything
+/rapidx:plugin install sdd-workflow     # SDD only
+/rapidx:plugin remove knowledge-engine  # Remove a plugin
+/rapidx:plugin info github-actions-sdlc # Details
+```
+
+### Custom plugins
+
+1. Create `rapidx-plugin.json` with component list
+2. Add components (agents/, skills/, commands/, hooks/)
+3. Register in `.rapidx/plugins/registry.json`
+4. Install with `/rapidx:plugin install <name>`
+
+See `src/plugin-manager.js` for the plugin schema.
+
+---
+
+## 24. Enhanced Hooks
+
+New hooks added in v2.0:
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `codebase-context` | `session_start` | Inject `.rapidx/knowledge/` into session context |
+| `knowledge-sync` | `session_end` | Detect changed files, prompt for knowledge refresh |
+| `spec-validator` | `pre_tool_use` (Bash) | Validate spec compliance before git commits |
+
+### Hook: codebase-context
+
+Injects at session start:
+- Active tech stack (versions from `stack.json`)
+- Code patterns summary
+- Architecture summary
+- Project constitution
+- Active spec reference
+
+### Hook: knowledge-sync
+
+At session end:
+- Checks git diff for new source files, spec changes, ADR updates
+- If relevant changes detected, logs a reminder to run `/rapidx:learn`
+- Writes to `SYNC_LOG.md`
+
+### Hook: spec-validator
+
+Before git commits:
+- Detects if branch follows spec naming (`{###-feature-slug}`)
+- Checks spec exists and has been reviewed
+- Warns (or blocks with `RAPIDX_STRICT_SPEC=1`) on violations
+
+---
+
+## 25. Agentic GitHub Workflows
+
+Inspired by [github/awesome-copilot](https://github.com/github/awesome-copilot) agentic workflow patterns.
+
+### rapidx-spec-check.yml
+
+**Trigger**: PR opened/updated on main/develop
+**What it does**:
+1. Detects if branch is a spec branch (`{###-feature-slug}`)
+2. Checks spec exists and has been reviewed
+3. Validates spec completeness (required sections present)
+4. Checks constitution compliance
+5. Posts a structured PR comment with status table
+6. Fails the check if no spec found on spec branch
+
+### rapidx-pr-review.yml
+
+**Trigger**: PR opened (ready for review)
+**What it does**:
+1. Loads RapidX context (stack, constitution, ADRs)
+2. Runs security scan (secret detection in diff)
+3. Posts AI review summary with:
+   - Constitution and architecture checks
+   - Security scan results
+   - Review checklist for human reviewers
+   - Instructions for requesting full AI review
+
+### rapidx-knowledge-sync.yml
+
+**Trigger**: Push to main when `ARCHITECTURE.md`, `docs/adr/`, `CONTRIBUTING.md` change
+**What it does**:
+1. Runs `scripts/learn-codebase.js --all`
+2. If knowledge files changed, creates an auto-commit
+3. Keeps all AI tool configs up-to-date with architecture changes
+
+### Install
+
+```bash
+/rapidx:plugin install github-actions-sdlc
+```
+
+---
+
+## 26. Architecture Decision Records
+
+ADRs are the foundation of the RapidX learning enforcement system.
+
+### Why ADRs matter in RapidX
+
+When you run `/rapidx:learn-arch`, all ADRs are read:
+- **Accepted ADRs** → become enforcement rules for code-reviewer and spec-writer
+- **Deprecated/Superseded ADRs** → become anti-patterns in `anti-patterns.md`
+
+This means every architectural decision automatically becomes part of every AI review.
+
+### ADR commands
+
+```
+/rapidx:adr new "Use PostgreSQL as primary database"  → Create ADR
+/rapidx:adr list                                       → List all ADRs
+/rapidx:adr check                                      → Check diff vs ADRs
+/rapidx:adr sync                                       → Re-sync to knowledge base
+```
+
+### ADR format
+
+```markdown
+# ADR-0001: Use PostgreSQL as Primary Database
+**Status**: Accepted
+**Date**: 2026-04-09
+
+## Context / Decision / Rationale / Consequences
+```
+
+### ADR directory
+
+```
+docs/adr/
+├── README.md            # Auto-updated index
+├── 0001-use-postgresql.md
+└── 0002-rest-over-graphql.md
+```
+
+The `adr-writer` agent manages numbering, slugification, and index updates.
+
+---
+
+## 27. Scripts Reference
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `scripts/learn-codebase.js` | CLI codebase learning | `node scripts/learn-codebase.js [flags]` |
+
+### learn-codebase.js flags
+
+```bash
+--all          Learn everything (default)
+--code         Source code patterns
+--arch         Architecture artifacts
+--guidelines   Linting + coding standards
+--docs         Documentation
+--sync-only    Re-sync existing knowledge
+--preview      Show what would change, don't write
+--file <path>  Learn from specific file
+--dir <path>   Learn from directory
+```
+
+---
+
+## 28. Inspiration and Credits
+
+RapidX v2.0 incorporates ideas and patterns from:
+
+| Project | Contribution |
+|---------|-------------|
+| **[github/spec-kit](https://github.com/github/spec-kit)** | Spec-Driven Development methodology, spec/plan/tasks/checklist/constitution templates |
+| **[github/awesome-copilot](https://github.com/github/awesome-copilot)** | Pattern-based instruction files, agent format, hook structure, agentic GitHub workflows |
+| **[abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)** | Codebase knowledge graph concept, cross-platform context injection, MCP-style architecture awareness |
+| **[gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)** | SDLC workflow engine (vendored as "Get Things Done") |
+| **[affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)** | Enterprise component library (ECC) — skills, rules, agents, hooks |
+
+---
+
+*Generated by RapidX Agentic Engineering Platform v2.0.0*
 *Powered by Get Things Done + Everything Claude Code*
+*Inspired by spec-kit · awesome-copilot · GitNexus*

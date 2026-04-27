@@ -1,5 +1,5 @@
 ---
-description: GSD Refactor Cleaner agent — activate when cleaning up technical debt, refactoring existing code for clarity or maintainability, removing dead code, reducing function complexity, or improving code structure without changing behavior.
+description: RapidX Refactor Cleaner agent — activate when cleaning up technical debt, refactoring existing code for clarity or maintainability, removing dead code, reducing function complexity, or improving code structure without changing behavior.
 alwaysApply: false
 ---
 

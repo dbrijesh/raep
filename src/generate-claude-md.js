@@ -120,7 +120,6 @@ Key commands:
 - \`/rapidx:review\` — Code review current changes
 - \`/rapidx:ship\` — Prepare release
 - \`/rapidx:do\` — Smart dispatcher — describe what you want
-(Also available as \`/gsd:*\` for backward compatibility.)
 
 RapidX commands:
 - \`/rapidx:help\` — Show all RapidX commands

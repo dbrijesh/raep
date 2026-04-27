@@ -202,6 +202,39 @@ function detectAntigravity() {
 }
 
 /**
+ * Detect Kiro IDE.
+ * Kiro stores its workspace config in .kiro/ and may be installed as a CLI or app.
+ */
+function detectKiro() {
+  // Try kiro --version CLI first (most reliable — app is actually installed)
+  const out = run('kiro --version');
+  if (out) return { detected: true, version: extractVersion(out) };
+
+  // Check known app install paths
+  const home = os.homedir();
+  const candidates = [
+    '/Applications/Kiro.app',
+    path.join(home, 'AppData', 'Local', 'Programs', 'Kiro'),
+    process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'Programs', 'Kiro') : null,
+    path.join(home, '.local', 'share', 'kiro'),
+  ].filter(Boolean);
+
+  for (const p of candidates) {
+    if (pathExists(p)) {
+      return { detected: true, version: null };
+    }
+  }
+
+  // .kiro/ directory last — can be created by the installer itself, so it's
+  // a weaker signal (still useful if the binary is not on PATH)
+  if (pathExists('.kiro')) {
+    return { detected: true, version: null };
+  }
+
+  return { detected: false, version: null };
+}
+
+/**
  * Detect all development platforms and IDEs.
  * @returns {object} Detection results keyed by platform name.
  */
@@ -214,6 +247,7 @@ function detectPlatforms() {
     copilotCli: detectCopilotCli(),
     vscode: detectVSCode(),
     cursor: detectCursor(),
+    kiro: detectKiro(),
     jetbrains: detectJetBrains(),
     antigravity: detectAntigravity(),
   };

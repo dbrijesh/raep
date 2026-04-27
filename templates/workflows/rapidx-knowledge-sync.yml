@@ -1,0 +1,88 @@
+name: RapidX Knowledge Sync
+
+# Automated knowledge sync workflow.
+# Runs when architecture docs, ADRs, or coding standards change —
+# triggers a knowledge refresh so all AI tools stay current.
+#
+# This is the "always up-to-date" guarantee for the learning system.
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'ARCHITECTURE.md'
+      - 'docs/adr/**'
+      - 'docs/ARCHITECTURE*.md'
+      - 'CONTRIBUTING.md'
+      - 'CODING_STANDARDS.md'
+      - '.eslintrc*'
+      - 'eslint.config.*'
+      - '.rapidx/CONSTITUTION.md'
+
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Learning scope (all, code, arch, guidelines, docs)'
+        required: false
+        default: 'all'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  knowledge-sync:
+    runs-on: ubuntu-latest
+    name: Sync Knowledge Base
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run knowledge learning
+        run: |
+          SCOPE="${{ github.event.inputs.scope || 'all' }}"
+          echo "Running knowledge learning with scope: $SCOPE"
+
+          # Run the RapidX learning script
+          if [ -f "scripts/learn-codebase.js" ]; then
+            node scripts/learn-codebase.js --${SCOPE} 2>&1 | tee .rapidx/knowledge/last-sync.log
+            echo "LEARNING_SUCCESS=true" >> $GITHUB_ENV
+          else
+            echo "::warning::scripts/learn-codebase.js not found — run npx rapidx-platform --update"
+            echo "LEARNING_SUCCESS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Check for knowledge changes
+        id: knowledge-changes
+        run: |
+          git add .rapidx/knowledge/ CLAUDE.md .github/copilot-instructions.md .cursor/rules/rapidx-knowledge.mdc 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No knowledge changes detected"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Knowledge changes detected:"
+            git diff --staged --stat
+          fi
+
+      - name: Commit knowledge updates
+        if: steps.knowledge-changes.outputs.changed == 'true'
+        run: |
+          git config user.name "RapidX Knowledge Bot"
+          git config user.email "rapidx-bot@noreply.github.com"
+          git commit -m "chore(knowledge): auto-sync codebase knowledge base
+
+Triggered by: ${{ github.event_name }}
+Changed files: ${{ github.event.head_commit.modified || 'workflow_dispatch' }}
+Scope: ${{ github.event.inputs.scope || 'all' }}
+
+Co-authored-by: RapidX Knowledge Bot <rapidx-bot@noreply.github.com>"
+          git push

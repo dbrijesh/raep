@@ -3,26 +3,29 @@
 /**
  * generate-commands-index.js
  *
- * Generates COMMANDS.md — a human-readable index of all available GSD + RapidX
+ * Generates COMMANDS.md — a human-readable index of all available RapidX
  * commands, with per-platform usage instructions.
  *
- * Also generates .github/copilot/prompts/gsd/index.prompt.md — a Copilot
- * prompt that lists all commands and routes to the right one.
+ * Also generates .github/prompts/rapidx-gtd.prompt.md — a VS Code Copilot
+ * prompt router. Users type /rapidx-gtd in Copilot Chat to invoke it.
  */
 
 const fs = require('fs');
 const path = require('path');
-const { parseGsdCommand } = require('./generate-commands');
+const { parseCommandFile } = require('./generate-commands');
 
-// Core GTD workflow commands — shown first in the index
+// Core workflow commands — shown first in the index
 const CORE_COMMANDS = [
+  'do',
+  'do-mode2',
+  'do-mode3',
+  'do-mode4',
   'new-project',
   'plan-phase',
   'execute-phase',
   'verify-work',
   'ship',
   'debug',
-  'do',
   'next',
   'review',
   'progress',
@@ -30,20 +33,20 @@ const CORE_COMMANDS = [
 
 /**
  * Build a sorted command list with descriptions from source .md files.
- * @param {string} gsdSourceDir
+ * @param {string} commandsDir
  * @returns {{ name: string, description: string, argumentHint: string }[]}
  */
-function listCommands(gsdSourceDir) {
-  if (!fs.existsSync(gsdSourceDir)) return [];
+function listCommands(commandsDir) {
+  if (!fs.existsSync(commandsDir)) return [];
 
-  return fs.readdirSync(gsdSourceDir)
+  return fs.readdirSync(commandsDir)
     .filter(f => f.endsWith('.md'))
     .sort()
     .map(file => {
-      const content = fs.readFileSync(path.join(gsdSourceDir, file), 'utf8');
-      const parsed = parseGsdCommand(content);
+      const content = fs.readFileSync(path.join(commandsDir, file), 'utf8');
+      const parsed = parseCommandFile(content);
       return {
-        name: parsed.name.replace(/^gsd:/, ''),
+        name: parsed.name.replace(/^gsd:/, '').replace(/^rapidx:/, ''),
         description: parsed.description,
         argumentHint: parsed.argumentHint,
       };
@@ -53,11 +56,11 @@ function listCommands(gsdSourceDir) {
 
 /**
  * Generate COMMANDS.md content listing all available commands per platform.
- * @param {string} gsdSourceDir
+ * @param {string} commandsDir
  * @returns {string}
  */
-function generateCommandsIndex(gsdSourceDir) {
-  const commands = listCommands(gsdSourceDir);
+function generateCommandsIndex(commandsDir) {
+  const commands = listCommands(commandsDir);
 
   const coreRows = [];
   const otherRows = [];
@@ -79,11 +82,20 @@ function generateCommandsIndex(gsdSourceDir) {
     return CORE_COMMANDS.indexOf(aName) - CORE_COMMANDS.indexOf(bName);
   });
 
-  return `# Get Things Done — Command Reference
+  return `# RapidX — Command Reference
 
-> Part of the RapidX Agentic Engineering Platform
+> RapidX Agentic Engineering Platform
 
-## Core GTD workflow
+## Execution modes — choose your autonomy level
+
+| Mode | Command | Autonomy | When to use |
+|------|---------|----------|-------------|
+| **1** | \`do <task>\` | Dispatcher | Not sure which command — routes automatically |
+| **2** | \`do-mode2 <task>\` | Human-driven | Approve every gate: plan → diffs → commit |
+| **3** | \`do-mode3 <task>\` | Orchestrated | Agents run parallel waves, you review per wave |
+| **4** | \`do-mode4 <task>\` | Autonomous | Full autopilot, no checkpoints, audit log written |
+
+## Core workflow
 
 | Command | Description |
 |---------|-------------|
@@ -100,7 +112,7 @@ ${[...coreRows, ...otherRows].join('\n')}
 ## How to use per platform
 
 ### Claude Code
-Use \`/rapidx:<command>\` in the chat prompt. \`/gsd:<command>\` also works for backward compatibility.
+Use \`/rapidx:<command>\` in the chat prompt:
 
 \`\`\`
 /rapidx:new-project
@@ -113,14 +125,21 @@ Use \`/rapidx:<command>\` in the chat prompt. \`/gsd:<command>\` also works for 
 \`\`\`
 
 ### GitHub Copilot (VS Code)
-Open a prompt file and click **Run**, or attach it with \`#file:\` in Copilot Chat:
+Type \`/rapidx-<command>\` in Copilot Chat — prompts are auto-discovered from \`.github/prompts/\`.
+Or open any \`.prompt.md\` file and click **Run in Copilot Chat**:
 
 \`\`\`
-Open: .github/copilot/prompts/rapidx/new-project.prompt.md
-Or: Ctrl+Shift+I → #file:.github/copilot/prompts/rapidx/plan-phase.prompt.md → describe phase
+/rapidx-new-project
+/rapidx-plan-phase    then describe the phase
+/rapidx-fine-tune     apply codebase knowledge to all AI platforms
+/rapidx-learn         learn patterns from your codebase
+/rapidx-gtd           command router — describe what you want
+
+Open file:  .github/prompts/rapidx-new-project.prompt.md  → click "Run"
 \`\`\`
 
-All prompt files are in \`.github/copilot/prompts/rapidx/\`.
+All prompt files are in \`.github/prompts/\` and follow the VS Code prompt file standard.
+See: https://code.visualstudio.com/docs/copilot/customization/prompt-files
 
 ### Cursor
 Reference a command file with \`@\` in Composer:
@@ -136,25 +155,36 @@ All command files are in \`.cursor/commands/rapidx/\`.
 }
 
 /**
- * Generate a Copilot index prompt that lists and routes to all GSD commands.
- * @param {string} gsdSourceDir
+ * Generate a Copilot command router prompt (rapidx-gtd.prompt.md).
+ * Follows VS Code prompt file standard — `agent` field, not `mode`.
+ * https://code.visualstudio.com/docs/copilot/customization/prompt-files
+ * @param {string} commandsDir
  * @returns {string}
  */
-function generateCopilotCommandsIndex(gsdSourceDir) {
-  const commands = listCommands(gsdSourceDir);
+function generateCopilotCommandsIndex(commandsDir) {
+  const commands = listCommands(commandsDir);
   const list = commands
-    .map(c => `- **${c.name}**${c.argumentHint ? ' `' + c.argumentHint + '`' : ''} — ${c.description}`)
+    .map(c => `- **\`/rapidx-${c.name}\`**${c.argumentHint ? ' `' + c.argumentHint + '`' : ''} — ${c.description}`)
     .join('\n');
 
   return `---
-mode: agent
-description: "[Get Things Done] List all available GTD commands and route to the right one"
+agent: agent
+description: "[RapidX] Command router — describe what you want and I'll run the right RapidX workflow"
+tools:
+  - codebase
+  - editFiles
+  - runCommands
+  - problems
+  - search
+  - workspaceDetails
 ---
-# Get Things Done: Command Router
+# RapidX: Command Router
 
-Tell me what you want to do and I'll run the right GTD command.
+Tell me what you want to do and I'll run the right RapidX workflow.
 
 ## Available commands
+
+Type \`/rapidx-<name>\` in Copilot Chat to invoke any of these directly:
 
 ${list}
 
@@ -162,29 +192,33 @@ ${list}
 
 Read the user's request, identify the best matching command from the list above, then execute it by following that command's workflow. Read \`.planning/\` state files to understand current project context.
 
-If the user's intent maps to one specific command, execute it directly.
-If it's ambiguous, ask one clarifying question to determine which command to use.
+- If the user's intent maps to one specific command, execute it directly.
+- If it's ambiguous, ask one clarifying question to determine which command to use.
+- For enterprise/governance tasks, prefer \`/rapidx-governance-check\`, \`/rapidx-maturity-gate\`, or \`/rapidx-audit-report\`.
+
+*Type \`/rapidx-gtd\` in Copilot Chat to see this router.*
 `;
 }
 
 /**
  * Write COMMANDS.md and the Copilot index prompt.
  * Called from install-claude.js and install-vscode.js after commands are generated.
- * @param {string} gsdSourceDir
+ * @param {string} commandsDir
  * @param {object} outputDirs
  * @param {string} [outputDirs.projectRoot]   — write COMMANDS.md here
- * @param {string} [outputDirs.copilotPrompts] — write index.prompt.md here
+ * @param {string} [outputDirs.copilotPrompts] — write rapidx-gtd.prompt.md here
  */
-function writeCommandsIndex(gsdSourceDir, outputDirs) {
+function writeCommandsIndex(commandsDir, outputDirs) {
   if (outputDirs.projectRoot) {
-    const md = generateCommandsIndex(gsdSourceDir);
+    const md = generateCommandsIndex(commandsDir);
     fs.writeFileSync(path.join(outputDirs.projectRoot, 'COMMANDS.md'), md, 'utf8');
   }
 
   if (outputDirs.copilotPrompts) {
     fs.mkdirSync(outputDirs.copilotPrompts, { recursive: true });
-    const prompt = generateCopilotCommandsIndex(gsdSourceDir);
-    fs.writeFileSync(path.join(outputDirs.copilotPrompts, 'index.prompt.md'), prompt, 'utf8');
+    const prompt = generateCopilotCommandsIndex(commandsDir);
+    // Named "rapidx-gtd" — users type /rapidx-gtd in Copilot Chat for the command router
+    fs.writeFileSync(path.join(outputDirs.copilotPrompts, 'rapidx-gtd.prompt.md'), prompt, 'utf8');
   }
 }
 

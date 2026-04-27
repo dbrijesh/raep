@@ -1,5 +1,5 @@
 ---
-description: GSD Code Reviewer agent — activate when reviewing code, checking a PR diff, assessing code quality, or verifying standards compliance on changed files.
+description: RapidX Code Reviewer agent — activate when reviewing code, checking a PR diff, assessing code quality, or verifying standards compliance on changed files.
 alwaysApply: false
 ---
 

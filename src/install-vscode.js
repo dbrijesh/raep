@@ -8,9 +8,38 @@ const { injectAgentSkills } = require('./inject-agent-skills');
 const { execSync } = require('child_process');
 const { writeCopilotInstructions } = require('./generate-copilot-instructions');
 const { writeAgentsMd } = require('./generate-agents-md');
+const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
+const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 const COPILOT_EXTENSION_URL = 'https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';
+
+/**
+ * Copy Get Things Done support files (workflows, references, templates) to
+ * .github/prompts/rapidx/ so Copilot prompt files can reference them via #file:.
+ * Rewrites /gsd: → /rapidx: in all text content.
+ * @param {string} promptsDir — path to .github/prompts/
+ */
+function installGtdPromptFiles(promptsDir) {
+  const dest = path.join(promptsDir, 'rapidx');
+  const subDirs = ['workflows', 'references', 'templates', 'contexts'];
+  let count = 0;
+  for (const sub of subDirs) {
+    const src = path.join(GTD_DIR, sub);
+    if (!fs.existsSync(src)) continue;
+    const destSub = path.join(dest, sub);
+    fs.mkdirSync(destSub, { recursive: true });
+    for (const file of fs.readdirSync(src)) {
+      if (!file.endsWith('.md') && !file.endsWith('.txt')) continue;
+      const content = fs.readFileSync(path.join(src, file), 'utf8');
+      fs.writeFileSync(path.join(destSub, file), content.replace(/\/gsd:/g, '/rapidx:'), 'utf8');
+      count++;
+    }
+  }
+  if (count > 0) {
+    process.stdout.write(`  [RapidX] Copied ${count} Get Things Done workflow files → .github/prompts/rapidx/\n`);
+  }
+}
 
 /**
  * Check whether GitHub Copilot extensions are installed in VS Code.
@@ -33,8 +62,9 @@ function checkCopilotExtensions() {
  * Never overwrites non-RapidX keys.
  * @param {string} settingsPath
  * @param {object} stack
+ * @param {object} profile - loaded profile object; profile_id used for rapidx.profile setting
  */
-function mergeVSCodeSettings(settingsPath, stack) {
+function mergeVSCodeSettings(settingsPath, stack, profile) {
   let existing = {};
   try {
     const text = fs.readFileSync(settingsPath, 'utf8');
@@ -47,7 +77,7 @@ function mergeVSCodeSettings(settingsPath, stack) {
   const be = stack.backend || {};
 
   const rapidxSettings = {
-    'rapidx.profile': stack.profile || 'default',
+    'rapidx.profile': (profile && profile.profile_id) || stack.profile || 'default',
     'rapidx.techStack': {
       frontend: fe.framework || null,
       backend: be.language || null,
@@ -56,14 +86,22 @@ function mergeVSCodeSettings(settingsPath, stack) {
     'rapidx.enabled': true,
     'github.copilot.enable': { '*': true },
     'github.copilot.chat.enabled': true,
+    // Point Copilot at the project instructions file
+    'github.copilot.chat.codeGeneration.instructions': [
+      { file: '.github/copilot-instructions.md' },
+    ],
+    // VS Code discovers .github/prompts/ automatically; list it explicitly for clarity
+    'chat.promptFilesLocations': {
+      '.github/prompts': true,
+    },
   };
 
-  // Merge
-  const merged = Object.assign({}, existing, rapidxSettings);
-  // Preserve any existing rapidx keys that we don't explicitly set
-  if (existing.rapidx) {
-    merged.rapidx = Object.assign({}, existing.rapidx, rapidxSettings.rapidx || {});
-  }
+  // Merge: RapidX defaults go in first so existing user settings always win.
+  // The rapidx.* namespace is ours — our values take priority over stale existing keys.
+  const merged = Object.assign({}, rapidxSettings, existing);
+  merged['rapidx.profile'] = rapidxSettings['rapidx.profile'];
+  merged['rapidx.techStack'] = rapidxSettings['rapidx.techStack'];
+  merged['rapidx.enabled'] = true;
 
   const dir = path.dirname(settingsPath);
   fs.mkdirSync(dir, { recursive: true });
@@ -93,12 +131,12 @@ function writeExtensionsJson(vscodeDir) {
 }
 
 /**
- * Create skill reference files under .github/copilot/skills/.
- * @param {string} copilotDir
+ * Create skill reference files under .github/skills/.
+ * @param {string} githubDir
  * @param {object} components
  */
-function createSkillRefs(copilotDir, components) {
-  const skillsDir = path.join(copilotDir, 'skills');
+function createSkillRefs(githubDir, components) {
+  const skillsDir = path.join(githubDir, 'skills');
   fs.mkdirSync(skillsDir, { recursive: true });
 
   const skills = components ? Array.from(components.skills) : [];
@@ -115,36 +153,40 @@ function createSkillRefs(copilotDir, components) {
   }
 }
 
-// GSD agents that have Copilot-specific agent files
-const GSD_AGENT_NAMES = [
-  'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
-  'build-error-resolver', 'doc-updater', 'e2e-runner', 'refactor-cleaner', 'database-reviewer',
-];
+// Shared agent list — see src/constants.js
+const GTD_AGENT_NAMES = AGENT_NAMES;
 
 /**
- * Copy GSD agent files to .github/copilot/agents/.
+ * Copy agent files to .github/agents/.
  * These are referenced via #file: in Copilot Chat.
- * @param {string} copilotDir  — path to .github/copilot/
+ * Installs core agents from the pre-built Copilot templates, plus enterprise agents
+ * from templates/agents/rapidx/.
+ * @param {string} githubDir  — path to .github/
  * @param {object} components  — { agents: Set<string>, ... }
  */
-function createAgentRefs(copilotDir, components) {
-  const agentsDir = path.join(copilotDir, 'agents');
+function createAgentRefs(githubDir, components) {
+  const agentsDir = path.join(githubDir, 'agents');
   fs.mkdirSync(agentsDir, { recursive: true });
 
-  // Determine which agents to install — intersection of mapped agents and GSD agent files
-  const requestedAgents = components ? Array.from(components.agents) : GSD_AGENT_NAMES;
-  const toInstall = requestedAgents.filter(a => GSD_AGENT_NAMES.includes(a));
-
-  // Source: pre-built Copilot agent files in templates (named without prefix, e.g. planner.md)
-  const agentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.github', 'copilot', 'agents');
-
+  const requestedAgents = components ? Array.from(components.agents) : GTD_AGENT_NAMES;
   const installedSkills = components ? components.skills : new Set();
 
-  for (const agentName of toInstall) {
+  // Core agents — use pre-built Copilot agent files from raep-run skill
+  const agentsSrc = path.join(TEMPLATES_DIR, 'skills', 'raep-run', '.github', 'copilot', 'agents');
+  for (const agentName of requestedAgents.filter(a => GTD_AGENT_NAMES.includes(a))) {
     const srcFile = path.join(agentsSrc, `${agentName}.md`);
     const destFile = path.join(agentsDir, `rapidx-${agentName}.md`);
     if (!fs.existsSync(srcFile)) continue;
+    const raw = fs.readFileSync(srcFile, 'utf8');
+    const augmented = injectAgentSkills(raw, agentName, installedSkills, 'copilot');
+    fs.writeFileSync(destFile, augmented, 'utf8');
+  }
 
+  // Enterprise agents — use templates/agents/rapidx/ as the source
+  for (const agentName of requestedAgents.filter(a => ENTERPRISE_AGENT_NAMES.includes(a))) {
+    const srcFile = path.join(TEMPLATES_DIR, 'agents', 'rapidx', `${agentName}.md`);
+    const destFile = path.join(agentsDir, `rapidx-${agentName}.md`);
+    if (!fs.existsSync(srcFile)) continue;
     const raw = fs.readFileSync(srcFile, 'utf8');
     const augmented = injectAgentSkills(raw, agentName, installedSkills, 'copilot');
     fs.writeFileSync(destFile, augmented, 'utf8');
@@ -166,10 +208,13 @@ function installVSCode(options) {
   const vscodeDir = path.join(targetDir, '.vscode');
   const githubDir = path.join(targetDir, '.github');
   const copilotDir = path.join(githubDir, 'copilot');
+  // VS Code auto-discovers .github/prompts/ — this is the standard location
+  const promptsDir = path.join(githubDir, 'prompts');
 
   fs.mkdirSync(vscodeDir, { recursive: true });
   fs.mkdirSync(githubDir, { recursive: true });
   fs.mkdirSync(copilotDir, { recursive: true });
+  fs.mkdirSync(promptsDir, { recursive: true });
 
   // ── Check Copilot extensions ────────────────────────────────────────────────
   if (checkExtensions) {
@@ -184,7 +229,7 @@ function installVSCode(options) {
   writeCopilotInstructions(targetDir, profile, stack, components);
 
   // ── Merge .vscode/settings.json ────────────────────────────────────────────
-  mergeVSCodeSettings(path.join(vscodeDir, 'settings.json'), stack);
+  mergeVSCodeSettings(path.join(vscodeDir, 'settings.json'), stack, profile);
 
   // ── Generate .vscode/extensions.json ──────────────────────────────────────
   writeExtensionsJson(vscodeDir);
@@ -192,25 +237,41 @@ function installVSCode(options) {
   // ── Generate AGENTS.md ─────────────────────────────────────────────────────
   writeAgentsMd(targetDir, profile, stack, components);
 
-  // ── Create skill reference files in .github/copilot/skills/ ───────────────
-  createSkillRefs(copilotDir, components);
+  // ── Create skill reference files in .github/skills/ ───────────────────────
+  createSkillRefs(githubDir, components);
 
-  // ── Copy GSD agent files to .github/copilot/agents/ ───────────────────────
-  createAgentRefs(copilotDir, components);
+  // ── Copy agent files to .github/agents/ ──────────────────────────────────
+  createAgentRefs(githubDir, components);
 
-  // ── Generate Copilot .prompt.md files from all GSD commands ───────────────
-  const gtdSrc = path.join(TEMPLATES_DIR, '..', 'get-things-done', 'commands', 'gsd');
-  const copilotPromptsDir = path.join(githubDir, 'copilot', 'prompts', 'rapidx');
+  // ── Copy GTD workflow/reference/template files to .github/prompts/rapidx/ ──
+  // Copilot prompt files reference these via #file:.github/prompts/rapidx/...
+  installGtdPromptFiles(promptsDir);
+
+  // ── Generate Copilot .prompt.md files from Get Things Done source ─────────
+  // Files go to .github/prompts/ — VS Code auto-discovers this location.
+  // Type /<command-name> in Copilot Chat to invoke any prompt.
+  const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const copilotPromptsResult = generateAllCommands(gtdSrc, {
-    copilot: copilotPromptsDir,
+    copilot: promptsDir,
   });
   if (copilotPromptsResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Generated ${copilotPromptsResult.generated} Get Things Done prompt files in .github/copilot/prompts/rapidx/\n`);
+    process.stdout.write(`  [RapidX] Generated ${copilotPromptsResult.generated} Get Things Done prompt files in .github/prompts/\n`);
+  }
+
+  // ── Generate Copilot .prompt.md files from RapidX enterprise commands ─────
+  const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
+  if (fs.existsSync(rapidxSrc)) {
+    const rapidxPromptsResult = generateAllCommands(rapidxSrc, {
+      copilot: promptsDir,
+    });
+    if (rapidxPromptsResult.generated > 0) {
+      process.stdout.write(`  [RapidX] Generated ${rapidxPromptsResult.generated} RapidX enterprise prompt files in .github/prompts/\n`);
+    }
   }
 
   // ── Write Copilot command index prompt ────────────────────────────────────
   writeCommandsIndex(gtdSrc, {
-    copilotPrompts: copilotPromptsDir,
+    copilotPrompts: promptsDir,
   });
 
   return { success: true };

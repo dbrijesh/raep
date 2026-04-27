@@ -71,8 +71,8 @@ Review code for quality and security.
   const installed = new Set(['coding-standards', 'security-review']);
   const out = injectAgentSkills(BASE_AGENT, 'code-reviewer', installed, 'copilot');
   assert.ok(out.includes('## Active skills'), 'should add Active skills section');
-  assert.ok(out.includes('#file:.github/copilot/skills/coding-standards.md'), 'should have copilot #file: ref');
-  assert.ok(out.includes('#file:.github/copilot/skills/security-review.md'), 'should have security-review ref');
+  assert.ok(out.includes('#file:.github/skills/coding-standards.md'), 'should have copilot #file: ref');
+  assert.ok(out.includes('#file:.github/skills/security-review.md'), 'should have security-review ref');
   assert.ok(out.startsWith('---'), 'should preserve original frontmatter');
   console.log('✓ injectAgentSkills — copilot: injects #file: skill refs');
 }
