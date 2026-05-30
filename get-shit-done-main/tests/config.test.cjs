@@ -8,7 +8,7 @@
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert');
+const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
@@ -232,6 +232,36 @@ describe('config-set command', () => {
     assert.strictEqual(config.workflow.text_mode, true);
   });
 
+  test('sets workflow.use_worktrees to disable worktree isolation', () => {
+    writeConfig(tmpDir, {});
+
+    const result = runGsdTools('config-set workflow.use_worktrees false', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.use_worktrees, false);
+  });
+
+  test('sets git.base_branch for non-main default branches', () => {
+    writeConfig(tmpDir, {});
+
+    const result = runGsdTools('config-set git.base_branch master', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.git.base_branch, 'master');
+  });
+
+  test('sets intel.enabled to opt into the intel subsystem', () => {
+    writeConfig(tmpDir, {});
+
+    const result = runGsdTools('config-set intel.enabled true', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.intel.enabled, true);
+  });
+
   test('errors when no key path provided', () => {
     const result = runGsdTools('config-set', tmpDir);
     assert.strictEqual(result.success, false);
@@ -256,8 +286,8 @@ describe('config-get command', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    // Create config with known values
-    runGsdTools('config-ensure-section', tmpDir);
+    // Create config with known values — sandbox HOME to avoid global defaults
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
   });
 
   afterEach(() => {
@@ -265,7 +295,7 @@ describe('config-get command', () => {
   });
 
   test('gets a top-level value', () => {
-    const result = runGsdTools('config-get model_profile', tmpDir);
+    const result = runGsdTools('config-get model_profile', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const output = JSON.parse(result.output);
@@ -298,18 +328,46 @@ describe('config-get command', () => {
     );
   });
 
-  test('errors when config.json does not exist', () => {
-    const emptyTmpDir = createTempProject();
-    try {
+  describe('when config.json does not exist', () => {
+    let emptyTmpDir;
+
+    beforeEach(() => {
+      emptyTmpDir = createTempProject();
+    });
+
+    afterEach(() => {
+      cleanup(emptyTmpDir);
+    });
+
+    test('errors when config.json does not exist', () => {
       const result = runGsdTools('config-get model_profile', emptyTmpDir);
       assert.strictEqual(result.success, false);
       assert.ok(
         result.error.includes('No config.json'),
         `Expected "No config.json" in error: ${result.error}`
       );
-    } finally {
-      cleanup(emptyTmpDir);
-    }
+    });
+  });
+
+  test('gets git.base_branch after it is set', () => {
+    runGsdTools('config-set git.base_branch master', tmpDir);
+    const result = runGsdTools('config-get git.base_branch', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, 'master');
+  });
+
+  test('errors for git.base_branch when not explicitly set', () => {
+    // Default config from config-ensure-section does not include git.base_branch,
+    // so config-get should return "Key not found" — this triggers auto-detect
+    // fallback in the workflow (origin/HEAD detection).
+    const result = runGsdTools('config-get git.base_branch', tmpDir);
+    assert.strictEqual(result.success, false);
+    assert.ok(
+      result.error.includes('Key not found'),
+      `Expected "Key not found" in error: ${result.error}`
+    );
   });
 
   test('errors when no key path provided', () => {
@@ -477,6 +535,60 @@ describe('config-new-project command', () => {
   });
 });
 
+// ─── config-set (research_before_questions and discuss_mode) ──────────────────
+
+describe('config-set research_before_questions and discuss_mode', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('workflow.research_before_questions is a valid config key', () => {
+    const result = runGsdTools('config-set workflow.research_before_questions true', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.research_before_questions, true);
+  });
+
+  test('workflow.discuss_mode is a valid config key', () => {
+    const result = runGsdTools('config-set workflow.discuss_mode assumptions', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.discuss_mode, 'assumptions');
+  });
+
+  test('research_before_questions defaults to false in new configs', () => {
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.research_before_questions, false);
+  });
+
+  test('discuss_mode defaults to discuss in new configs', () => {
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.discuss_mode, 'discuss');
+  });
+
+  test('hooks.research_questions is rejected with suggestion', () => {
+    const result = runGsdTools('config-set hooks.research_questions true', tmpDir);
+    assert.strictEqual(result.success, false);
+    assert.ok(
+      result.error.includes('Unknown config key'),
+      `Expected "Unknown config key" in error: ${result.error}`
+    );
+    assert.ok(
+      result.error.includes('workflow.research_before_questions'),
+      `Expected suggestion for workflow.research_before_questions in error: ${result.error}`
+    );
+  });
+});
+
 // ─── config-set (additional coverage) ────────────────────────────────────────
 
 describe('config-set unknown key (no suggestion)', () => {
@@ -545,7 +657,7 @@ describe('config-set-model-profile command', () => {
 
   beforeEach(() => {
     tmpDir = createTempProject();
-    runGsdTools('config-ensure-section', tmpDir);
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
   });
 
   afterEach(() => {
@@ -566,7 +678,7 @@ describe('config-set-model-profile command', () => {
   });
 
   test('reports previous profile in output', () => {
-    const result = runGsdTools('config-set-model-profile budget', tmpDir);
+    const result = runGsdTools('config-set-model-profile budget', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
     assert.ok(result.success, `Command failed: ${result.error}`);
 
     const out = JSON.parse(result.output);
@@ -607,16 +719,257 @@ describe('config-set-model-profile command', () => {
     assert.strictEqual(result.success, false);
   });
 
-  test('creates config if missing before setting profile', () => {
-    const emptyDir = createTempProject();
-    try {
+  describe('when config is missing', () => {
+    let emptyDir;
+
+    beforeEach(() => {
+      emptyDir = createTempProject();
+    });
+
+    afterEach(() => {
+      cleanup(emptyDir);
+    });
+
+    test('creates config if missing before setting profile', () => {
       const result = runGsdTools('config-set-model-profile budget', emptyDir);
       assert.ok(result.success, `Command failed: ${result.error}`);
 
       const config = readConfig(emptyDir);
       assert.strictEqual(config.model_profile, 'budget');
-    } finally {
+    });
+  });
+});
+
+// ─── config-set (workflow.skip_discuss) ───────────────────────────────────────
+
+describe('config-set workflow.skip_discuss', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('config-ensure-section', tmpDir);
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('workflow.skip_discuss is a valid config key', () => {
+    const result = runGsdTools('config-set workflow.skip_discuss true', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.skip_discuss, true);
+  });
+
+  test('skip_discuss defaults to false in new configs', () => {
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.skip_discuss, false);
+  });
+
+  test('skip_discuss can be toggled back to false', () => {
+    runGsdTools('config-set workflow.skip_discuss true', tmpDir);
+    const result = runGsdTools('config-set workflow.skip_discuss false', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.workflow.skip_discuss, false);
+  });
+
+  describe('skip_discuss in config-new-project', () => {
+    let emptyDir;
+
+    beforeEach(() => {
+      emptyDir = createTempProject();
+    });
+
+    afterEach(() => {
       cleanup(emptyDir);
-    }
+    });
+
+    test('skip_discuss is present in config-new-project output', () => {
+      const result = runGsdTools(['config-new-project', '{}'], emptyDir, { HOME: emptyDir, USERPROFILE: emptyDir });
+      assert.ok(result.success, `Command failed: ${result.error}`);
+
+      const config = readConfig(emptyDir);
+      assert.strictEqual(config.workflow.skip_discuss, false, 'skip_discuss should default to false');
+    });
+
+    test('skip_discuss can be set via config-new-project choices', () => {
+      const choices = JSON.stringify({
+        workflow: { skip_discuss: true },
+      });
+      const result = runGsdTools(['config-new-project', choices], emptyDir, { HOME: emptyDir, USERPROFILE: emptyDir });
+      assert.ok(result.success, `Command failed: ${result.error}`);
+
+      const config = readConfig(emptyDir);
+      assert.strictEqual(config.workflow.skip_discuss, true);
+    });
+  });
+
+  test('config-get workflow.skip_discuss returns the set value', () => {
+    runGsdTools('config-set workflow.skip_discuss true', tmpDir);
+    const result = runGsdTools('config-get workflow.skip_discuss', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, true);
+  });
+});
+
+// ─── config-set/config-get workflow.use_worktrees ────────────────────────────
+
+describe('config-set/config-get workflow.use_worktrees', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('config-get workflow.use_worktrees returns false after setting to false', () => {
+    runGsdTools('config-set workflow.use_worktrees false', tmpDir);
+    const result = runGsdTools('config-get workflow.use_worktrees', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, false);
+  });
+
+  test('config-get workflow.use_worktrees errors when not set (default config)', () => {
+    // config-ensure-section does NOT include use_worktrees in hardcoded defaults,
+    // so config-get should error with "Key not found". This is the expected behavior
+    // that workflows rely on: the shell fallback `|| echo "true"` provides the default.
+    const result = runGsdTools('config-get workflow.use_worktrees', tmpDir);
+    assert.strictEqual(result.success, false);
+    assert.ok(
+      result.error.includes('Key not found'),
+      `Expected "Key not found" in error: ${result.error}`
+    );
+  });
+
+  test('config-get workflow.use_worktrees returns true after setting to true', () => {
+    runGsdTools('config-set workflow.use_worktrees true', tmpDir);
+    const result = runGsdTools('config-get workflow.use_worktrees', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, true);
+  });
+
+  test('use_worktrees can be toggled back and forth', () => {
+    runGsdTools('config-set workflow.use_worktrees false', tmpDir);
+    runGsdTools('config-set workflow.use_worktrees true', tmpDir);
+    const result = runGsdTools('config-get workflow.use_worktrees', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, true);
+  });
+});
+
+// ─── config-set/config-get context ─────────────────────────────────────────
+
+describe('config-set/config-get context', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('config-ensure-section', tmpDir, { HOME: tmpDir, USERPROFILE: tmpDir });
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('config set context dev succeeds', () => {
+    const result = runGsdTools('config-set context dev', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.context, 'dev');
+  });
+
+  test('config set context research succeeds', () => {
+    const result = runGsdTools('config-set context research', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.context, 'research');
+  });
+
+  test('config set context review succeeds', () => {
+    const result = runGsdTools('config-set context review', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const config = readConfig(tmpDir);
+    assert.strictEqual(config.context, 'review');
+  });
+
+  test('config get context returns the set value', () => {
+    runGsdTools('config-set context dev', tmpDir);
+    const result = runGsdTools('config-get context', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output, 'dev');
+  });
+
+  test('config set context rejects invalid values', () => {
+    const result = runGsdTools('config-set context foobar', tmpDir);
+    assert.strictEqual(result.success, false);
+    assert.ok(
+      result.error.includes('Invalid context value'),
+      `Expected "Invalid context value" in error: ${result.error}`
+    );
+  });
+
+  test('all three context profile files exist', () => {
+    const contextsDir = path.join(__dirname, '..', 'get-shit-done', 'contexts');
+    assert.ok(fs.existsSync(path.join(contextsDir, 'dev.md')), 'dev.md should exist');
+    assert.ok(fs.existsSync(path.join(contextsDir, 'research.md')), 'research.md should exist');
+    assert.ok(fs.existsSync(path.join(contextsDir, 'review.md')), 'review.md should exist');
+  });
+});
+
+// ─── config-path (#2282) ────────────────────────────────────────────────────
+
+describe('config-path command (#2282)', () => {
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    runGsdTools('config-ensure-section', tmpDir);
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('returns root config path when no workstream is active', () => {
+    const result = runGsdTools('config-path', tmpDir);
+    assert.ok(result.success, `config-path failed: ${result.error}`);
+    assert.ok(result.output.trim().endsWith('.planning/config.json'), `expected root config path, got: ${result.output}`);
+    assert.ok(!result.output.includes('workstreams'), 'should not include workstreams in path');
+  });
+
+  test('returns workstream config path when GSD_WORKSTREAM is set', () => {
+    const result = runGsdTools('config-path', tmpDir, { GSD_WORKSTREAM: 'my-stream' });
+    assert.ok(result.success, `config-path failed: ${result.error}`);
+    assert.ok(result.output.trim().includes('workstreams/my-stream/config.json'), `expected workstream config path, got: ${result.output}`);
+  });
+
+  test('config-path and config-get agree on the active path', () => {
+    // Write a value via config-set (uses planningDir internally)
+    runGsdTools('config-set model_profile quality', tmpDir);
+    // config-path should point to a file containing that value
+    const pathResult = runGsdTools('config-path', tmpDir);
+    const configPath = pathResult.output.trim();
+    const configContent = JSON.parse(require('fs').readFileSync(configPath, 'utf-8'));
+    assert.strictEqual(configContent.model_profile, 'quality', 'config-path should point to the file config-set wrote');
   });
 });

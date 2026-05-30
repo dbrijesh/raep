@@ -1,4 +1,4 @@
-# Agent: Knowledge Curator — Get Things Done
+# Agent: Knowledge Curator — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

@@ -1,5 +1,5 @@
 ---
-name: gsd:review
+name: rapidx:review
 description: Request cross-AI peer review of phase plans from external AI CLIs
 argument-hint: "--phase N [--gemini] [--claude] [--codex] [--all]"
 allowed-tools:
@@ -13,7 +13,7 @@ allowed-tools:
 <objective>
 Invoke external AI CLIs (Gemini, Claude, Codex) to independently review phase plans.
 Produces a structured REVIEWS.md with per-reviewer feedback that can be fed back into
-planning via /gsd:plan-phase --reviews.
+planning via /rapidx:plan-phase --reviews.
 
 **Flow:** Detect CLIs → Build review prompt → Invoke each CLI → Collect responses → Write REVIEWS.md
 </objective>

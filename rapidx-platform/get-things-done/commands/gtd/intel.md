@@ -1,5 +1,5 @@
 ---
-name: gsd:intel
+name: rapidx:intel
 description: "Query, inspect, or refresh codebase intelligence files in .planning/intel/"
 argument-hint: "[query <term>|status|diff|refresh]"
 allowed-tools:
@@ -15,7 +15,7 @@ allowed-tools:
 **Before ANY tool calls**, display this banner:
 
 ```
-GSD > INTEL
+RapidX > INTEL
 ```
 
 Then proceed to Step 1.
@@ -24,7 +24,7 @@ Then proceed to Step 1.
 
 Check if intel is enabled by reading `.planning/config.json` directly using the Read tool.
 
-**DO NOT use the gsd-tools config get-value command** -- it hard-exits on missing keys.
+**DO NOT use the rapidx-tools config get-value command** -- it hard-exits on missing keys.
 
 1. Read `.planning/config.json` using the Read tool
 2. If the file does not exist: display the disabled message below and **STOP**
@@ -35,13 +35,13 @@ Check if intel is enabled by reading `.planning/config.json` directly using the 
 **Disabled message:**
 
 ```
-GSD > INTEL
+RapidX > INTEL
 
 Intel system is disabled. To activate:
 
   rapidx-sdk query config-set intel.enabled true
 
-Then run /gsd:intel refresh to build the initial index.
+Then run /rapidx:intel refresh to build the initial index.
 ```
 
 ---
@@ -61,9 +61,9 @@ Parse `$ARGUMENTS` to determine the operation mode:
 **Usage message** (shown when no argument or unrecognized argument):
 
 ```
-GSD > INTEL
+RapidX > INTEL
 
-Usage: /gsd:intel <mode>
+Usage: /rapidx:intel <mode>
 
 Modes:
   query <term>  Search intel files for a term
@@ -82,7 +82,7 @@ rapidx-sdk query intel.query <term>
 
 Parse the JSON output and display results:
 - If the output contains `"disabled": true`, display the disabled message from Step 1 and **STOP**
-- If no matches found, display: `No intel matches for '<term>'. Try /gsd:intel refresh to build the index.`
+- If no matches found, display: `No intel matches for '<term>'. Try /rapidx:intel refresh to build the index.`
 - Otherwise, display matching entries grouped by intel file
 
 **STOP** after displaying results. Do not spawn an agent.
@@ -126,7 +126,7 @@ If no snapshot exists, suggest running `refresh` first.
 Display before spawning:
 
 ```
-GSD > Spawning intel-updater agent to analyze codebase...
+RapidX > Spawning intel-updater agent to analyze codebase...
 ```
 
 Spawn a Task:
@@ -176,4 +176,4 @@ Display a summary showing:
 1. DO NOT spawn an agent for query/status/diff operations -- these are inline CLI calls
 2. DO NOT modify intel files directly -- the agent handles writes during refresh
 3. DO NOT skip the config gate check
-4. DO NOT use the gsd-tools config get-value CLI for the config gate -- it exits on missing keys
+4. DO NOT use the rapidx-tools config get-value CLI for the config gate -- it exits on missing keys

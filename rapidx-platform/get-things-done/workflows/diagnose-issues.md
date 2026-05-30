@@ -7,7 +7,7 @@ Orchestrator stays lean: parse gaps, spawn agents, collect results, update UAT.
 </purpose>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-debugger — Diagnoses and fixes issues
 </available_agent_types>
 
@@ -187,7 +187,7 @@ rapidx-sdk query commit "docs({phase_num}): add root causes from diagnosis" ".pl
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DIAGNOSIS COMPLETE
+ RapidX ► DIAGNOSIS COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Gap (Truth) | Root Cause | Files |
@@ -220,7 +220,7 @@ Agents only diagnose—plan-phase --gaps handles fixes (no fix application).
 
 **Agent times out:**
 - Check DEBUG-{slug}.md for partial progress
-- Can resume with /gsd:debug
+- Can resume with /rapidx:debug
 
 **All agents fail:**
 - Something systemic (permissions, git, etc.)

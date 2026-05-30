@@ -1,5 +1,5 @@
 <purpose>
-Execute small, ad-hoc tasks with GSD guarantees (atomic commits, STATE.md tracking). Quick mode spawns rapidx-planner (quick mode) + rapidx-executor(s), tracks tasks in `.planning/quick/`, and updates STATE.md's "Quick Tasks Completed" table.
+Execute small, ad-hoc tasks with RapidX guarantees (atomic commits, STATE.md tracking). Quick mode spawns rapidx-planner (quick mode) + rapidx-executor(s), tracks tasks in `.planning/quick/`, and updates STATE.md's "Quick Tasks Completed" table.
 
 With `--full` flag: enables the complete quality pipeline — discussion + research + plan-checking + verification. One flag for everything.
 
@@ -17,7 +17,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-phase-researcher — Researches technical approaches for a phase
 - rapidx-planner — Creates detailed plans from phase scope
 - rapidx-plan-checker — Reviews plan quality before execution
@@ -60,7 +60,7 @@ Display banner based on active flags:
 If `$FULL_MODE` (all phases enabled — `--full` or all granular flags):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (FULL)
+ RapidX ► QUICK TASK (FULL)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Discussion + research + plan checking + verification enabled
@@ -69,7 +69,7 @@ If `$FULL_MODE` (all phases enabled — `--full` or all granular flags):
 If `$DISCUSS_MODE` and `$VALIDATE_MODE` (no research):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + VALIDATE)
+ RapidX ► QUICK TASK (DISCUSS + VALIDATE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Discussion + plan checking + verification enabled
@@ -78,7 +78,7 @@ If `$DISCUSS_MODE` and `$VALIDATE_MODE` (no research):
 If `$DISCUSS_MODE` and `$RESEARCH_MODE` (no validate):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS + RESEARCH)
+ RapidX ► QUICK TASK (DISCUSS + RESEARCH)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Discussion + research enabled
@@ -87,7 +87,7 @@ If `$DISCUSS_MODE` and `$RESEARCH_MODE` (no validate):
 If `$RESEARCH_MODE` and `$VALIDATE_MODE` (no discuss):
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH + VALIDATE)
+ RapidX ► QUICK TASK (RESEARCH + VALIDATE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Research + plan checking + verification enabled
@@ -96,7 +96,7 @@ If `$RESEARCH_MODE` and `$VALIDATE_MODE` (no discuss):
 If `$DISCUSS_MODE` only:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (DISCUSS)
+ RapidX ► QUICK TASK (DISCUSS)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Discussion phase enabled — surfacing gray areas before planning
@@ -105,7 +105,7 @@ If `$DISCUSS_MODE` only:
 If `$RESEARCH_MODE` only:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (RESEARCH)
+ RapidX ► QUICK TASK (RESEARCH)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Research phase enabled — investigating approaches before planning
@@ -114,7 +114,7 @@ If `$RESEARCH_MODE` only:
 If `$VALIDATE_MODE` only:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUICK TASK (VALIDATE)
+ RapidX ► QUICK TASK (VALIDATE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Plan checking + verification enabled
@@ -126,13 +126,13 @@ If `$VALIDATE_MODE` only:
 
 ```bash
 if ! command -v rapidx-sdk &>/dev/null; then
-  echo "⚠ rapidx-sdk not found in PATH — /gsd:quick requires it."
+  echo "⚠ rapidx-sdk not found in PATH — /rapidx:quick requires it."
   echo ""
-  echo "Install the GSD SDK:"
-  echo "  npm install -g @gsd-build/sdk"
+  echo "Install the RapidX SDK:"
+  echo "  npm install -g @rapidx-build/sdk"
   echo ""
-  echo "Or update GSD to get the latest packages:"
-  echo "  /gsd:update"
+  echo "Or update RapidX to get the latest packages:"
+  echo "  /rapidx:update"
   exit 1
 fi
 ```
@@ -142,7 +142,7 @@ INIT=$(rapidx-sdk query init.quick "$DESCRIPTION")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_PLANNER=$(rapidx-sdk query agent-skills rapidx-planner 2>/dev/null)
 AGENT_SKILLS_EXECUTOR=$(rapidx-sdk query agent-skills rapidx-executor 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(rapidx-sdk query agent-skills gsd-checker 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(rapidx-sdk query agent-skills rapidx-checker 2>/dev/null)
 AGENT_SKILLS_VERIFIER=$(rapidx-sdk query agent-skills rapidx-verifier 2>/dev/null)
 ```
 
@@ -161,7 +161,7 @@ if [ -f .gitmodules ]; then
 fi
 ```
 
-**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/gsd:new-project` first.
+**If `roadmap_exists` is false:** Error — Quick mode requires an active project with ROADMAP.md. Run `/rapidx:new-project` first.
 
 Quick tasks can run mid-phase - validation only checks ROADMAP.md exists, not phase status.
 
@@ -215,7 +215,7 @@ Skip this step entirely if NOT `$DISCUSS_MODE`.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DISCUSSING QUICK TASK
+ RapidX ► DISCUSSING QUICK TASK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Surfacing gray areas for: ${DESCRIPTION}
@@ -342,7 +342,7 @@ Skip this step entirely if NOT `$RESEARCH_MODE`.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING QUICK TASK
+ RapidX ► RESEARCHING QUICK TASK
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Investigating approaches for: ${DESCRIPTION}
@@ -464,7 +464,7 @@ Skip this step entirely if NOT `$VALIDATE_MODE`.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CHECKING PLAN
+ RapidX ► CHECKING PLAN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning plan checker...
@@ -756,7 +756,7 @@ Skip this step entirely if NOT `$VALIDATE_MODE`.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING RESULTS
+ RapidX ► VERIFYING RESULTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning verifier...
@@ -888,7 +888,7 @@ Display completion output:
 ```
 ---
 
-GSD > QUICK TASK COMPLETE (VALIDATED)
+RapidX > QUICK TASK COMPLETE (VALIDATED)
 
 Quick Task ${quick_id}: ${DESCRIPTION}
 
@@ -899,14 +899,14 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick ${GSD_WS}
+Ready for next task: /rapidx:quick ${RAPIDX_WS}
 ```
 
 **If NOT `$VALIDATE_MODE`:**
 ```
 ---
 
-GSD > QUICK TASK COMPLETE
+RapidX > QUICK TASK COMPLETE
 
 Quick Task ${quick_id}: ${DESCRIPTION}
 
@@ -916,7 +916,7 @@ Commit: ${commit_hash}
 
 ---
 
-Ready for next task: /gsd:quick ${GSD_WS}
+Ready for next task: /rapidx:quick ${RAPIDX_WS}
 ```
 
 </process>

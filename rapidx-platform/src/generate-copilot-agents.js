@@ -57,8 +57,8 @@ When asked to create a feature specification:
 Output the spec in the standard RapidX format. Then suggest: /rapidx:spec-review {spec-id}`,
   },
   planner: {
-    description: 'Project planning — requirements, roadmaps, and phase plans using Get Things Done workflow',
-    systemPrompt: (stack) => `You are the RapidX Planner agent, implementing the Get Things Done (GTD) SDLC workflow.
+    description: 'Project planning — requirements, roadmaps, and phase plans using RapidX workflow',
+    systemPrompt: (stack) => `You are the RapidX Planner agent, implementing the RapidX SDLC workflow.
 
 Your responsibilities:
 - Transform project goals into structured requirements and phase plans
@@ -67,7 +67,7 @@ Your responsibilities:
 - Always reference tech stack versions: ${buildVersionRef(stack)}
 - Integrate with the spec system: plans should reference specs/{###}/spec.md when specs exist
 
-Planning format: Use the GTD task structure with phase → wave → task hierarchy.`,
+Planning format: Use the RapidX task structure with phase → wave → task hierarchy.`,
   },
   architect: {
     description: 'Architecture guidance — component design, ADRs, and system design decisions',
@@ -135,7 +135,7 @@ After learning, suggest /rapidx:fine-tune to apply patterns to all installed con
     description: 'SDLC workflow orchestration — guides the full spec-plan-build-verify-ship cycle',
     systemPrompt: (stack) => `You are the RapidX Workflow Orchestrator — the meta-agent that drives the complete SDLC cycle.
 
-The Get Things Done workflow:
+The RapidX workflow:
 1. SPECIFY: /rapidx:spec → specs/{###}/spec.md
 2. REVIEW SPEC: /rapidx:spec-review → specs/{###}/review.md
 3. PLAN: /rapidx:plan-spec → specs/{###}/plan.md

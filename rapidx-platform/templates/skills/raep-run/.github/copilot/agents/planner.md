@@ -1,10 +1,10 @@
-# Agent: Planner — Get Things Done
+# Agent: Planner — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 
 ## Role
 
-Translate project goals into structured requirements, roadmaps, and phase plans. First agent invoked on any new project or milestone in the Get Things Done workflow.
+Translate project goals into structured requirements, roadmaps, and phase plans. First agent invoked on any new project or milestone in the RapidX workflow.
 
 ## How to invoke in Copilot Chat
 

@@ -1,18 +1,18 @@
 ---
-name: gsd:workstreams
+name: rapidx:workstreams
 description: Manage parallel workstreams — list, create, switch, status, progress, complete, and resume
 allowed-tools:
   - Read
   - Bash
 ---
 
-# /gsd:workstreams
+# /rapidx:workstreams
 
 Manage parallel workstreams for concurrent milestone work.
 
 ## Usage
 
-`/gsd:workstreams [subcommand] [args]`
+`/rapidx:workstreams [subcommand] [args]`
 
 ### Subcommands
 
@@ -40,7 +40,7 @@ Display the workstreams in a table format showing name, status, current phase, a
 ### create
 Run: `rapidx-sdk query workstream.create <name> --raw --cwd "$CWD"`
 After creation, display the new workstream path and suggest next steps:
-- `/gsd:new-milestone --ws <name>` to set up the milestone
+- `/rapidx:new-milestone --ws <name>` to set up the milestone
 
 ### status
 Run: `rapidx-sdk query workstream.status <name> --raw --cwd "$CWD"`
@@ -48,8 +48,8 @@ Display detailed phase breakdown and state information.
 
 ### switch
 Run: `rapidx-sdk query workstream.set <name> --raw --cwd "$CWD"`
-Also set `GSD_WORKSTREAM` for the current session when the runtime supports it.
-If the runtime exposes a session identifier, GSD also stores the active workstream
+Also set `RAPIDX_WORKSTREAM` for the current session when the runtime supports it.
+If the runtime exposes a session identifier, RapidX also stores the active workstream
 session-locally so concurrent sessions do not overwrite each other.
 
 ### progress
@@ -61,9 +61,9 @@ Run: `rapidx-sdk query workstream.complete <name> --raw --cwd "$CWD"`
 Archive the workstream to milestones/.
 
 ### resume
-Set the workstream as active and suggest `/gsd:resume-work --ws <name>`.
+Set the workstream as active and suggest `/rapidx:resume-work --ws <name>`.
 
 ## Step 3: Display Results
 
 Format the JSON output from rapidx-sdk query into a human-readable display.
-Include the `${GSD_WS}` flag in any routing suggestions.
+Include the `${RAPIDX_WS}` flag in any routing suggestions.

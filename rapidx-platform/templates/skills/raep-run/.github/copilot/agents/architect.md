@@ -1,4 +1,4 @@
-# Agent: Architect — Get Things Done
+# Agent: Architect — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

@@ -1,5 +1,5 @@
 ---
-name: gsd:pr-branch
+name: rapidx:pr-branch
 description: Create a clean PR branch by filtering out .planning/ commits — ready for code review
 argument-hint: "[target branch, default: main]"
 allowed-tools:
@@ -10,7 +10,7 @@ allowed-tools:
 
 <objective>
 Create a clean branch suitable for pull requests by filtering out .planning/ commits
-from the current branch. Reviewers see only code changes, not Get Things Done planning artifacts.
+from the current branch. Reviewers see only code changes, not RapidX planning artifacts.
 
 This solves the problem of PR diffs being cluttered with PLAN.md, SUMMARY.md, STATE.md
 changes that are irrelevant to code review.

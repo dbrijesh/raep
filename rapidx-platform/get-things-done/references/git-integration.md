@@ -1,5 +1,5 @@
 <overview>
-Git integration for GSD framework.
+Git integration for RapidX framework.
 </overview>
 
 <core_principle>
@@ -29,7 +29,7 @@ The git log should read like a changelog of what shipped, not a diary of plannin
 [ -d .git ] && echo "GIT_EXISTS" || echo "NO_GIT"
 ```
 
-If NO_GIT: Run `git init` silently. GSD projects always get their own repo.
+If NO_GIT: Run `git init` silently. RapidX projects always get their own repo.
 </git_check>
 
 <commit_formats>
@@ -255,7 +255,7 @@ Each plan produces 2-4 commits (tasks + metadata). Clear, granular, bisectable.
 
 ## Multi-Repo Workspace Support (sub_repos)
 
-For workspaces with separate git repos (e.g., `backend/`, `frontend/`, `shared/`), GSD routes commits to each repo independently.
+For workspaces with separate git repos (e.g., `backend/`, `frontend/`, `shared/`), RapidX routes commits to each repo independently.
 
 ### Configuration
 
@@ -274,7 +274,7 @@ Set `commit_docs: false` so planning docs stay local and are not committed to an
 
 ### How It Works
 
-1. **Auto-detection:** During `/gsd:new-project`, directories with their own `.git` folder are detected and offered for selection as sub-repos. On subsequent runs, `loadConfig` auto-syncs the `sub_repos` list with the filesystem — adding newly created repos and removing deleted ones. This means `config.json` may be rewritten automatically when repos change on disk.
+1. **Auto-detection:** During `/rapidx:new-project`, directories with their own `.git` folder are detected and offered for selection as sub-repos. On subsequent runs, `loadConfig` auto-syncs the `sub_repos` list with the filesystem — adding newly created repos and removing deleted ones. This means `config.json` may be rewritten automatically when repos change on disk.
 2. **File grouping:** Code files are grouped by their sub-repo prefix (e.g., `backend/src/api/users.ts` belongs to the `backend/` repo).
 3. **Independent commits:** Each sub-repo receives its own atomic commit via `rapidx-tools.cjs commit-to-subrepo`. File paths are made relative to the sub-repo root before staging.
 4. **Planning stays local:** The `.planning/` directory is not committed; it acts as cross-repo coordination.

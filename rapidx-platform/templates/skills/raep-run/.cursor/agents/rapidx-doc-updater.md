@@ -3,7 +3,7 @@ description: RapidX Doc Updater agent — activate when documentation needs to b
 alwaysApply: false
 ---
 
-# Agent: Doc Updater — Get Things Done
+# Agent: Doc Updater — RapidX
 
 ## Role
 

@@ -2,15 +2,15 @@
 
 **This is an INTERNAL workflow — NOT a user-facing command.**
 
-There is no `/gsd:transition` command. This workflow is invoked automatically by
+There is no `/rapidx:transition` command. This workflow is invoked automatically by
 `execute-phase` during auto-advance, or inline by the orchestrator after phase
-verification. Users should never be told to run `/gsd:transition`.
+verification. Users should never be told to run `/rapidx:transition`.
 
 **Valid user commands for phase progression:**
-- `/gsd:discuss-phase {N}` — discuss a phase before planning
-- `/gsd:plan-phase {N}` — plan a phase
-- `/gsd:execute-phase {N}` — execute a phase
-- `/gsd:progress` — see roadmap progress
+- `/rapidx:discuss-phase {N}` — discuss a phase before planning
+- `/rapidx:plan-phase {N}` — plan a phase
+- `/rapidx:execute-phase {N}` — execute a phase
+- `/rapidx:progress` — see roadmap progress
 
 </internal_workflow>
 
@@ -93,7 +93,7 @@ Append to the completion confirmation message (regardless of mode):
 Outstanding verification items in this phase:
 {list filenames}
 
-These will carry forward as debt. Review: `/gsd:audit-uat`
+These will carry forward as debt. Review: `/rapidx:audit-uat`
 ```
 
 This does NOT block transition — it ensures the user sees the debt before confirming.
@@ -400,12 +400,12 @@ Before routing to Route B, check whether other workstreams are still active.
 This prevents one workstream from advancing or completing the milestone while
 other workstreams are still working on their phases.
 
-**Skip this check if NOT in workstream mode** (i.e., `GSD_WORKSTREAM` is not set / flat mode).
+**Skip this check if NOT in workstream mode** (i.e., `RAPIDX_WORKSTREAM` is not set / flat mode).
 In flat mode, go directly to **Route B**.
 
 ```bash
 # Only check if we're in workstream mode
-if [ -n "$GSD_WORKSTREAM" ]; then
+if [ -n "$RAPIDX_WORKSTREAM" ]; then
   WS_LIST=$(rapidx-sdk query workstream.list --raw)
 fi
 ```
@@ -413,7 +413,7 @@ fi
 Parse the JSON result. The output has `{ mode, workstreams: [...] }`.
 Each workstream entry has: `name`, `status`, `current_phase`, `phase_count`, `completed_phases`.
 
-Filter out the current workstream (`$GSD_WORKSTREAM`) and any workstreams with
+Filter out the current workstream (`$RAPIDX_WORKSTREAM`) and any workstreams with
 status containing "milestone complete" or "archived" (case-insensitive).
 The remaining entries are **other active workstreams**.
 
@@ -446,7 +446,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Plan Phase [X+1] in detail
 ```
 
-Exit skill and invoke SlashCommand("/gsd:plan-phase [X+1] --auto ${GSD_WS}")
+Exit skill and invoke SlashCommand("/rapidx:plan-phase [X+1] --auto ${RAPIDX_WS}")
 
 **If CONTEXT.md does NOT exist:**
 
@@ -458,7 +458,7 @@ Next: Phase [X+1] — [Name]
 ⚡ Auto-continuing: Discuss Phase [X+1] first
 ```
 
-Exit skill and invoke SlashCommand("/gsd:discuss-phase [X+1] --auto ${GSD_WS}")
+Exit skill and invoke SlashCommand("/rapidx:discuss-phase [X+1] --auto ${RAPIDX_WS}")
 
 </if>
 
@@ -477,13 +477,13 @@ Exit skill and invoke SlashCommand("/gsd:discuss-phase [X+1] --auto ${GSD_WS}")
 
 `/clear` then:
 
-`/gsd:discuss-phase [X+1] ${GSD_WS}` — gather context and clarify approach
+`/rapidx:discuss-phase [X+1] ${RAPIDX_WS}` — gather context and clarify approach
 
 ---
 
 **Also available:**
-- `/gsd:plan-phase [X+1] ${GSD_WS}` — skip discussion, plan directly
-- `/gsd:research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/rapidx:plan-phase [X+1] ${RAPIDX_WS}` — skip discussion, plan directly
+- `/rapidx:research-phase [X+1] ${RAPIDX_WS}` — investigate unknowns
 
 ---
 ```
@@ -502,13 +502,13 @@ Exit skill and invoke SlashCommand("/gsd:discuss-phase [X+1] --auto ${GSD_WS}")
 
 `/clear` then:
 
-`/gsd:plan-phase [X+1] ${GSD_WS}`
+`/rapidx:plan-phase [X+1] ${RAPIDX_WS}`
 
 ---
 
 **Also available:**
-- `/gsd:discuss-phase [X+1] ${GSD_WS}` — revisit context
-- `/gsd:research-phase [X+1] ${GSD_WS}` — investigate unknowns
+- `/rapidx:discuss-phase [X+1] ${RAPIDX_WS}` — revisit context
+- `/rapidx:research-phase [X+1] ${RAPIDX_WS}` — investigate unknowns
 
 ---
 ```
@@ -554,18 +554,18 @@ This workstream's phases are complete. Other workstreams are still active:
 
 Archive this workstream:
 
-`/gsd:workstreams complete {current_ws_name} ${GSD_WS}`
+`/rapidx:workstreams complete {current_ws_name} ${RAPIDX_WS}`
 
 See overall milestone progress:
 
-`/gsd:workstreams progress ${GSD_WS}`
+`/rapidx:workstreams progress ${RAPIDX_WS}`
 
 <sub>Milestone completion will be available once all workstreams finish.</sub>
 
 ---
 ```
 
-Do NOT suggest `/gsd:complete-milestone` or `/gsd:new-milestone`.
+Do NOT suggest `/rapidx:complete-milestone` or `/rapidx:new-milestone`.
 Do NOT auto-invoke any further slash commands.
 
 **Stop here.** The user must explicitly decide what to do next.
@@ -593,7 +593,7 @@ Phase {X} marked complete.
 ⚡ Auto-continuing: Complete milestone and archive
 ```
 
-Exit skill and invoke SlashCommand("/gsd:complete-milestone {version} ${GSD_WS}")
+Exit skill and invoke SlashCommand("/rapidx:complete-milestone {version} ${RAPIDX_WS}")
 
 </if>
 
@@ -612,7 +612,7 @@ Exit skill and invoke SlashCommand("/gsd:complete-milestone {version} ${GSD_WS}"
 
 `/clear` then:
 
-`/gsd:complete-milestone {version} ${GSD_WS}`
+`/rapidx:complete-milestone {version} ${RAPIDX_WS}`
 
 ---
 

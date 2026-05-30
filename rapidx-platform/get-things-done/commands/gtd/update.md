@@ -1,13 +1,13 @@
 ---
-name: gsd:update
-description: Update Get Things Done to latest version with changelog display
+name: rapidx:update
+description: Update RapidX to latest version with changelog display
 allowed-tools:
   - Bash
   - AskUserQuestion
 ---
 
 <objective>
-Check for Get Things Done updates, install if available, and display what changed.
+Check for RapidX updates, install if available, and display what changed.
 
 Routes to the update workflow which handles:
 - Version detection (local vs global installation)

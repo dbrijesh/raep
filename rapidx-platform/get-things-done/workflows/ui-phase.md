@@ -9,7 +9,7 @@ UI-SPEC.md locks spacing, typography, color, copywriting, and design system deci
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-ui-researcher — Researches UI/UX approaches
 - rapidx-ui-checker — Reviews UI implementation quality
 </available_agent_types>
@@ -49,11 +49,11 @@ UI_ENABLED=$(rapidx-sdk query config-get workflow.ui_phase 2>/dev/null || echo "
 
 **If `UI_ENABLED` is `false`:**
 ```
-UI phase is disabled in config. Enable via /gsd:settings.
+UI phase is disabled in config. Enable via /rapidx:settings.
 ```
 Exit workflow.
 
-**If `planning_exists` is false:** Error — run `/gsd:new-project` first.
+**If `planning_exists` is false:** Error — run `/rapidx:new-project` first.
 
 ## 2. Parse and Validate Phase
 
@@ -70,7 +70,7 @@ PHASE_INFO=$(rapidx-sdk query roadmap.get-phase "${PHASE}")
 **If `has_context` is false:**
 ```
 No CONTEXT.md found for Phase {N}.
-Recommended: run /gsd:discuss-phase {N} first to capture design preferences.
+Recommended: run /rapidx:discuss-phase {N} first to capture design preferences.
 Continuing without user decisions — UI researcher will ask all questions.
 ```
 Continue (non-blocking).
@@ -85,7 +85,7 @@ Continue (non-blocking).
 **If `SKETCH_FINDINGS_PATH` is not empty:**
 ```
 ⚡ Sketch findings detected: {SKETCH_FINDINGS_PATH}
-   Validated design decisions from /gsd:sketch will be loaded into the UI researcher.
+   Validated design decisions from /rapidx:sketch will be loaded into the UI researcher.
    Pre-validated decisions (layout, palette, typography, spacing) should be treated as locked — not re-asked.
 ```
 
@@ -114,7 +114,7 @@ If "Update": continue to step 5.
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI DESIGN CONTRACT — PHASE {N}
+ RapidX ► UI DESIGN CONTRACT — PHASE {N}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning UI researcher...
@@ -123,7 +123,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd:ui-researcher.md for instructions.
+Read ~/.claude/agents/rapidx:ui-researcher.md for instructions.
 
 <objective>
 Create UI design contract for Phase {phase_number}: {phase_name}
@@ -134,9 +134,9 @@ Answer: "What visual and interaction contracts does this phase need?"
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {research_path} (Technical Research — stack decisions)
-- {SKETCH_FINDINGS_PATH} (Sketch Findings — validated design decisions, CSS patterns, visual direction from /gsd:sketch, if exists)
+- {SKETCH_FINDINGS_PATH} (Sketch Findings — validated design decisions, CSS patterns, visual direction from /rapidx:sketch, if exists)
 </files_to_read>
 
 ${AGENT_SKILLS_UI}
@@ -177,7 +177,7 @@ Display blocker details and options. Exit workflow.
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING UI-SPEC
+ RapidX ► VERIFYING UI-SPEC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning UI checker...
@@ -186,7 +186,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd:ui-checker.md for instructions.
+Read ~/.claude/agents/rapidx:ui-checker.md for instructions.
 
 <objective>
 Validate UI design contract for Phase {phase_number}: {phase_name}
@@ -253,7 +253,7 @@ Max revision iterations reached. Remaining issues:
 
 Options:
 1. Force approve — proceed with current UI-SPEC (FLAGs become accepted)
-2. Edit manually — open UI-SPEC.md in editor, re-run /gsd:ui-phase
+2. Edit manually — open UI-SPEC.md in editor, re-run /rapidx:ui-phase
 3. Abandon — exit without approving
 ```
 
@@ -264,7 +264,7 @@ Use AskUserQuestion for the choice.
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI-SPEC READY ✓
+ RapidX ► UI-SPEC READY ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {N}: {Name}** — UI design contract approved
@@ -279,14 +279,14 @@ Dimensions: 6/6 passed
 {If CONTEXT.md exists for this phase:}
 **Plan Phase {N}** — planner will use UI-SPEC.md as design context
 
-`/clear` then: `/gsd:plan-phase {N}`
+`/clear` then: `/rapidx:plan-phase {N}`
 
 {If CONTEXT.md does NOT exist:}
 **Discuss Phase {N}** — gather implementation context before planning
 
-`/clear` then: `/gsd:discuss-phase {N}`
+`/clear` then: `/rapidx:discuss-phase {N}`
 
-(or `/gsd:plan-phase {N}` to skip discussion)
+(or `/rapidx:plan-phase {N}` to skip discussion)
 
 ───────────────────────────────────────────────────────────────
 ```

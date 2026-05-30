@@ -11,7 +11,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-project-researcher — Researches project-level technical decisions
 - rapidx-research-synthesizer — Synthesizes findings from parallel research agents
 - rapidx-roadmapper — Creates phased execution roadmaps
@@ -30,7 +30,7 @@ If the flag is absent, keep the current behavior of continuing phase numbering f
 - Read PROJECT.md (existing project, validated requirements, decisions)
 - Read MILESTONES.md (what shipped previously)
 - Read STATE.md (pending todos, blockers)
-- Check for MILESTONE-CONTEXT.md (from /gsd:discuss-milestone)
+- Check for MILESTONE-CONTEXT.md (from /rapidx:discuss-milestone)
 
 ## 2. Gather Milestone Goals
 
@@ -107,7 +107,7 @@ Before writing any files, present a summary of what was gathered and ask for con
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► MILESTONE SUMMARY
+ RapidX ► MILESTONE SUMMARY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Milestone v[X.Y]: [Name]**
@@ -157,14 +157,14 @@ Ensure the `## Evolution` section exists in PROJECT.md. If missing (projects cre
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
+**After each phase transition** (via `/rapidx:transition`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone** (via `/rapidx:complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -204,7 +204,7 @@ rapidx-sdk query commit "docs: start milestone v[X.Y] [Name]" .planning/PROJECT.
 INIT=$(rapidx-sdk query init.new-milestone)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills rapidx-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(rapidx-sdk query agent-skills gsd-synthesizer 2>/dev/null)
+AGENT_SKILLS_SYNTHESIZER=$(rapidx-sdk query agent-skills rapidx-synthesizer 2>/dev/null)
 AGENT_SKILLS_ROADMAPPER=$(rapidx-sdk query agent-skills rapidx-roadmapper 2>/dev/null)
 ```
 
@@ -228,7 +228,7 @@ Then verify `.planning/phases/` no longer contains old milestone directories bef
 
 If `phase_dir_count > 0` but `phase_archive_path` is missing:
 - Stop and explain that reset numbering is unsafe without a completed milestone archive target.
-- Tell the user to complete/archive the previous milestone first, then rerun `/gsd:new-milestone --reset-phase-numbers ${GSD_WS}`.
+- Tell the user to complete/archive the previous milestone first, then rerun `/rapidx:new-milestone --reset-phase-numbers ${RAPIDX_WS}`.
 
 ## 8. Research Decision
 
@@ -246,13 +246,13 @@ AskUserQuestion: "Research the domain ecosystem for new features before defining
 - "Skip research (current default)" — Go straight to requirements
 - "Research first" — Discover patterns, features, architecture for NEW capabilities
 
-**IMPORTANT:** Do NOT persist this choice to config.json. The `workflow.research` setting is a persistent user preference that controls plan-phase behavior across the project. Changing it here would silently alter future `/gsd:plan-phase` behavior. To change the default, use `/gsd:settings`.
+**IMPORTANT:** Do NOT persist this choice to config.json. The `workflow.research` setting is a persistent user preference that controls plan-phase behavior across the project. Changing it here would silently alter future `/rapidx:plan-phase` behavior. To change the default, use `/rapidx:settings`.
 
 **If user chose "Research first":**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING
+ RapidX ► RESEARCHING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning 4 researchers in parallel...
@@ -329,7 +329,7 @@ Commit after writing.
 Display key findings from SUMMARY.md:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCH COMPLETE ✓
+ RapidX ► RESEARCH COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Stack additions:** [from SUMMARY.md]
@@ -343,7 +343,7 @@ Display key findings from SUMMARY.md:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEFINING REQUIREMENTS
+ RapidX ► DEFINING REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -416,7 +416,7 @@ rapidx-sdk query commit "docs: define milestone v[X.Y] requirements" .planning/R
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CREATING ROADMAP
+ RapidX ► CREATING ROADMAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning roadmapper...
@@ -500,7 +500,7 @@ rapidx-sdk query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" .pl
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► MILESTONE INITIALIZED ✓
+ RapidX ► MILESTONE INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Milestone v[X.Y]: [Name]**
@@ -520,9 +520,9 @@ rapidx-sdk query commit "docs: create milestone v[X.Y] roadmap ([N] phases)" .pl
 
 `/clear` then:
 
-`/gsd:discuss-phase [N] ${GSD_WS}` — gather context and clarify approach
+`/rapidx:discuss-phase [N] ${RAPIDX_WS}` — gather context and clarify approach
 
-Also: `/gsd:plan-phase [N] ${GSD_WS}` — skip discussion, plan directly
+Also: `/rapidx:plan-phase [N] ${RAPIDX_WS}` — skip discussion, plan directly
 ```
 
 </process>
@@ -539,7 +539,7 @@ Also: `/gsd:plan-phase [N] ${GSD_WS}` — skip discussion, plan directly
 - [ ] User feedback incorporated (if any)
 - [ ] Phase numbering mode respected (continued or reset)
 - [ ] All commits made (if planning docs committed)
-- [ ] User knows next step: `/gsd:discuss-phase [N] ${GSD_WS}`
+- [ ] User knows next step: `/rapidx:discuss-phase [N] ${RAPIDX_WS}`
 
 **Atomic commits:** Each phase commits its artifacts immediately.
 </success_criteria>

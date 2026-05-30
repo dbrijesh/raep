@@ -1,5 +1,5 @@
 <purpose>
-Interactive configuration of GSD workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.gsd/defaults.json) for future projects.
+Interactive configuration of RapidX workflow agents (research, plan_check, verifier) and model profile selection via multi-question prompt. Updates .planning/config.json with user preferences. Optionally saves settings as global defaults (~/.rapidx/defaults.json) for future projects.
 </purpose>
 
 <required_reading>
@@ -13,18 +13,18 @@ Ensure config exists and load current state:
 
 ```bash
 rapidx-sdk query config-ensure-section
-GSD_CONFIG_PATH=$(node "$HOME/.claude/get-things-done/bin/rapidx-tools.cjs" config-path)
+RAPIDX_CONFIG_PATH=$(node "$HOME/.claude/get-things-done/bin/rapidx-tools.cjs" config-path)
 INIT=$(rapidx-sdk query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Creates config.json (at the workstream-aware path) with defaults if missing and loads current config values.
-Store `$GSD_CONFIG_PATH` — all subsequent reads and writes use this path, not the hardcoded `.planning/config.json`, so active-workstream installs write to the correct location (#2282).
+Store `$RAPIDX_CONFIG_PATH` — all subsequent reads and writes use this path, not the hardcoded `.planning/config.json`, so active-workstream installs write to the correct location (#2282).
 </step>
 
 <step name="read_current">
 ```bash
-cat "$GSD_CONFIG_PATH"
+cat "$RAPIDX_CONFIG_PATH"
 ```
 
 Parse current values (default to `true` if not present):
@@ -33,7 +33,7 @@ Parse current values (default to `true` if not present):
 - `workflow.verifier` — spawn verifier during execute-phase
 - `workflow.nyquist_validation` — validation architecture research during plan-phase (default: true if absent)
 - `workflow.ui_phase` — generate UI-SPEC.md design contracts for frontend phases (default: true if absent)
-- `workflow.ui_safety_gate` — prompt to run /gsd:ui-phase before planning frontend phases (default: true if absent)
+- `workflow.ui_safety_gate` — prompt to run /rapidx:ui-phase before planning frontend phases (default: true if absent)
 - `workflow.ai_integration_phase` — framework selection + eval strategy for AI phases (default: true if absent)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
@@ -115,11 +115,11 @@ AskUserQuestion([
     ]
   },
   {
-    question: "Enable UI Safety Gate? (prompts to run /gsd:ui-phase before planning frontend phases)",
+    question: "Enable UI Safety Gate? (prompts to run /rapidx:ui-phase before planning frontend phases)",
     header: "UI Gate",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "plan-phase asks to run /gsd:ui-phase first when frontend indicators detected." },
+      { label: "Yes (Recommended)", description: "plan-phase asks to run /rapidx:ui-phase first when frontend indicators detected." },
       { label: "No", description: "No prompt — plan-phase proceeds without UI-SPEC check." }
     ]
   },
@@ -128,7 +128,7 @@ AskUserQuestion([
     header: "AI Phase",
     multiSelect: false,
     options: [
-      { label: "Yes (Recommended)", description: "Run /gsd:ai-phase before planning AI system phases. Surfaces the right framework, researches its docs, and designs the evaluation strategy." },
+      { label: "Yes (Recommended)", description: "Run /rapidx:ai-phase before planning AI system phases. Surfaces the right framework, researches its docs, and designs the evaluation strategy." },
       { label: "No", description: "Skip AI design contract. Good for non-AI phases or when framework is already decided." }
     ]
   },
@@ -166,7 +166,7 @@ AskUserQuestion([
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Run smart discuss before each phase — surfaces gray areas and captures decisions." },
-      { label: "Yes", description: "Skip discuss in /gsd:autonomous — chain directly to plan. Best for backend/pipeline work where phase descriptions are the spec." }
+      { label: "Yes", description: "Skip discuss in /rapidx:autonomous — chain directly to plan. Best for backend/pipeline work where phase descriptions are the spec." }
     ]
   },
   {
@@ -215,7 +215,7 @@ Merge new settings into existing config.json:
 }
 ```
 
-Write updated config to `$GSD_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
+Write updated config to `$RAPIDX_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
 </step>
 
 <step name="save_as_defaults">
@@ -228,20 +228,20 @@ AskUserQuestion([
     header: "Defaults",
     multiSelect: false,
     options: [
-      { label: "Yes", description: "New projects start with these settings (saved to ~/.gsd/defaults.json)" },
+      { label: "Yes", description: "New projects start with these settings (saved to ~/.rapidx/defaults.json)" },
       { label: "No", description: "Only apply to this project" }
     ]
   }
 ])
 ```
 
-If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.gsd/defaults.json`:
+If "Yes": write the same config object (minus project-specific fields like `brave_search`) to `~/.rapidx/defaults.json`:
 
 ```bash
-mkdir -p ~/.gsd
+mkdir -p ~/.rapidx
 ```
 
-Write `~/.gsd/defaults.json` with:
+Write `~/.rapidx/defaults.json` with:
 ```json
 {
   "mode": <current>,
@@ -271,7 +271,7 @@ Display:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SETTINGS UPDATED
+ RapidX ► SETTINGS UPDATED
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 | Setting              | Value |
@@ -290,13 +290,13 @@ Display:
 | Context Warnings     | {On/Off} |
 | Saved as Defaults    | {Yes/No} |
 
-These settings apply to future /gsd:plan-phase and /gsd:execute-phase runs.
+These settings apply to future /rapidx:plan-phase and /rapidx:execute-phase runs.
 
 Quick commands:
-- /gsd:set-profile <profile> — switch model profile
-- /gsd:plan-phase --research — force research
-- /gsd:plan-phase --skip-research — skip research
-- /gsd:plan-phase --skip-verify — skip plan check
+- /rapidx:set-profile <profile> — switch model profile
+- /rapidx:plan-phase --research — force research
+- /rapidx:plan-phase --skip-research — skip research
+- /rapidx:plan-phase --skip-verify — skip plan check
 ```
 </step>
 
@@ -306,6 +306,6 @@ Quick commands:
 - [ ] Current config read
 - [ ] User presented with 14 settings (profile + 11 workflow toggles + git branching + ctx warnings)
 - [ ] Config updated with model_profile, workflow, and git sections
-- [ ] User offered to save as global defaults (~/.gsd/defaults.json)
+- [ ] User offered to save as global defaults (~/.rapidx/defaults.json)
 - [ ] Changes confirmed to user
 </success_criteria>

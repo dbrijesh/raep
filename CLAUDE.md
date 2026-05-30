@@ -3,21 +3,22 @@
 ## What this project is
 
 RapidX is a unified enterprise-grade agentic SDLC orchestration framework combining:
-- **Get Things Done** — SDLC workflow engine (plan → build → review → test → ship). Forked from the upstream "GSD" project — always call it "Get Things Done" in code, docs, and user-facing text. Never use the upstream's original name.
-- **ECC (Everything Claude Code)** — Enterprise component library (rules, skills, agents, hooks, security)
-- **RapidX enterprise layer** — Multi-client profiles, tech-stack-aware installation, governance gates, compliance packs, maturity progression, and interactive multi-platform installer
+- **RapidX workflow engine** — SDLC workflow engine (plan → build → review → test → ship). Forked from an upstream project; **all user-facing text, docs, agents, skills, and command descriptions are branded "RapidX"**. Never use the upstream's original name, and do NOT use the legacy "Get Things Done" / "GTD" branding either — it has been fully retired.
+- **Enterprise component library** — rules, skills, agents, hooks, security (formerly "ECC")
+- **RapidX enterprise layer** — Multi-client profiles, tech-stack-aware installation, governance gates, compliance packs, maturity progression, invariant catalogs, codebase knowledge graph, and interactive multi-platform installer
 
 The full spec is in `rapidx-platform-spec-v2.md` — read it completely before making any architectural decisions.
 
 ## Naming rules (critical)
 
-- Platform: **RapidX** everywhere
-- Workflow engine: **Get Things Done** or **GTD** — never the upstream name
-- Command namespace: `/gsd:*` kept for compat, descriptions say "Get Things Done"
-- Enterprise commands: `/rapidx:*`
-- Vendored engine directory: `get-things-done/`
+- Platform & workflow engine: **RapidX** everywhere (in code, docs, and all user-facing text)
+- **Do NOT use "Get Things Done", "GTD", or "Get Shit Done"** in any content — fully retired. Only lowercase structural path tokens (`get-things-done/` vendored dir, internal `GTD_DIR`/`gtdDir` variable names) may remain, since renaming them would break the installer.
+- Real platform/product names are KEPT: "Claude Code", "Copilot", "Cursor", "Codex", "OpenCode", "Antigravity", "Kiro". `.claude/` and similar paths are platform-required and stay.
+- Command namespace: `/rapidx:*` (the legacy `/gsd:*` namespace has been migrated to `/rapidx:*`)
+- Vendored engine directory: `get-things-done/` (internal path only — never surfaced to users)
 - Environment variables: `RAPIDX_` prefix
 - Runtime state: `.rapidx/`
+- Branding sweep: run `node rapidx-platform/scripts/rebrand-rapidx.js --check` to verify no legacy branding leaked into installable content.
 
 ## Build instructions — start here
 
@@ -170,8 +171,7 @@ Key requirements:
 Build one installer module per platform. Each reads the mapped components and copies only the relevant files.
 
 **`src/install-claude.js`** — Claude Code:
-- Copy GTD commands to `.claude/commands/gsd/`
-- Copy RapidX commands to `.claude/commands/rapidx/`
+- Copy workflow + RapidX commands to `.claude/commands/rapidx/`
 - Copy selected rules to `.claude/rules/` (if rule files supported) or embed in CLAUDE.md
 - Configure hooks in `.claude/settings.json`
 - Generate CLAUDE.md with tech stack context and version-specific guidance
@@ -266,10 +266,12 @@ tests/
 - **All RapidX code in `rapidx/` subdirectories** — never mix with upstream
 - **Conventional commits:** `feat(installer):`, `feat(rapidx):`, `fix(hooks):`
 - **Tests use Node.js assert** — no framework
-- **User-facing text: "Get Things Done"** — never the upstream name
-- **VS Code settings.json merge** — read existing, add RapidX keys, write back, never overwrite
+- **User-facing text: "RapidX"** — never the upstream name, never legacy "Get Things Done"/"GTD"
+- **Claude settings.json merge** — `hooks` and `permissions` MUST be written at the TOP LEVEL (Claude Code reads them there); merge with existing entries, never overwrite. Do NOT nest hooks under a `rapidx` key.
+- **VS Code settings.json merge** — read existing, add RapidX keys under the `rapidx` namespace, write back, never overwrite non-RapidX keys
 - **Component mapping in JSON** — `src/component-map.json`, not hardcoded in JS
 - **Version strings in stack.json** — always semver or major.minor, never "latest"
+- **Zero-dependency runtime libs** — `.rapidx/hooks/lib/*.cjs` (invariant engine, graph query) use Node built-ins only; they must run identically on every platform
 
 ## Architecture decisions
 
@@ -282,6 +284,9 @@ tests/
 - `copilot-instructions.md` is the primary config surface for VS Code users
 - Settings.json files are always merged, never overwritten
 - `/rapidx:add-tech` enables incremental stack expansion without reinstalling
+- **Invariant catalog** (`.rapidx/invariants/catalog.json`) is enforced on every execute phase — auto via hooks on Claude Code/Cursor/Kiro, and via an injected execute-phase directive + `/rapidx:invariant-check` on hookless platforms (Copilot, Codex, OpenCode, Gemini, Antigravity). Authored by the `invariant-catalog` agent.
+- **Codebase knowledge graph** is built natively (zero-dep, `scripts/build-knowledge-graph.js`) by default, with an optional richer build via the external `graphify` CLI when present. Queried via `.rapidx/hooks/lib/graph-query.cjs`.
+- **Platform-neutral core** (`src/install-rapidx-core.js`) lays down `.rapidx/` (engine, graph lib, invariants/knowledge/inputs dirs) for ALL platforms before per-platform installers run.
 
 ## What to build first
 
@@ -289,7 +294,8 @@ Start with Phase 1 (scaffold) → Phase 2 (detection) → Phase 3 (component map
 
 ## Reference links
 
-- Get Things Done source: https://github.com/gsd-build/get-shit-done
-- ECC source: https://github.com/affaan-m/everything-claude-code
+- Upstream workflow engine source (attribution only — never surfaced to users): https://github.com/gsd-build/get-shit-done
+- Enterprise component library source: https://github.com/affaan-m/everything-claude-code
+- Knowledge-graph inspiration (GitNexus): https://github.com/abhigyanpatwari/GitNexus
 - VS Code Copilot instructions: https://docs.github.com/en/copilot/customizing-copilot/adding-repository-instructions-for-github-copilot
 - Cursor rules format: https://docs.cursor.com/context/rules-for-ai

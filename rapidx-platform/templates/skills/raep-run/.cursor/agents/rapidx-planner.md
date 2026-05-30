@@ -3,11 +3,11 @@ description: RapidX Planner agent — activate when planning a new project, feat
 alwaysApply: false
 ---
 
-# Agent: Planner — Get Things Done
+# Agent: Planner — RapidX
 
 ## Role
 
-Translate project goals into structured requirements, roadmaps, and phase plans. First agent invoked on any new project or milestone in the Get Things Done workflow.
+Translate project goals into structured requirements, roadmaps, and phase plans. First agent invoked on any new project or milestone in the RapidX workflow.
 
 ## Responsibilities
 

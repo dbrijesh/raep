@@ -13,7 +13,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-phase-researcher — Researches technical approaches for a phase
 - rapidx-pattern-mapper — Analyzes codebase for existing patterns, produces PATTERNS.md
 - rapidx-planner — Creates detailed plans from phase scope
@@ -29,9 +29,9 @@ Load all context in one call (paths only to minimize orchestrator context):
 ```bash
 INIT=$(rapidx-sdk query init.plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills gsd-researcher 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills rapidx-researcher 2>/dev/null)
 AGENT_SKILLS_PLANNER=$(rapidx-sdk query agent-skills rapidx-planner 2>/dev/null)
-AGENT_SKILLS_CHECKER=$(rapidx-sdk query agent-skills gsd-checker 2>/dev/null)
+AGENT_SKILLS_CHECKER=$(rapidx-sdk query agent-skills rapidx-checker 2>/dev/null)
 CONTEXT_WINDOW=$(rapidx-sdk query config-get context_window 2>/dev/null || echo "200000")
 TDD_MODE=$(rapidx-sdk query config-get workflow.tdd_mode 2>/dev/null || echo "false")
 ```
@@ -46,7 +46,7 @@ Parse JSON for: `researcher_model`, `planner_model`, `checker_model`, `research_
 
 **File paths (for <files_to_read> blocks):** `state_path`, `roadmap_path`, `requirements_path`, `context_path`, `research_path`, `verification_path`, `uat_path`, `reviews_path`. These are null if files don't exist.
 
-**If `planning_exists` is false:** Error — run `/gsd:new-project` first.
+**If `planning_exists` is false:** Error — run `/rapidx:new-project` first.
 
 ## 2. Parse and Normalize Arguments
 
@@ -77,9 +77,9 @@ Error:
 ```
 No REVIEWS.md found for Phase {N}. Run reviews first:
 
-/gsd:review --phase {N}
+/rapidx:review --phase {N}
 
-Then re-run /gsd:plan-phase {N} --reviews
+Then re-run /rapidx:plan-phase {N} --reviews
 ```
 Exit workflow.
 
@@ -109,7 +109,7 @@ fi
 2. Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PRD EXPRESS PATH
+ RapidX ► PRD EXPRESS PATH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Using PRD: {PRD_FILE}
@@ -239,9 +239,9 @@ If "Run discuss-phase first":
   does not work correctly in nested subcontexts (#1009). Instead, display the command
   and exit so the user runs it as a top-level command:
   ```
-  Run this command first, then re-run /gsd:plan-phase {X} ${GSD_WS}:
+  Run this command first, then re-run /rapidx:plan-phase {X} ${RAPIDX_WS}:
 
-  /gsd:discuss-phase {X} ${GSD_WS}
+  /rapidx:discuss-phase {X} ${RAPIDX_WS}
   ```
   **Exit the plan-phase workflow. Do not continue.**
 
@@ -264,19 +264,19 @@ echo "${phase_goal}" | grep -qi "agent\|llm\|rag\|chatbot\|embedding\|langchain\
 **If AI keywords detected AND no AI-SPEC.md:**
 ```
 ◆ Note: This phase appears to involve AI system development.
-  Consider running /gsd:ai-integration-phase {N} before planning to:
+  Consider running /rapidx:ai-integration-phase {N} before planning to:
   - Select the right framework for your use case
   - Research its docs and best practices
   - Design an evaluation strategy
 
-  Continue planning without AI-SPEC? (non-blocking — /gsd:ai-integration-phase can be run after)
+  Continue planning without AI-SPEC? (non-blocking — /rapidx:ai-integration-phase can be run after)
 ```
 
 Use AskUserQuestion with options:
 - "Continue — plan without AI-SPEC"
-- "Stop — I'll run /gsd:ai-integration-phase {N} first"
+- "Stop — I'll run /rapidx:ai-integration-phase {N} first"
 
-If "Stop": Exit with `/gsd:ai-integration-phase {N}` reminder.
+If "Stop": Exit with `/rapidx:ai-integration-phase {N}` reminder.
 If "Continue": Proceed. (Non-blocking — planner will note AI-SPEC is absent.)
 
 **If `AI_SPEC_FILE` is non-empty:** Extract framework for planner context:
@@ -328,7 +328,7 @@ If user selects "Skip research": skip to step 6.
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING PHASE {X}
+ RapidX ► RESEARCHING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning researcher...
@@ -349,7 +349,7 @@ Answer: "What do I need to know to PLAN this phase well?"
 </objective>
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>
@@ -429,7 +429,7 @@ SECURITY_BLOCK=$(rapidx-sdk query config-get workflow.security_block_on --raw 2>
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
+ RapidX ► SECURITY THREAT MODEL REQUIRED (ASVS L{SECURITY_ASVS})
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Each PLAN.md must include a <threat_model> block.
@@ -480,9 +480,9 @@ AUTO_CHAIN=$(rapidx-sdk query config-get workflow._auto_chain_active 2>/dev/null
 
 Auto-generate UI-SPEC without prompting:
 ```
-Skill(skill="gsd-ui-phase", args="${PHASE} --auto ${GSD_WS}")
+Skill(skill="rapidx-ui-phase", args="${PHASE} --auto ${RAPIDX_WS}")
 ```
-After `gsd-ui-phase` returns, re-read:
+After `rapidx-ui-phase` returns, re-read:
 ```bash
 UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 UI_SPEC_PATH="${UI_SPEC_FILE}"
@@ -496,10 +496,10 @@ Output this markdown directly (not as a code block):
 ```
 ## ⚠ UI-SPEC.md missing for Phase {N}
 ▶ Recommended next step:
-`/gsd:ui-phase {N} ${GSD_WS}` — generate UI design contract before planning
+`/rapidx:ui-phase {N} ${RAPIDX_WS}` — generate UI design contract before planning
 ───────────────────────────────────────────────
 Also available:
-- `/gsd:plan-phase {N} --skip-ui ${GSD_WS}` — plan without UI-SPEC (not recommended for frontend phases)
+- `/rapidx:plan-phase {N} --skip-ui ${RAPIDX_WS}` — plan without UI-SPEC (not recommended for frontend phases)
 ```
 
 **Exit the plan-phase workflow. Do not continue.**
@@ -615,7 +615,7 @@ VALIDATION_EXISTS=$(ls "${PHASE_DIR}"/*-VALIDATION.md 2>/dev/null | head -1)
 ```
 
 If missing and Nyquist is still enabled/applicable — ask user:
-1. Re-run: `/gsd:plan-phase {PHASE} --research ${GSD_WS}`
+1. Re-run: `/rapidx:plan-phase {PHASE} --research ${RAPIDX_WS}`
 2. Disable Nyquist with the exact command:
    `rapidx-sdk query config-set workflow.nyquist_validation false`
 3. Continue anyway (plans fail Dimension 8)
@@ -638,7 +638,7 @@ PATTERN_MAPPER_CFG=$(rapidx-sdk query config-get workflow.pattern_mapper 2>/dev/
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PATTERN MAPPING PHASE {X}
+ RapidX ► PATTERN MAPPING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning pattern mapper...
@@ -653,7 +653,7 @@ Pattern mapper prompt:
 **Padded phase:** {padded_phase}
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {research_path} (Technical Research)
 </files_to_read>
 
@@ -686,7 +686,7 @@ PATTERNS_PATH="${PHASE_DIR}/${PADDED_PHASE}-PATTERNS.md"
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PLANNING PHASE {X}
+ RapidX ► PLANNING PHASE {X}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning planner...
@@ -703,7 +703,7 @@ Planner prompt:
 - {state_path} (Project State)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {research_path} (Technical Research)
 - {PATTERNS_PATH} (Pattern Map — analog files and code excerpts, if exists)
 - {verification_path} (Verification Gaps - if --gaps)
@@ -741,7 +741,7 @@ Each TDD plan gets one feature with RED/GREEN/REFACTOR gate sequence.
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /gsd:execute-phase. Plans need:
+Output consumed by /rapidx:execute-phase. Plans need:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
 - Tasks in XML format with read_first and acceptance_criteria fields (MANDATORY on every task)
 - Verification criteria
@@ -835,7 +835,7 @@ rest become a follow-up phase
 
 Use AskUserQuestion with these 3 options.
 
-**If "Split":** Use `/gsd:insert-phase` to create the sub-phases, then replan each.
+**If "Split":** Use `/rapidx:insert-phase` to create the sub-phases, then replan each.
 **If "Proceed":** Return to planner with instruction to attempt all items at full fidelity, accepting more plans/tasks.
 **If "Prioritize":** Use AskUserQuestion (multiSelect) to let user pick which items are "now" vs "later". Create CONTEXT.md for each sub-phase with the selected items.
 
@@ -864,7 +864,7 @@ Options:
 Use AskUserQuestion for each gap (or batch if multiple gaps).
 
 **If "Add plan":** Return to planner (step 8) with instruction to add plans covering the missing items, preserving existing plans.
-**If "Split":** Use `/gsd:insert-phase` for overflow items, then replan.
+**If "Split":** Use `/rapidx:insert-phase` for overflow items, then replan.
 **If "Defer":** Record in CONTEXT.md `## Deferred Ideas` with developer's confirmation. Proceed to step 10.
 
 ## 10. Spawn rapidx-plan-checker Agent
@@ -872,7 +872,7 @@ Use AskUserQuestion for each gap (or batch if multiple gaps).
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► VERIFYING PLANS
+ RapidX ► VERIFYING PLANS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning plan checker...
@@ -889,7 +889,7 @@ Checker prompt:
 - {PHASE_DIR}/*-PLAN.md (Plans to verify)
 - {roadmap_path} (Roadmap)
 - {requirements_path} (Requirements)
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {research_path} (Technical Research — includes Validation Architecture)
 </files_to_read>
 
@@ -965,7 +965,7 @@ Display: `Revision iteration {N}/3 -- {blocker_count} blockers, {warning_count} 
   **If `stall_reentry_count >= 2`:**
     Display: `Stall persists after 2 re-planning attempts. The following issues could not be resolved automatically:`
     List the remaining issues from the checker.
-    Suggest: "Consider resolving these issues manually or running `/gsd:debug` to investigate root causes."
+    Suggest: "Consider resolving these issues manually or running `/rapidx:debug` to investigate root causes."
     Options: "Proceed anyway" | "Abandon"
     If "Proceed anyway": accept current plans and continue to step 13.
     If "Abandon": stop workflow.
@@ -981,7 +981,7 @@ Revision prompt:
 
 <files_to_read>
 - {PHASE_DIR}/*-PLAN.md (Existing plans)
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 </files_to_read>
 
 ${AGENT_SKILLS_PLANNER}
@@ -1035,7 +1035,7 @@ BOUNCE_SCRIPT=$(rapidx-sdk query config-get workflow.plan_bounce_script 2>/dev/n
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► BOUNCING PLANS (External Refinement)
+ RapidX ► BOUNCING PLANS (External Refinement)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Script: ${BOUNCE_SCRIPT}
@@ -1178,7 +1178,7 @@ fi
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTO-ADVANCING TO EXECUTE
+ RapidX ► AUTO-ADVANCING TO EXECUTE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Plans ready. Launching execute-phase...
@@ -1186,7 +1186,7 @@ Plans ready. Launching execute-phase...
 
 Launch execute-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting):
 ```
-Skill(skill="gsd-execute-phase", args="${PHASE} --auto --no-transition ${GSD_WS}")
+Skill(skill="rapidx-execute-phase", args="${PHASE} --auto --no-transition ${RAPIDX_WS}")
 ```
 
 The `--no-transition` flag tells execute-phase to return status after verification instead of chaining further. This keeps the auto-advance chain flat — each phase runs at the same nesting level rather than spawning deeper Task agents.
@@ -1195,19 +1195,19 @@ The `--no-transition` flag tells execute-phase to return status after verificati
 - **PHASE COMPLETE** → Display final summary:
   ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GSD ► PHASE ${PHASE} COMPLETE ✓
+   RapidX ► PHASE ${PHASE} COMPLETE ✓
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Auto-advance pipeline finished.
 
-  Next: /gsd:discuss-phase ${NEXT_PHASE} --auto ${GSD_WS}
+  Next: /rapidx:discuss-phase ${NEXT_PHASE} --auto ${RAPIDX_WS}
   ```
 - **GAPS FOUND / VERIFICATION FAILED** → Display result, stop chain:
   ```
   Auto-advance stopped: Execution needs review.
 
   Review the output above and continue manually:
-  /gsd:execute-phase ${PHASE} ${GSD_WS}
+  /rapidx:execute-phase ${PHASE} ${RAPIDX_WS}
   ```
 
 **If neither `--auto` nor config enabled:**
@@ -1219,7 +1219,7 @@ Route to `<offer_next>` (existing behavior).
 Output this markdown directly (not as a code block):
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PHASE {X} PLANNED ✓
+ RapidX ► PHASE {X} PLANNED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {X}: {Name}** — {N} plan(s) in {M} wave(s)
@@ -1240,15 +1240,15 @@ Verification: {Passed | Passed with override | Skipped}
 
 /clear then:
 
-/gsd:execute-phase {X} ${GSD_WS}
+/rapidx:execute-phase {X} ${RAPIDX_WS}
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
 - cat .planning/phases/{phase-dir}/*-PLAN.md — review plans
-- /gsd:plan-phase {X} --research — re-research first
-- /gsd:review --phase {X} --all — peer review plans with external AIs
-- /gsd:plan-phase {X} --reviews — replan incorporating review feedback
+- /rapidx:plan-phase {X} --research — re-research first
+- /rapidx:review --phase {X} --all — peer review plans with external AIs
+- /rapidx:plan-phase {X} --reviews — replan incorporating review feedback
 
 ───────────────────────────────────────────────────────────────
 </offer_next>
@@ -1269,11 +1269,11 @@ stdio deadlocks with MCP servers — see Claude Code issue anthropics/claude-cod
    Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\tasks\*" -ErrorAction SilentlyContinue
    ```
 4. **Reduce MCP server count:** Temporarily disable non-essential MCP servers in settings.json
-5. **Retry:** Restart Claude Code and run `/gsd:plan-phase` again
+5. **Retry:** Restart Claude Code and run `/rapidx:plan-phase` again
 
 If freezes persist, try `--skip-research` to reduce the agent chain from 3 to 2 agents:
 ```
-/gsd:plan-phase N --skip-research
+/rapidx:plan-phase N --skip-research
 ```
 </windows_troubleshooting>
 

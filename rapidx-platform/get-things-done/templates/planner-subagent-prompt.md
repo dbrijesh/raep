@@ -34,7 +34,7 @@ Template for spawning rapidx-planner agent. The agent contains all planning expe
 </planning_context>
 
 <downstream_consumer>
-Output consumed by /gsd:execute-phase
+Output consumed by /rapidx:execute-phase
 Plans must be executable prompts with:
 - Frontmatter (wave, depends_on, files_modified, autonomous)
 - Tasks in XML format
@@ -68,7 +68,7 @@ Before returning PLANNING COMPLETE:
 
 ## Usage
 
-**From /gsd:plan-phase (standard mode):**
+**From /rapidx:plan-phase (standard mode):**
 ```python
 Task(
   prompt=filled_template,
@@ -77,7 +77,7 @@ Task(
 )
 ```
 
-**From /gsd:plan-phase --gaps (gap closure mode):**
+**From /rapidx:plan-phase --gaps (gap closure mode):**
 ```python
 Task(
   prompt=filled_template,  # with mode: gap_closure

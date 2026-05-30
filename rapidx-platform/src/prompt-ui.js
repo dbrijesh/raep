@@ -135,7 +135,7 @@ async function banner() {
     sep +
     colored('Everything Claude Code', WHITE) +
     sep +
-    colored('Get Things Done', WHITE)
+    colored('RapidX', WHITE)
   );
   writeln('');
 

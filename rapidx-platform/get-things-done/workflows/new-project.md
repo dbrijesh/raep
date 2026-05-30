@@ -7,7 +7,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-project-researcher — Researches project-level technical decisions
 - rapidx-research-synthesizer — Synthesizes findings from parallel research agents
 - rapidx-roadmapper — Creates phased execution roadmaps
@@ -33,7 +33,7 @@ Check if `--auto` flag is present in $ARGUMENTS.
 **Document requirement:**
 Auto mode requires an idea document — either:
 
-- File reference: `/gsd:new-project --auto @prd.md`
+- File reference: `/rapidx:new-project --auto @prd.md`
 - Pasted/written text in the prompt
 
 If no document content provided, error:
@@ -42,8 +42,8 @@ If no document content provided, error:
 Error: --auto requires an idea document.
 
 Usage:
-  /gsd:new-project --auto @your-idea.md
-  /gsd:new-project --auto [paste or write your idea here]
+  /rapidx:new-project --auto @your-idea.md
+  /rapidx:new-project --auto [paste or write your idea here]
 
 The document should describe what you want to build.
 ```
@@ -60,7 +60,7 @@ The document should describe what you want to build.
 INIT=$(rapidx-sdk query init.new-project)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills rapidx-project-researcher 2>/dev/null)
-AGENT_SKILLS_SYNTHESIZER=$(rapidx-sdk query agent-skills gsd-synthesizer 2>/dev/null)
+AGENT_SKILLS_SYNTHESIZER=$(rapidx-sdk query agent-skills rapidx-synthesizer 2>/dev/null)
 AGENT_SKILLS_ROADMAPPER=$(rapidx-sdk query agent-skills rapidx-roadmapper 2>/dev/null)
 ```
 
@@ -89,7 +89,7 @@ if [ "$RUNTIME" = "codex" ]; then INSTRUCTION_FILE="AGENTS.md"; else INSTRUCTION
 
 All subsequent references to the project instruction file use `$INSTRUCTION_FILE`.
 
-**If `project_exists` is true:** Error — project already initialized. Use `/gsd:progress`.
+**If `project_exists` is true:** Error — project already initialized. Use `/rapidx:progress`.
 
 **If `has_git` is false:** Initialize git:
 
@@ -110,13 +110,13 @@ Use AskUserQuestion:
 - header: "Codebase"
 - question: "I detected existing code in this directory. Would you like to map the codebase first?"
 - options:
-  - "Map codebase first" — Run /gsd:map-codebase to understand existing architecture (Recommended)
+  - "Map codebase first" — Run /rapidx:map-codebase to understand existing architecture (Recommended)
   - "Skip mapping" — Proceed with project initialization
 
 **If "Map codebase first":**
 
 ```
-Run `/gsd:map-codebase` first, then return to `/gsd:new-project`
+Run `/rapidx:map-codebase` first, then return to `/rapidx:new-project`
 ```
 
 Exit command.
@@ -255,8 +255,8 @@ If any of these exist, surface them before questioning:
 ⚡ Prior exploration detected:
 {if SPIKE_SKILL}  ✓ Spike findings skill: {path} — validated patterns from experiments
 {if SKETCH_SKILL}  ✓ Sketch findings skill: {path} — validated design decisions
-{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/gsd:spike-wrap-up` to package findings
-{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/gsd:sketch-wrap-up` to package findings
+{if HAS_SPIKES && !SPIKE_SKILL}  ◆ Raw spikes in .planning/spikes/ — consider `/rapidx:spike-wrap-up` to package findings
+{if HAS_SKETCHES && !SKETCH_SKILL}  ◆ Raw sketches in .planning/sketches/ — consider `/rapidx:sketch-wrap-up` to package findings
 
 These findings will be incorporated into project context and available to planning agents.
 ```
@@ -271,7 +271,7 @@ If spike/sketch findings skills exist, read their SKILL.md files to inform the q
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► QUESTIONING
+ RapidX ► QUESTIONING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -413,14 +413,14 @@ Initialize with any decisions made during questioning:
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
+**After each phase transition** (via `/rapidx:transition`):
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone** (via `/rapidx:complete-milestone`):
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
@@ -440,10 +440,10 @@ rapidx-sdk query commit "docs: initialize project" .planning/PROJECT.md
 
 **If auto mode:** Skip — config was collected in Step 2a. Proceed to Step 5.5.
 
-**Check for global defaults** at `~/.gsd/defaults.json`. If the file exists, read and display its contents before asking:
+**Check for global defaults** at `~/.rapidx/defaults.json`. If the file exists, read and display its contents before asking:
 
 ```bash
-DEFAULTS_RAW=$(cat ~/.gsd/defaults.json 2>/dev/null)
+DEFAULTS_RAW=$(cat ~/.rapidx/defaults.json 2>/dev/null)
 ```
 
 Format the JSON into human-readable bullets using these label mappings:
@@ -459,7 +459,7 @@ Format the JSON into human-readable bullets using these label mappings:
 Display above the prompt:
 
 ```text
-Your saved defaults (~/.gsd/defaults.json):
+Your saved defaults (~/.rapidx/defaults.json):
   • Mode: [value]
   • Granularity: [value]
   • Execution: [Parallel|Sequential]
@@ -530,7 +530,7 @@ AskUserQuestion([
 
 For each selected setting, ask only that question using the option set from Round 1 / Round 2 below. Merge user answers over the saved defaults — unchanged settings retain their saved values. Then skip to **Commit config.json**.
 
-**If "Configure fresh" or `~/.gsd/defaults.json` doesn't exist:** proceed with the questions below.
+**If "Configure fresh" or `~/.rapidx/defaults.json` doesn't exist:** proceed with the questions below.
 
 **Round 1 — Core workflow settings (4 questions):**
 
@@ -638,7 +638,7 @@ mkdir -p .planning
 rapidx-sdk query config-new-project '{"mode":"[yolo|interactive]","granularity":"[selected]","parallelization":true|false,"commit_docs":true|false,"model_profile":"quality|balanced|budget|inherit","workflow":{"research":true|false,"plan_check":true|false,"verifier":true|false,"nyquist_validation":[false if granularity=coarse, true otherwise]}}'
 ```
 
-**Note:** Run `/gsd:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
+**Note:** Run `/rapidx:settings` anytime to update model profile, workflow agents, branching strategy, and other preferences.
 
 **If commit_docs = No:**
 
@@ -672,7 +672,7 @@ Strip the `./` prefix to get directory names (e.g., `./backend` → `backend`).
 Use AskUserQuestion:
 
 - header: "Multi-Repo Workspace"
-- question: "I detected separate git repos in this workspace. Which directories contain code that GSD should commit to?"
+- question: "I detected separate git repos in this workspace. Which directories contain code that RapidX should commit to?"
 - multiSelect: true
 - options: one option per detected directory
   - "[directory name]" — Separate git repo
@@ -709,7 +709,7 @@ Display stage banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCHING
+ RapidX ► RESEARCHING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Researching [domain] ecosystem...
@@ -931,7 +931,7 @@ Display research complete banner and key findings:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► RESEARCH COMPLETE ✓
+ RapidX ► RESEARCH COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Key Findings
@@ -951,7 +951,7 @@ Display stage banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DEFINING REQUIREMENTS
+ RapidX ► DEFINING REQUIREMENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -1105,7 +1105,7 @@ Display stage banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► CREATING ROADMAP
+ RapidX ► CREATING ROADMAP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Spawning roadmapper...
@@ -1239,7 +1239,7 @@ Use AskUserQuestion:
 rapidx-sdk query generate-claude-md --output "$INSTRUCTION_FILE"
 ```
 
-This ensures new projects get the default GSD workflow-enforcement guidance and current project context in `$INSTRUCTION_FILE`.
+This ensures new projects get the default RapidX workflow-enforcement guidance and current project context in `$INSTRUCTION_FILE`.
 
 **Commit roadmap (after approval or auto mode):**
 
@@ -1253,7 +1253,7 @@ Present completion summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PROJECT INITIALIZED ✓
+ RapidX ► PROJECT INITIALIZED ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **[Project Name]**
@@ -1278,7 +1278,7 @@ Present completion summary:
 ╚══════════════════════════════════════════╝
 ```
 
-Exit skill and invoke SlashCommand("/gsd:discuss-phase 1 --auto")
+Exit skill and invoke SlashCommand("/rapidx:discuss-phase 1 --auto")
 
 **If interactive mode:**
 
@@ -1300,13 +1300,13 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 /clear then:
 
-/gsd:discuss-phase 1 — gather context and clarify approach
+/rapidx:discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /gsd:ui-phase 1 — generate UI design contract (recommended for frontend phases)
-- /gsd:plan-phase 1 — skip discussion, plan directly
+- /rapidx:ui-phase 1 — generate UI design contract (recommended for frontend phases)
+- /rapidx:plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1322,12 +1322,12 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 
 /clear then:
 
-/gsd:discuss-phase 1 — gather context and clarify approach
+/rapidx:discuss-phase 1 — gather context and clarify approach
 
 ---
 
 **Also available:**
-- /gsd:plan-phase 1 — skip discussion, plan directly
+- /rapidx:plan-phase 1 — skip discussion, plan directly
 
 ───────────────────────────────────────────────────────────────
 ```
@@ -1369,8 +1369,8 @@ PHASE1_HAS_UI=$(echo "$PHASE1_SECTION" | grep -qi "UI hint.*yes" && echo "true" 
 - [ ] ROADMAP.md created with phases, requirement mappings, success criteria
 - [ ] STATE.md initialized
 - [ ] REQUIREMENTS.md traceability updated
-- [ ] `$INSTRUCTION_FILE` generated with GSD workflow guidance (AGENTS.md for Codex, CLAUDE.md otherwise)
-- [ ] User knows next step is `/gsd:discuss-phase 1`
+- [ ] `$INSTRUCTION_FILE` generated with RapidX workflow guidance (AGENTS.md for Codex, CLAUDE.md otherwise)
+- [ ] User knows next step is `/rapidx:discuss-phase 1`
 
 **Atomic commits:** Each phase commits its artifacts immediately. If context is lost, artifacts persist.
 

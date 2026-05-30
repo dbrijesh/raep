@@ -1,4 +1,4 @@
-# Agent: TDD Guide — Get Things Done
+# Agent: TDD Guide — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

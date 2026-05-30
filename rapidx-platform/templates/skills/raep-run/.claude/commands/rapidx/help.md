@@ -10,7 +10,7 @@ Display the complete RapidX command reference including all available commands, 
 <output>
 # RapidX Agentic Engineering Platform — Command Reference
 
-## Get Things Done workflow commands (/rapidx:*)
+## RapidX workflow commands (/rapidx:*)
 
 | Command | Description |
 |---------|-------------|
@@ -23,7 +23,7 @@ Display the complete RapidX command reference including all available commands, 
 | `/rapidx:quick` | Quick ad-hoc task or bug fix |
 | `/rapidx:map-codebase` | Analyze existing codebase for migration |
 | `/rapidx:health` | Check project health status |
-| `/rapidx:help` | Show Get Things Done command reference |
+| `/rapidx:help` | Show RapidX command reference |
 
 ## RapidX enterprise commands (/rapidx:*)
 

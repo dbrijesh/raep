@@ -28,10 +28,13 @@ function addFromEntry(entry, result) {
  *     mobile?: { framework?: string },
  *     profile?: string
  *   }
+ * @param {object} [profile] - Loaded profile object whose skills/agents/hooks arrays
+ *   are merged into the result. This is the authoritative enforcement mechanism
+ *   for profile-specific components.
  *
  * @returns {{ rules: Set, skills: Set, agents: Set, hooks: Set, skipped: { rules: string[], skills: string[], agents: string[] } }}
  */
-function mapComponents(stackConfig) {
+function mapComponents(stackConfig, profile) {
   stackConfig = stackConfig || {};
 
   const result = {
@@ -140,13 +143,23 @@ function mapComponents(stackConfig) {
   const MODERNIZATION_PROFILES = new Set(['modernization', 'legacy-modernization']);
 
   if (stackConfig.profile) {
-    const profile = stackConfig.profile.toLowerCase();
-    if (REGULATED_PROFILES.has(profile)) {
+    const profileId = stackConfig.profile.toLowerCase();
+    if (REGULATED_PROFILES.has(profileId)) {
       addFromEntry(componentMap.profiles.regulated, result);
     }
-    if (MODERNIZATION_PROFILES.has(profile)) {
+    if (MODERNIZATION_PROFILES.has(profileId)) {
       addFromEntry(componentMap.profiles.modernization, result);
     }
+  }
+
+  // ── Profile JSON enforcement ──────────────────────────────────────────────
+  // Merge skills/agents/hooks defined in the loaded profile JSON. These are
+  // the authoritative per-client component overrides beyond stack-derived defaults.
+  if (profile) {
+    (profile.skills || []).forEach(s => result.skills.add(s));
+    (profile.agents || []).forEach(a => result.agents.add(a));
+    (profile.hooks || []).forEach(h => result.hooks.add(h));
+    (profile.rules || []).forEach(r => result.rules.add(r));
   }
 
   // ── Compute skipped ───────────────────────────────────────────────────────

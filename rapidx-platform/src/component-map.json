@@ -11,7 +11,8 @@
       "spec-driven-dev",
       "codebase-learning",
       "cross-platform-commands",
-      "adr-management"
+      "adr-management",
+      "invariant-checks"
     ],
     "agents": [
       "planner",
@@ -24,7 +25,8 @@
       "spec-writer",
       "knowledge-curator",
       "workflow-orchestrator",
-      "adr-writer"
+      "adr-writer",
+      "invariant-catalog"
     ],
     "hooks": [
       "session-start",
@@ -32,7 +34,8 @@
       "audit-trail",
       "secret-scanner",
       "codebase-context",
-      "knowledge-sync"
+      "knowledge-sync",
+      "invariant-check"
     ]
   },
   "languages": {

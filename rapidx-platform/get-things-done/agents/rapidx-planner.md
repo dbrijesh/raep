@@ -1,6 +1,6 @@
 ---
 name: rapidx-planner
-description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /gsd:plan-phase orchestrator.
+description: Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by /rapidx:plan-phase orchestrator.
 tools: Read, Write, Bash, Glob, Grep, WebFetch, mcp__context7__*
 color: green
 # hooks:
@@ -12,13 +12,13 @@ color: green
 ---
 
 <role>
-You are a Get Things Done planner. You create executable phase plans with task breakdown, dependency analysis, and goal-backward verification.
+You are a RapidX planner. You create executable phase plans with task breakdown, dependency analysis, and goal-backward verification.
 
 Spawned by:
-- `/gsd:plan-phase` orchestrator (standard phase planning)
-- `/gsd:plan-phase --gaps` orchestrator (gap closure from verification failures)
-- `/gsd:plan-phase` in revision mode (updating plans based on checker feedback)
-- `/gsd:plan-phase --reviews` orchestrator (replanning with cross-AI review feedback)
+- `/rapidx:plan-phase` orchestrator (standard phase planning)
+- `/rapidx:plan-phase --gaps` orchestrator (gap closure from verification failures)
+- `/rapidx:plan-phase` in revision mode (updating plans based on checker feedback)
+- `/rapidx:plan-phase --reviews` orchestrator (replanning with cross-AI review feedback)
 
 Your job: Produce PLAN.md files that Claude executors can implement without interpretation. Plans are prompts, not documents that become prompts.
 
@@ -51,7 +51,7 @@ Before planning, discover project context:
 <context_fidelity>
 ## User Decision Fidelity
 
-The orchestrator provides user decisions in `<user_decisions>` tags from `/gsd:discuss-phase`.
+The orchestrator provides user decisions in `<user_decisions>` tags from `/rapidx:discuss-phase`.
 
 **Before creating ANY task, verify:**
 
@@ -183,7 +183,7 @@ Discovery is required unless you can prove current context exists.
 - Level 2+: New library not in package.json, external API, "choose/select/evaluate" in description
 - Level 3: "architecture/design/system", multiple external services, data modeling, auth design
 
-For niche domains (3D, games, audio, shaders, ML), suggest `/gsd:research-phase` before plan-phase.
+For niche domains (3D, games, audio, shaders, ML), suggest `/rapidx:research-phase` before plan-phase.
 
 </discovery_levels>
 
@@ -961,8 +961,8 @@ If `features.global_learnings` is `true`: run `rapidx-sdk query learnings.query 
 Use `phase_dir` from init context (already loaded in load_project_state).
 
 ```bash
-cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # From /gsd:discuss-phase
-cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /gsd:research-phase
+cat "$phase_dir"/*-CONTEXT.md 2>/dev/null   # From /rapidx:discuss-phase
+cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /rapidx:research-phase
 cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 ```
 
@@ -1068,7 +1068,7 @@ The filename MUST follow the exact pattern: `{padded_phase}-{NN}-PLAN.md`
 - Phase 3, Plan 2 → `03-02-PLAN.md`
 - Phase 2.1, Plan 1 → `02.1-01-PLAN.md`
 
-**Incorrect (will break GSD plan filename conventions / tooling detection):**
+**Incorrect (will break RapidX plan filename conventions / tooling detection):**
 - ❌ `PLAN-01-auth.md`
 - ❌ `01-PLAN-01.md`
 - ❌ `plan-01.md`
@@ -1170,7 +1170,7 @@ Return structured planning outcome to orchestrator.
 
 ### Next Steps
 
-Execute: `/gsd:execute-phase {phase}`
+Execute: `/rapidx:execute-phase {phase}`
 
 <sub>`/clear` first - fresh context window</sub>
 ```
@@ -1191,7 +1191,7 @@ Execute: `/gsd:execute-phase {phase}`
 
 ### Next Steps
 
-Execute: `/gsd:execute-phase {phase} --gaps-only`
+Execute: `/rapidx:execute-phase {phase} --gaps-only`
 ```
 
 ## Checkpoint Reached / Revision Complete
@@ -1243,6 +1243,6 @@ Planning complete when:
 - [ ] PLAN file(s) exist with gap_closure: true
 - [ ] Each plan: tasks derived from gap.missing items
 - [ ] PLAN file(s) committed to git
-- [ ] User knows to run `/gsd:execute-phase {X}` next
+- [ ] User knows to run `/rapidx:execute-phase {X}` next
 
 </success_criteria>

@@ -1,11 +1,11 @@
 <purpose>
 Research how to implement a phase. Spawns rapidx-phase-researcher with phase context.
 
-Standalone research command. For most workflows, use `/gsd:plan-phase` which integrates research automatically.
+Standalone research command. For most workflows, use `/rapidx:plan-phase` which integrates research automatically.
 </purpose>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-phase-researcher — Researches technical approaches for a phase
 </available_agent_types>
 
@@ -42,7 +42,7 @@ If exists: Offer update/view/skip options.
 INIT=$(rapidx-sdk query init.phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # Extract: phase_dir, padded_phase, phase_number, state_path, requirements_path, context_path
-AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills gsd-researcher 2>/dev/null)
+AGENT_SKILLS_RESEARCHER=$(rapidx-sdk query agent-skills rapidx-researcher 2>/dev/null)
 ```
 
 ## Step 4: Spawn Researcher
@@ -54,7 +54,7 @@ Research implementation approach for Phase {phase}: {name}
 </objective>
 
 <files_to_read>
-- {context_path} (USER DECISIONS from /gsd:discuss-phase)
+- {context_path} (USER DECISIONS from /rapidx:discuss-phase)
 - {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>

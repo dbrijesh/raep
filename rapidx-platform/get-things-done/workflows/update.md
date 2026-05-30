@@ -1,5 +1,5 @@
 <purpose>
-Check for GSD updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
+Check for RapidX updates via npm, display changelog for versions between installed and latest, obtain user confirmation, and execute clean installation with cache clearing.
 </purpose>
 
 <required_reading>
@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <process>
 
 <step name="get_installed_version">
-Detect whether GSD is installed locally or globally by checking both locations and validating install integrity.
+Detect whether RapidX is installed locally or globally by checking both locations and validating install integrity.
 
 First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking prompt's `execution_context` path:
 - If the path contains `/get-things-done/workflows/update.md`, strip that suffix and store the remainder as `PREFERRED_CONFIG_DIR`
@@ -20,7 +20,7 @@ First, derive `PREFERRED_CONFIG_DIR` and `PREFERRED_RUNTIME` from the invoking p
 - Otherwise -> `claude`
 
 Use `PREFERRED_CONFIG_DIR` when available so custom `--config-dir` installs are checked before default locations.
-Use `PREFERRED_RUNTIME` as the first runtime checked so `/gsd:update` targets the runtime that invoked it.
+Use `PREFERRED_RUNTIME` as the first runtime checked so `/rapidx:update` targets the runtime that invoked it.
 
 Kilo config precedence must match the installer: `KILO_CONFIG_DIR` -> `dirname(KILO_CONFIG)` -> `XDG_CONFIG_HOME/kilo` -> `~/.config/kilo`.
 
@@ -256,7 +256,7 @@ If multiple runtime installs are detected and the invoking runtime cannot be det
 
 **If VERSION file missing:**
 ```
-## GSD Update
+## RapidX Update
 
 **Installed version:** Unknown
 
@@ -290,7 +290,7 @@ Compare installed vs latest:
 
 **If installed == latest:**
 ```
-## GSD Update
+## RapidX Update
 
 **Installed:** X.Y.Z
 **Latest:** X.Y.Z
@@ -302,7 +302,7 @@ Exit.
 
 **If installed > latest:**
 ```
-## GSD Update
+## RapidX Update
 
 **Installed:** X.Y.Z
 **Latest:** A.B.C
@@ -315,7 +315,7 @@ by re-running the local installer from your dev branch:
 
     node bin/install.js --global --claude
 
-Running /gsd:update would install the npm release (A.B.C) and downgrade
+Running /rapidx:update would install the npm release (A.B.C) and downgrade
 your dev version — do NOT use it to resolve this warning.
 ```
 
@@ -330,7 +330,7 @@ Exit.
 3. Display preview and ask for confirmation:
 
 ```
-## GSD Update Available
+## RapidX Update Available
 
 **Installed:** 1.5.10
 **Latest:** 1.5.15
@@ -350,22 +350,22 @@ Exit.
 
 ────────────────────────────────────────────────────────────
 
-⚠️  **Note:** The installer performs a clean install of GSD folders:
-- `commands/gsd/` will be wiped and replaced
+⚠️  **Note:** The installer performs a clean install of RapidX folders:
+- `commands/rapidx/` will be wiped and replaced
 - `get-things-done/` will be wiped and replaced
-- `agents/gsd:*` files will be replaced
+- `agents/rapidx:*` files will be replaced
 
 (Paths are relative to detected runtime install location:
 global: `~/.claude/`, `~/.config/opencode/`, `~/.opencode/`, `~/.gemini/`, `~/.config/kilo/`, or `~/.codex/`
 local: `./.claude/`, `./.config/opencode/`, `./.opencode/`, `./.gemini/`, `./.kilo/`, or `./.codex/`)
 
 Your custom files in other locations are preserved:
-- Custom commands not in `commands/gsd/` ✓
+- Custom commands not in `commands/rapidx/` ✓
 - Custom agents not prefixed with `gsd-` ✓
 - Custom hooks ✓
 - Your CLAUDE.md files ✓
 
-If you've modified any GSD files directly, they'll be automatically backed up to `rapidx-local-patches/` and can be reapplied with `/gsd:reapply-patches` after the update.
+If you've modified any RapidX files directly, they'll be automatically backed up to `rapidx-local-patches/` and can be reapplied with `/rapidx:reapply-patches` after the update.
 ```
 
 
@@ -381,14 +381,14 @@ Use AskUserQuestion:
 
 <step name="backup_custom_files">
 Before running the installer, detect and back up any user-added files inside
-GSD-managed directories. These are files that exist on disk but are NOT listed
-in `gsd-file-manifest.json` — i.e., files the user added themselves that the
+RapidX-managed directories. These are files that exist on disk but are NOT listed
+in `rapidx-file-manifest.json` — i.e., files the user added themselves that the
 installer does not know about and will delete during the wipe.
 
 **Do not use bash path-stripping (`${filepath#$RUNTIME_DIR/}`) or `node -e require()`
 inline** — those patterns fail when `$RUNTIME_DIR` is unset and the stripped
 relative path may not match manifest key format, which causes CUSTOM_COUNT=0
-even when custom files exist (bug #1997). Use `gsd-tools detect-custom-files`
+even when custom files exist (bug #1997). Use `rapidx-tools detect-custom-files`
 instead, which resolves paths reliably with Node.js `path.relative()`.
 
 First, resolve the config directory (`RUNTIME_DIR`) from the install scope
@@ -413,9 +413,9 @@ inspect).
 Otherwise, resolve the path to `rapidx-tools.cjs` and run:
 
 ```bash
-GSD_TOOLS="$RUNTIME_DIR/get-things-done/bin/rapidx-tools.cjs"
-if [ -f "$GSD_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
-  CUSTOM_JSON=$(node "$GSD_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
+RAPIDX_TOOLS="$RUNTIME_DIR/get-things-done/bin/rapidx-tools.cjs"
+if [ -f "$RAPIDX_TOOLS" ] && [ -n "$RUNTIME_DIR" ]; then
+  CUSTOM_JSON=$(node "$RAPIDX_TOOLS" detect-custom-files --config-dir "$RUNTIME_DIR" 2>/dev/null)
   CUSTOM_COUNT=$(echo "$CUSTOM_JSON" | node -e "process.stdin.resume();let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{try{console.log(JSON.parse(d).custom_count);}catch{console.log(0);}})" 2>/dev/null || echo "0")
 else
   CUSTOM_COUNT=0
@@ -425,11 +425,11 @@ fi
 
 **If `CUSTOM_COUNT` > 0:**
 
-Back up each custom file to `$RUNTIME_DIR/gsd:user-files-backup/` before the
+Back up each custom file to `$RUNTIME_DIR/rapidx:user-files-backup/` before the
 installer wipes the directories:
 
 ```bash
-BACKUP_DIR="$RUNTIME_DIR/gsd:user-files-backup"
+BACKUP_DIR="$RUNTIME_DIR/rapidx:user-files-backup"
 mkdir -p "$BACKUP_DIR"
 
 # Parse custom_files array from CUSTOM_JSON and copy each file
@@ -453,8 +453,8 @@ JSEOF
 Then inform the user:
 
 ```
-⚠️  Found N custom file(s) inside GSD-managed directories.
-    These have been backed up to gsd-user-files-backup/ before the update.
+⚠️  Found N custom file(s) inside RapidX-managed directories.
+    These have been backed up to rapidx-user-files-backup/ before the update.
     Restore them after the update if needed.
 ```
 
@@ -527,17 +527,17 @@ fi
 
 for dir in "${CACHE_DIRS[@]}"; do
   if [ -n "$dir" ]; then
-    rm -f "$dir/cache/gsd:update-check.json"
+    rm -f "$dir/cache/rapidx:update-check.json"
   fi
 done
 
 for dir in .claude .config/opencode .opencode .gemini .config/kilo .kilo .codex; do
-  rm -f "./$dir/cache/gsd:update-check.json"
-  rm -f "$HOME/$dir/cache/gsd:update-check.json"
+  rm -f "./$dir/cache/rapidx:update-check.json"
+  rm -f "$HOME/$dir/cache/rapidx:update-check.json"
 done
 ```
 
-The SessionStart hook (`gsd-check-update.js`) writes to the detected runtime's cache directory, so preferred/env-derived paths and default paths must all be cleared to prevent stale update indicators.
+The SessionStart hook (`rapidx-check-update.js`) writes to the detected runtime's cache directory, so preferred/env-derived paths and default paths must all be cleared to prevent stale update indicators.
 </step>
 
 <step name="display_result">
@@ -545,12 +545,12 @@ Format completion message (changelog was already shown in confirmation step):
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
-║  GSD Updated: v1.5.10 → v1.5.15                           ║
+║  RapidX Updated: v1.5.10 → v1.5.15                           ║
 ╚═══════════════════════════════════════════════════════════╝
 
 ⚠️  Restart your runtime to pick up the new commands.
 
-[View full changelog](https://github.com/gsd-build/get-shit-done/blob/main/CHANGELOG.md)
+[View full changelog](https://github.com/rapidx-build/get-shit-done/blob/main/CHANGELOG.md)
 ```
 </step>
 
@@ -564,7 +564,7 @@ Check for rapidx-local-patches/backup-meta.json in the config directory.
 
 ```
 Local patches were backed up before the update.
-Run /gsd:reapply-patches to merge your modifications into the new version.
+Run /rapidx:reapply-patches to merge your modifications into the new version.
 ```
 
 **If no patches:** Continue normally.

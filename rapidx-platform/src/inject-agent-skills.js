@@ -8,9 +8,13 @@
  * determined by the `components.skills` Set produced by mapComponents().
  *
  * Platform-specific reference formats:
- *   copilot — `#file:.github/skills/<skill>.md`
- *   cursor  — `@.cursor/skills/<skill>/SKILL.md`
- *   claude  — `.claude/skills/<skill>/SKILL.md` (informational, no @ syntax in agent files)
+ *   copilot     — `#file:.github/skills/<skill>.md`
+ *   cursor      — `@.cursor/skills/<skill>/SKILL.md`
+ *   claude      — `.claude/skills/<skill>/SKILL.md` (informational path, no @ syntax)
+ *   codex       — `.agents/skills/<skill>.md`
+ *   opencode    — `.opencode/instructions/<skill>.md`
+ *   gemini      — `.gemini/skills/<skill>.md`
+ *   antigravity — `.agent/skills/<skill>.md`
  */
 
 const agentSkillMap = require('./agent-skill-map.json');
@@ -84,22 +88,121 @@ ${refs}
 }
 
 /**
+ * Build the injected skills section for Claude Code.
+ * Skills are listed as informational paths (no @ syntax in Claude agent files).
+ *
+ * @param {string[]} skills
+ * @returns {string}
+ */
+function claudeSkillsSection(skills) {
+  if (!skills.length) return '';
+  const refs = skills.map(s => `- \`.claude/skills/${s}/SKILL.md\``).join('\n');
+  return `
+## Active skills
+
+These skills are installed for your tech stack at the paths below. Reference them when relevant:
+
+${refs}
+`;
+}
+
+/**
+ * Build the injected skills section for Codex.
+ *
+ * @param {string[]} skills
+ * @returns {string}
+ */
+function codexSkillsSection(skills) {
+  if (!skills.length) return '';
+  const refs = skills.map(s => `- \`.agents/skills/${s}.md\``).join('\n');
+  return `
+## Active skills
+
+These skills are installed for your tech stack:
+
+${refs}
+`;
+}
+
+/**
+ * Build the injected skills section for OpenCode.
+ *
+ * @param {string[]} skills
+ * @returns {string}
+ */
+function opencodeSkillsSection(skills) {
+  if (!skills.length) return '';
+  const refs = skills.map(s => `- \`.opencode/instructions/${s}.md\``).join('\n');
+  return `
+## Active skills
+
+These skills are installed for your tech stack:
+
+${refs}
+`;
+}
+
+/**
+ * Build the injected skills section for Gemini CLI.
+ *
+ * @param {string[]} skills
+ * @returns {string}
+ */
+function geminiSkillsSection(skills) {
+  if (!skills.length) return '';
+  const refs = skills.map(s => `- \`.gemini/skills/${s}.md\``).join('\n');
+  return `
+## Active skills
+
+These skills are installed for your tech stack:
+
+${refs}
+`;
+}
+
+/**
+ * Build the injected skills section for Antigravity.
+ *
+ * @param {string[]} skills
+ * @returns {string}
+ */
+function antigravitySkillsSection(skills) {
+  if (!skills.length) return '';
+  const refs = skills.map(s => `- \`.agent/skills/${s}.md\``).join('\n');
+  return `
+## Active skills
+
+These skills are installed for your tech stack:
+
+${refs}
+`;
+}
+
+/**
  * Inject the skills section into agent file content.
  * Appends the section at the end of the file (after the last content line).
  *
  * @param {string} content       — original agent file content
  * @param {string} agentName     — e.g. "code-reviewer"
  * @param {Set<string>|string[]} installedSkills — from components.skills
- * @param {'copilot'|'cursor'}   platform
+ * @param {'copilot'|'cursor'|'claude'|'codex'|'opencode'|'gemini'|'antigravity'} platform
  * @returns {string}             — augmented content
  */
 function injectAgentSkills(content, agentName, installedSkills, platform) {
   const skills = resolveSkills(agentName, installedSkills);
   if (!skills.length) return content;
 
-  const section = platform === 'copilot'
-    ? copilotSkillsSection(skills, agentName)
-    : cursorSkillsSection(skills);
+  let section;
+  switch (platform) {
+    case 'copilot':     section = copilotSkillsSection(skills, agentName); break;
+    case 'cursor':      section = cursorSkillsSection(skills); break;
+    case 'claude':      section = claudeSkillsSection(skills); break;
+    case 'codex':       section = codexSkillsSection(skills); break;
+    case 'opencode':    section = opencodeSkillsSection(skills); break;
+    case 'gemini':      section = geminiSkillsSection(skills); break;
+    case 'antigravity': section = antigravitySkillsSection(skills); break;
+    default:            section = cursorSkillsSection(skills);
+  }
 
   return content.trimEnd() + '\n' + section;
 }

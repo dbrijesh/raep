@@ -1,9 +1,9 @@
 # Ultraplan Phase Workflow [BETA]
 
-Offload GSD's plan phase to Claude Code's ultraplan cloud infrastructure.
+Offload RapidX's plan phase to Claude Code's ultraplan cloud infrastructure.
 
 ⚠ **BETA feature.** Ultraplan is in research preview and may change. This workflow is
-intentionally isolated from /gsd:plan-phase so upstream changes to ultraplan cannot
+intentionally isolated from /rapidx:plan-phase so upstream changes to ultraplan cannot
 affect the core planning pipeline.
 
 ---
@@ -14,10 +14,10 @@ Display the stage banner:
 
 ```text
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► ULTRAPLAN PHASE  ⚠ BETA
+ RapidX ► ULTRAPLAN PHASE  ⚠ BETA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Ultraplan is in research preview (Claude Code v2.1.91+).
-Use /gsd:plan-phase for stable local planning.
+Use /rapidx:plan-phase for stable local planning.
 ```
 
 </step>
@@ -39,10 +39,10 @@ If the output is empty or unset, display the following error and exit:
 ║  RUNTIME ERROR                                               ║
 ╚══════════════════════════════════════════════════════════════╝
 
-/gsd:ultraplan-phase requires Claude Code.
+/rapidx:ultraplan-phase requires Claude Code.
 ultraplan is not available in this runtime.
 
-Use /gsd:plan-phase for local planning instead.
+Use /rapidx:plan-phase for local planning instead.
 ```
 
 </step>
@@ -52,9 +52,9 @@ Use /gsd:plan-phase for local planning instead.
 <step name="initialize">
 
 Parse phase number from `$ARGUMENTS`. If no phase number is provided, detect the next
-unplanned phase from the roadmap (same logic as /gsd:plan-phase).
+unplanned phase from the roadmap (same logic as /rapidx:plan-phase).
 
-Load GSD phase context:
+Load RapidX phase context:
 
 ```bash
 INIT=$(rapidx-sdk query init.plan-phase "$PHASE")
@@ -69,7 +69,7 @@ Parse JSON for: `phase_found`, `phase_number`, `phase_name`, `phase_slug`, `padd
 ```text
 No .planning directory found. Initialize the project first:
 
-/gsd:new-project
+/rapidx:new-project
 ```
 
 **If `phase_found` is false:** Error with the phase number provided and exit.
@@ -86,7 +86,7 @@ Phase {N}: {phase name}
 
 <step name="build_prompt">
 
-Build the ultraplan prompt from GSD context.
+Build the ultraplan prompt from RapidX context.
 
 1. Read the phase scope from ROADMAP.md — extract the goal, deliverables, and scope for
    the target phase.
@@ -116,7 +116,7 @@ Plan phase {phase_number}: {phase_name}
 
 ## Output Format
 
-Produce a GSD PLAN.md with the following YAML frontmatter:
+Produce a RapidX PLAN.md with the following YAML frontmatter:
 
 ---
 phase: "{padded_phase}-{phase_slug}"
@@ -161,9 +161,9 @@ When ◆ ultraplan ready appears in your terminal:
   4. Click "Approve plan and teleport back to terminal"
   5. At the terminal dialog, choose Cancel  ← saves the plan to a file
   6. Note the file path Claude prints
-  7. Run: /gsd:import --from <the file path>
+  7. Run: /rapidx:import --from <the file path>
 
-/gsd:import will run conflict detection, convert to GSD format,
+/rapidx:import will run conflict detection, convert to RapidX format,
 validate via plan-checker, update ROADMAP.md, and commit.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

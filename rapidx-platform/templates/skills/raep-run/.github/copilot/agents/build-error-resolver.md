@@ -1,4 +1,4 @@
-# Agent: Build Error Resolver — Get Things Done
+# Agent: Build Error Resolver — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

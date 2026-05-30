@@ -10,7 +10,7 @@ Read config.json for planning behavior settings.
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-executor — Executes plan tasks, commits, creates SUMMARY.md
 </available_agent_types>
 
@@ -255,7 +255,7 @@ If a commit is BLOCKED by a hook:
 <task_commit>
 ## Task Commit Protocol
 
-Canonical per-task commit rules live in **`agents/gsd:executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
+Canonical per-task commit rules live in **`agents/rapidx:executor.md`** (`<task_commit_protocol>`). Follow that section for staging, `{type}({phase}-{plan})` messages, `commit-to-subrepo` when `sub_repos` is set, post-commit checks, and untracked-file handling — do not duplicate or paraphrase the full protocol here (single source of truth).
 
 **Orchestrator note:** After each task, the spawned executor reports commit hashes; this workflow does not re-specify commit semantics beyond pointing at the executor.
 
@@ -349,7 +349,7 @@ Next: more plans → "Ready for {next-plan}" | last → "Phase complete, ready f
 handles STATE.md/ROADMAP.md updates centrally after merging worktrees to avoid
 merge conflicts).
 
-Update STATE.md using rapidx-sdk query (or legacy gsd-tools) state mutations:
+Update STATE.md using rapidx-sdk query (or legacy rapidx-tools) state mutations:
 
 ```bash
 # Auto-detect parallel mode: .git is a file in worktrees, a directory in main repo
@@ -386,7 +386,7 @@ rapidx-sdk query state.add-blocker --text-file "${BLOCKER_TEXT_FILE}"
 </step>
 
 <step name="update_session_continuity">
-Update session info using rapidx-sdk query (or legacy gsd-tools):
+Update session info using rapidx-sdk query (or legacy rapidx-tools):
 
 ```bash
 rapidx-sdk query state.record-session \
@@ -468,9 +468,9 @@ If `USER_SETUP_CREATED=true`: display `⚠️ USER SETUP REQUIRED` with path + e
 
 | Condition | Route | Action |
 |-----------|-------|--------|
-| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/gsd:execute-phase {phase}` + `/gsd:verify-work`. STOP here. |
-| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/gsd:plan-phase {Z+1}` + `/gsd:verify-work {Z}` + `/gsd:discuss-phase {Z+1}` |
-| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/gsd:complete-milestone` + `/gsd:verify-work` + `/gsd:add-phase` |
+| summaries < plans | **A: More plans** | Find next PLAN without SUMMARY. Yolo: auto-continue. Interactive: show next plan, suggest `/rapidx:execute-phase {phase}` + `/rapidx:verify-work`. STOP here. |
+| summaries = plans, current < highest phase | **B: Phase done** | Show completion, suggest `/rapidx:plan-phase {Z+1}` + `/rapidx:verify-work {Z}` + `/rapidx:discuss-phase {Z+1}` |
+| summaries = plans, current = highest phase | **C: Milestone done** | Show banner, suggest `/rapidx:complete-milestone` + `/rapidx:verify-work` + `/rapidx:add-phase` |
 
 All routes: `/clear` first for fresh context.
 </step>

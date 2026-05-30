@@ -133,7 +133,7 @@ This is required for Claude Code remote sessions (`/rc` mode) where the Claude A
 cannot forward TUI menu selections back to the host.
 
 Enable text mode:
-- Per-session: pass `--text` flag to any command (e.g., `/gsd:discuss-phase --text`)
+- Per-session: pass `--text` flag to any command (e.g., `/rapidx:discuss-phase --text`)
 - Per-project: `rapidx-sdk query config-set workflow.text_mode true`
 
 Text mode applies to ALL workflows in the session, not just discuss-phase.
@@ -141,7 +141,7 @@ Text mode applies to ALL workflows in the session, not just discuss-phase.
 
 <process>
 
-**Express path available:** If you already have a PRD or acceptance criteria document, use `/gsd:plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
+**Express path available:** If you already have a PRD or acceptance criteria document, use `/rapidx:plan-phase {phase} --prd path/to/prd.md` to skip this discussion and go straight to planning.
 
 <step name="initialize" priority="first">
 Phase number from argument (required).
@@ -149,7 +149,7 @@ Phase number from argument (required).
 ```bash
 INIT=$(rapidx-sdk query init.phase-op "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_ADVISOR=$(rapidx-sdk query agent-skills gsd-advisor 2>/dev/null)
+AGENT_SKILLS_ADVISOR=$(rapidx-sdk query agent-skills rapidx-advisor 2>/dev/null)
 ```
 
 Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `has_research`, `has_context`, `has_plans`, `has_verification`, `plan_count`, `roadmap_exists`, `planning_exists`, `response_language`.
@@ -160,7 +160,7 @@ Parse JSON for: `commit_docs`, `phase_found`, `phase_dir`, `phase_number`, `phas
 ```
 Phase [X] not found in roadmap.
 
-Use /gsd:progress ${GSD_WS} to see available phases.
+Use /rapidx:progress ${RAPIDX_WS} to see available phases.
 ```
 Exit workflow.
 
@@ -216,7 +216,7 @@ Write these answers inline before continuing. If a blocking anti-pattern cannot 
 </step>
 
 <step name="check_spec">
-Check if a SPEC.md (from `/gsd:spec-phase`) exists for this phase. SPEC.md locks requirements before implementation decisions — if present, this discussion focuses on HOW to implement, not WHAT to build.
+Check if a SPEC.md (from `/rapidx:spec-phase`) exists for this phase. SPEC.md locks requirements before implementation decisions — if present, this discussion focuses on HOW to implement, not WHAT to build.
 
 ```bash
 ls ${phase_dir}/*-SPEC.md 2>/dev/null | grep -v AI-SPEC | head -1 || true
@@ -235,7 +235,7 @@ ls ${phase_dir}/*-SPEC.md 2>/dev/null | grep -v AI-SPEC | head -1 || true
 
 **If no SPEC.md is found:** Continue to `check_existing` with `spec_loaded = false` (default behavior unchanged).
 
-**Note:** SPEC.md files named `AI-SPEC.md` (from `/gsd:ai-integration-phase`) are excluded — those serve a different purpose.
+**Note:** SPEC.md files named `AI-SPEC.md` (from `/rapidx:ai-integration-phase`) are excluded — those serve a different purpose.
 </step>
 
 <step name="check_existing">
@@ -291,7 +291,7 @@ Check `has_plans` and `plan_count` from init. **If `has_plans` is true:**
 - header: "Plans exist"
 - question: "Phase [X] already has {plan_count} plan(s) created without user context. Your decisions here won't affect existing plans unless you replan."
 - options:
-  - "Continue and replan after" — Capture context, then run /gsd:plan-phase {X} ${GSD_WS} to replan
+  - "Continue and replan after" — Capture context, then run /rapidx:plan-phase {X} ${RAPIDX_WS} to replan
   - "View existing plans" — Show plans before deciding
   - "Cancel" — Skip discuss-phase
 
@@ -376,7 +376,7 @@ Add to `<prior_decisions>`:
 
 If raw spikes/sketches exist but no findings skill, note in output:
 ```
-⚠ Unpackaged spikes/sketches detected — run `/gsd:spike-wrap-up` or `/gsd:sketch-wrap-up` to make findings available to planning agents.
+⚠ Unpackaged spikes/sketches detected — run `/rapidx:spike-wrap-up` or `/rapidx:sketch-wrap-up` to make findings available to planning agents.
 ```
 
 **Usage in subsequent steps:**
@@ -658,7 +658,7 @@ After user selects gray areas in present_gray_areas, spawn parallel research age
 2. For EACH user-selected gray area, spawn a Task() in parallel:
 
    Task(
-     prompt="First, read @~/.claude/agents/gsd:advisor-researcher.md for your role and instructions.
+     prompt="First, read @~/.claude/agents/rapidx:advisor-researcher.md for your role and instructions.
 
      <gray_area>{area_name}: {area_description from gray area identification}</gray_area>
      <phase_context>{phase_goal and description from ROADMAP.md}</phase_context>
@@ -938,7 +938,7 @@ Write after each area:
 }
 ```
 
-This is a structured checkpoint, not the final CONTEXT.md — the `write_context` step still produces the canonical output. But if the session dies, the next `/gsd:discuss-phase` invocation can detect this checkpoint and offer to resume from it instead of starting from scratch.
+This is a structured checkpoint, not the final CONTEXT.md — the `write_context` step still produces the canonical output. But if the session dies, the next `/rapidx:discuss-phase` invocation can detect this checkpoint and offer to resume from it instead of starting from scratch.
 
 **On session resume:** In the `check_existing` step, also check for `*-DISCUSS-CHECKPOINT.json`. If found and no CONTEXT.md exists:
 - Display: "Found interrupted discussion checkpoint ({N} areas completed). Resume from checkpoint?"
@@ -1123,14 +1123,14 @@ Created: .planning/phases/${PADDED_PHASE}-${SLUG}/${PADDED_PHASE}-CONTEXT.md
 
 `/clear` then:
 
-`/gsd:plan-phase ${PHASE} ${GSD_WS}`
+`/rapidx:plan-phase ${PHASE} ${RAPIDX_WS}`
 
 ---
 
 **Also available:**
-- `/gsd:discuss-phase ${PHASE} --chain ${GSD_WS}` — re-run with auto plan+execute after
-- `/gsd:plan-phase ${PHASE} --skip-research ${GSD_WS}` — plan without research
-- `/gsd:ui-phase ${PHASE} ${GSD_WS}` — generate UI design contract before planning (if phase has frontend work)
+- `/rapidx:discuss-phase ${PHASE} --chain ${RAPIDX_WS}` — re-run with auto plan+execute after
+- `/rapidx:plan-phase ${PHASE} --skip-research ${RAPIDX_WS}` — plan without research
+- `/rapidx:ui-phase ${PHASE} ${RAPIDX_WS}` — generate UI design contract before planning (if phase has frontend work)
 - Review/edit CONTEXT.md before continuing
 
 ---
@@ -1239,7 +1239,7 @@ rapidx-sdk query config-set workflow._auto_chain_active true
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AUTO-ADVANCING TO PLAN
+ RapidX ► AUTO-ADVANCING TO PLAN
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Context captured. Launching plan-phase...
@@ -1247,7 +1247,7 @@ Context captured. Launching plan-phase...
 
 Launch plan-phase using the Skill tool to avoid nested Task sessions (which cause runtime freezes due to deep agent nesting — see #686):
 ```
-Skill(skill="gsd-plan-phase", args="${PHASE} --auto ${GSD_WS}")
+Skill(skill="rapidx-plan-phase", args="${PHASE} --auto ${RAPIDX_WS}")
 ```
 
 This keeps the auto-advance chain flat — discuss, plan, and execute all run at the same nesting level rather than spawning increasingly deep Task agents.
@@ -1256,29 +1256,29 @@ This keeps the auto-advance chain flat — discuss, plan, and execute all run at
 - **PHASE COMPLETE** → Full chain succeeded. Display:
   ```
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   GSD ► PHASE ${PHASE} COMPLETE
+   RapidX ► PHASE ${PHASE} COMPLETE
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Auto-advance pipeline finished: discuss → plan → execute
 
   /clear then:
 
-  Next: /gsd:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${GSD_WS}
+  Next: /rapidx:discuss-phase ${NEXT_PHASE} ${WAS_CHAIN ? "--chain" : "--auto"} ${RAPIDX_WS}
   ```
 - **PLANNING COMPLETE** → Planning done, execution didn't complete:
   ```
   Auto-advance partial: Planning complete, execution did not finish.
-  Continue: /gsd:execute-phase ${PHASE} ${GSD_WS}
+  Continue: /rapidx:execute-phase ${PHASE} ${RAPIDX_WS}
   ```
 - **PLANNING INCONCLUSIVE / CHECKPOINT** → Stop chain:
   ```
   Auto-advance stopped: Planning needs input.
-  Continue: /gsd:plan-phase ${PHASE} ${GSD_WS}
+  Continue: /rapidx:plan-phase ${PHASE} ${RAPIDX_WS}
   ```
 - **GAPS FOUND** → Stop chain:
   ```
   Auto-advance stopped: Gaps found during execution.
-  Continue: /gsd:plan-phase ${PHASE} --gaps ${GSD_WS}
+  Continue: /rapidx:plan-phase ${PHASE} --gaps ${RAPIDX_WS}
   ```
 
 **If none of `--auto`, `--chain`, nor config enabled:**

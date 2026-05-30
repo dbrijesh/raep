@@ -17,7 +17,7 @@ calibration_source: "Adapted from thinking-partner verification corpus"
 
 > **L1 (Existence):** EXISTS -- `get-things-done/workflows/context-bridge.md` found, 187 lines.
 > **L2 (Substantive):** SUBSTANTIVE -- No TODO/FIXME markers, 4 defined sections (`updateContextTier`, `getContextBudget`, `injectContextWarning`, `resetTierState`), non-trivial logic with config reads and threshold calculations.
-> **L3 (Wired):** WIRED -- Referenced by `get-things-done/workflows/execute-phase.md` at step 3. Called by `agents/gsd:executor.md` via @-reference include. Arguments verified: receives planning directory path matching the expected parameter.
+> **L3 (Wired):** WIRED -- Referenced by `get-things-done/workflows/execute-phase.md` at step 3. Called by `agents/rapidx:executor.md` via @-reference include. Arguments verified: receives planning directory path matching the expected parameter.
 > **Status: PASSED**
 
 **Why this is good:** The verifier checked all three levels independently with specific evidence at each level -- file path, line count, exported symbols, import location, and argument verification. It did not stop at "file exists" but traced wiring through to actual usage with correct arguments.
@@ -68,7 +68,7 @@ calibration_source: "Adapted from thinking-partner verification corpus"
 **Output:**
 
 > **Method:** Ran `grep -rn "\/\[a-zA-Z\]\/" get-things-done/bin/` to find inline MSYS regex.
-> **Evidence:** 2 matches in `commands/gsd/misc.md` (lines 26, 487). These were NOT in the original plan scope -- Phase 148 extracted code into misc.md AFTER Phase 149's plan was written.
+> **Evidence:** 2 matches in `commands/rapidx/misc.md` (lines 26, 487). These were NOT in the original plan scope -- Phase 148 extracted code into misc.md AFTER Phase 149's plan was written.
 > **Assessment:** The executor correctly completed all planned tasks. The gap is a **planning ordering issue**, not an execution failure.
 > **Status: PASS_WITH_NOTES** -- Executor did what was planned. Unconsolidated regex noted as follow-up, not as a failure of this phase.
 

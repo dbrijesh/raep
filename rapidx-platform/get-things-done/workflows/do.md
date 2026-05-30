@@ -1,5 +1,5 @@
 <purpose>
-Analyze freeform text from the user and route to the most appropriate GSD command. This is a dispatcher — it never does the work itself. Match user intent to the best command, confirm the routing, and hand off.
+Analyze freeform text from the user and route to the most appropriate RapidX command. This is a dispatcher — it never does the work itself. Match user intent to the best command, confirm the routing, and hand off.
 </purpose>
 
 <required_reading>
@@ -16,7 +16,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 If `$ARGUMENTS` is empty, ask via AskUserQuestion:
 
 ```
-What would you like to do? Describe the task, bug, or idea and I'll route it to the right GSD command.
+What would you like to do? Describe the task, bug, or idea and I'll route it to the right RapidX command.
 ```
 
 Wait for response before continuing.
@@ -39,35 +39,35 @@ Evaluate `$ARGUMENTS` against these routing rules. Apply the **first matching** 
 
 | If the text describes... | Route to | Why |
 |--------------------------|----------|-----|
-| Starting a new project, "set up", "initialize" | `/gsd:new-project` | Needs full project initialization |
-| Mapping or analyzing an existing codebase | `/gsd:map-codebase` | Codebase discovery |
-| A bug, error, crash, failure, or something broken | `/gsd:debug` | Needs systematic investigation |
-| Spiking, "test if", "will this work", "experiment", "prove this out", validate feasibility | `/gsd:spike` | Throwaway experiment to validate feasibility |
-| Sketching, "mockup", "what would this look like", "prototype the UI", "design this", explore visual direction | `/gsd:sketch` | Throwaway HTML mockups to explore design |
-| Wrapping up spikes, "package the spikes", "consolidate spike findings" | `/gsd:spike-wrap-up` | Package spike findings into reusable skill |
-| Wrapping up sketches, "package the designs", "consolidate sketch findings" | `/gsd:sketch-wrap-up` | Package sketch findings into reusable skill |
-| Exploring, researching, comparing, or "how does X work" | `/gsd:research-phase` | Domain research before planning |
-| Discussing vision, "how should X look", brainstorming | `/gsd:discuss-phase` | Needs context gathering |
-| A complex task: refactoring, migration, multi-file architecture, system redesign | `/gsd:add-phase` | Needs a full phase with plan/build cycle |
-| Planning a specific phase or "plan phase N" | `/gsd:plan-phase` | Direct planning request |
-| Executing a phase or "build phase N", "run phase N" | `/gsd:execute-phase` | Direct execution request |
-| Running all remaining phases automatically | `/gsd:autonomous` | Full autonomous execution |
-| A review or quality concern about existing work | `/gsd:verify-work` | Needs verification |
-| Checking progress, status, "where am I" | `/gsd:progress` | Status check |
-| Resuming work, "pick up where I left off" | `/gsd:resume-work` | Session restoration |
-| A note, idea, or "remember to..." | `/gsd:add-todo` | Capture for later |
-| Adding tests, "write tests", "test coverage" | `/gsd:add-tests` | Test generation |
-| Completing a milestone, shipping, releasing | `/gsd:complete-milestone` | Milestone lifecycle |
-| A specific, actionable, small task (add feature, fix typo, update config) | `/gsd:quick` | Self-contained, single executor |
+| Starting a new project, "set up", "initialize" | `/rapidx:new-project` | Needs full project initialization |
+| Mapping or analyzing an existing codebase | `/rapidx:map-codebase` | Codebase discovery |
+| A bug, error, crash, failure, or something broken | `/rapidx:debug` | Needs systematic investigation |
+| Spiking, "test if", "will this work", "experiment", "prove this out", validate feasibility | `/rapidx:spike` | Throwaway experiment to validate feasibility |
+| Sketching, "mockup", "what would this look like", "prototype the UI", "design this", explore visual direction | `/rapidx:sketch` | Throwaway HTML mockups to explore design |
+| Wrapping up spikes, "package the spikes", "consolidate spike findings" | `/rapidx:spike-wrap-up` | Package spike findings into reusable skill |
+| Wrapping up sketches, "package the designs", "consolidate sketch findings" | `/rapidx:sketch-wrap-up` | Package sketch findings into reusable skill |
+| Exploring, researching, comparing, or "how does X work" | `/rapidx:research-phase` | Domain research before planning |
+| Discussing vision, "how should X look", brainstorming | `/rapidx:discuss-phase` | Needs context gathering |
+| A complex task: refactoring, migration, multi-file architecture, system redesign | `/rapidx:add-phase` | Needs a full phase with plan/build cycle |
+| Planning a specific phase or "plan phase N" | `/rapidx:plan-phase` | Direct planning request |
+| Executing a phase or "build phase N", "run phase N" | `/rapidx:execute-phase` | Direct execution request |
+| Running all remaining phases automatically | `/rapidx:autonomous` | Full autonomous execution |
+| A review or quality concern about existing work | `/rapidx:verify-work` | Needs verification |
+| Checking progress, status, "where am I" | `/rapidx:progress` | Status check |
+| Resuming work, "pick up where I left off" | `/rapidx:resume-work` | Session restoration |
+| A note, idea, or "remember to..." | `/rapidx:add-todo` | Capture for later |
+| Adding tests, "write tests", "test coverage" | `/rapidx:add-tests` | Test generation |
+| Completing a milestone, shipping, releasing | `/rapidx:complete-milestone` | Milestone lifecycle |
+| A specific, actionable, small task (add feature, fix typo, update config) | `/rapidx:quick` | Self-contained, single executor |
 
-**Requires `.planning/` directory:** All routes except `/gsd:new-project`, `/gsd:map-codebase`, `/gsd:spike`, `/gsd:sketch`, `/gsd:help`, and `/gsd:join-discord`. If the project doesn't exist and the route requires it, suggest `/gsd:new-project` first.
+**Requires `.planning/` directory:** All routes except `/rapidx:new-project`, `/rapidx:map-codebase`, `/rapidx:spike`, `/rapidx:sketch`, `/rapidx:help`, and `/rapidx:join-discord`. If the project doesn't exist and the route requires it, suggest `/rapidx:new-project` first.
 
 **Ambiguity handling:** If the text could reasonably match multiple routes, ask the user via AskUserQuestion with the top 2-3 options. For example:
 
 ```
 "Refactor the authentication system" could be:
-1. /gsd:add-phase — Full planning cycle (recommended for multi-file refactors)
-2. /gsd:quick — Quick execution (if scope is small and clear)
+1. /rapidx:add-phase — Full planning cycle (recommended for multi-file refactors)
+2. /rapidx:quick — Quick execution (if scope is small and clear)
 
 Which approach fits better?
 ```
@@ -78,7 +78,7 @@ Which approach fits better?
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► ROUTING
+ RapidX ► ROUTING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Input:** {first 80 chars of $ARGUMENTS}
@@ -90,7 +90,7 @@ Which approach fits better?
 <step name="dispatch">
 **Invoke the chosen command.**
 
-Run the selected `/gsd:*` command, passing `$ARGUMENTS` as args.
+Run the selected `/rapidx:*` command, passing `$ARGUMENTS` as args.
 
 If the chosen command expects a phase number and one wasn't provided in the text, extract it from context or ask via AskUserQuestion.
 
@@ -101,7 +101,7 @@ After invoking the command, stop. The dispatched command handles everything from
 
 <success_criteria>
 - [ ] Input validated (not empty)
-- [ ] Intent matched to exactly one GSD command
+- [ ] Intent matched to exactly one RapidX command
 - [ ] Ambiguity resolved via user question (if needed)
 - [ ] Project existence checked for routes that require it
 - [ ] Routing decision displayed before dispatch

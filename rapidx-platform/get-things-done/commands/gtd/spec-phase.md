@@ -1,5 +1,5 @@
 ---
-name: gsd:spec-phase
+name: rapidx:spec-phase
 description: Socratic spec refinement — clarify WHAT a phase delivers with ambiguity scoring before discuss-phase. Produces a SPEC.md with falsifiable requirements locked before implementation decisions begin.
 argument-hint: "<phase> [--auto] [--text]"
 allowed-tools:
@@ -58,5 +58,5 @@ Execute the spec-phase workflow from @~/.claude/get-things-done/workflows/spec-p
 - Gate passed: ambiguity ≤ 0.20 AND all dimension minimums met
 - SPEC.md written with falsifiable requirements, explicit boundaries, and acceptance criteria
 - SPEC.md committed atomically
-- User knows they can now run /gsd:discuss-phase which will load SPEC.md automatically
+- User knows they can now run /rapidx:discuss-phase which will load SPEC.md automatically
 </success_criteria>

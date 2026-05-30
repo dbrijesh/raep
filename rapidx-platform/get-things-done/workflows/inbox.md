@@ -103,7 +103,7 @@ For each classified issue, review against its template requirements.
 - **Gate check:** If PR exists linking this issue, does issue have `approved-enhancement`?
 
 **Bug Report Review Checklist:**
-- [ ] GSD Version provided
+- [ ] RapidX Version provided
 - [ ] Runtime selected
 - [ ] OS selected
 - [ ] Node.js version provided
@@ -239,7 +239,7 @@ Produce a structured triage report:
 
 ```
 ===================================================================
-  GSD INBOX TRIAGE — {repo} — {date}
+  RapidX INBOX TRIAGE — {repo} — {date}
 ===================================================================
 
 SUMMARY
@@ -317,12 +317,12 @@ Label recommendations:
 **If --close-incomplete:**
 For issues scoring below 50% completeness:
 ```bash
-gh issue close {number} --comment "Closed by GSD inbox triage: this issue is missing required fields per the issue template. Missing: {list}. Please reopen with a complete submission. See CONTRIBUTING.md for requirements."
+gh issue close {number} --comment "Closed by RapidX inbox triage: this issue is missing required fields per the issue template. Missing: {list}. Please reopen with a complete submission. See CONTRIBUTING.md for requirements."
 ```
 
 For PRs with gate violations:
 ```bash
-gh pr close {number} --comment "Closed by GSD inbox triage: this PR does not meet the issue-first requirement. {specific violation}. See CONTRIBUTING.md for the correct process."
+gh pr close {number} --comment "Closed by RapidX inbox triage: this PR does not meet the issue-first requirement. {specific violation}. See CONTRIBUTING.md for the correct process."
 ```
 
 Always confirm with the user before closing anything:
@@ -370,10 +370,10 @@ Next steps:
 <offer_next>
 After triage:
 
-- /gsd:review — Run cross-AI peer review on a specific phase plan
-- /gsd:ship — Create a PR from completed work
-- /gsd:progress — See overall project state
-- /gsd:inbox --label — Re-run with auto-labeling enabled
+- /rapidx:review — Run cross-AI peer review on a specific phase plan
+- /rapidx:ship — Create a PR from completed work
+- /rapidx:progress — See overall project state
+- /rapidx:inbox --label — Re-run with auto-labeling enabled
 </offer_next>
 
 <success_criteria>

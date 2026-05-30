@@ -2,7 +2,7 @@
 Curate spike experiment findings and package them into a persistent project skill for future
 build conversations. Reads from `.planning/spikes/`, writes skill to `./.claude/skills/spike-findings-[project]/`
 (project-local) and summary to `.planning/spikes/WRAP-UP-SUMMARY.md`.
-Companion to `/gsd:spike`.
+Companion to `/rapidx:spike`.
 </purpose>
 
 <required_reading>
@@ -14,7 +14,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="banner">
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE WRAP-UP
+ RapidX ► SPIKE WRAP-UP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </step>
@@ -31,7 +31,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 If no unprocessed spikes exist:
 ```
 No unprocessed spikes found in `.planning/spikes/`.
-Run `/gsd:spike` first to create experiments.
+Run `/rapidx:spike` first to create experiments.
 ```
 Exit.
 
@@ -229,7 +229,7 @@ rapidx-sdk query commit "docs(spike-wrap-up): package [N] spike findings into pr
 <step name="report">
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE WRAP-UP COMPLETE ✓
+ RapidX ► SPIKE WRAP-UP COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Curated:** {N} spikes ({included} included, {excluded} excluded)
@@ -247,14 +247,14 @@ The spike-findings skill will auto-load in future build conversations.
 
 **Start building** — plan the real implementation
 
-`/gsd:plan-phase`
+`/rapidx:plan-phase`
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/gsd:add-phase` — add a phase based on spike findings
-- `/gsd:spike` — spike additional ideas
-- `/gsd:explore` — continue exploring
+- `/rapidx:add-phase` — add a phase based on spike findings
+- `/rapidx:spike` — spike additional ideas
+- `/rapidx:explore` — continue exploring
 
 ───────────────────────────────────────────────────────────────
 </step>

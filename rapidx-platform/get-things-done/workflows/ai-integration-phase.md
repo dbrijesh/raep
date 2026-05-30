@@ -1,5 +1,5 @@
 <purpose>
-Generate an AI design contract (AI-SPEC.md) for phases that involve building AI systems. Orchestrates rapidx-framework-selector → rapidx-ai-researcher → rapidx-domain-researcher → rapidx-eval-planner with a validation gate. Inserts between discuss-phase and plan-phase in the GSD lifecycle.
+Generate an AI design contract (AI-SPEC.md) for phases that involve building AI systems. Orchestrates rapidx-framework-selector → rapidx-ai-researcher → rapidx-domain-researcher → rapidx-eval-planner with a validation gate. Inserts between discuss-phase and plan-phase in the RapidX lifecycle.
 
 AI-SPEC.md locks four things before the planner creates tasks:
 1. Framework selection (with rationale and alternatives)
@@ -43,11 +43,11 @@ AI_PHASE_ENABLED=$(rapidx-sdk query config-get workflow.ai_integration_phase 2>/
 
 **If `AI_PHASE_ENABLED` is `false`:**
 ```
-AI phase is disabled in config. Enable via /gsd:settings.
+AI phase is disabled in config. Enable via /rapidx:settings.
 ```
 Exit workflow.
 
-**If `planning_exists` is false:** Error — run `/gsd:new-project` first.
+**If `planning_exists` is false:** Error — run `/rapidx:new-project` first.
 
 ## 2. Parse and Validate Phase
 
@@ -64,7 +64,7 @@ PHASE_INFO=$(rapidx-sdk query roadmap.get-phase "${PHASE}")
 **If `has_context` is false:**
 ```
 No CONTEXT.md found for Phase {N}.
-Recommended: run /gsd:discuss-phase {N} first to capture framework preferences.
+Recommended: run /rapidx:discuss-phase {N} first to capture framework preferences.
 Continuing without user decisions — framework selector will ask all questions.
 ```
 Continue (non-blocking).
@@ -94,7 +94,7 @@ If "Update": continue to step 5.
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AI DESIGN CONTRACT — PHASE {N}: {name}
+ RapidX ► AI DESIGN CONTRACT — PHASE {N}: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Step 1/4 — Framework Selection...
@@ -102,7 +102,7 @@ Display:
 
 Spawn `rapidx-framework-selector` with:
 ```markdown
-Read ~/.claude/agents/gsd:framework-selector.md for instructions.
+Read ~/.claude/agents/rapidx:framework-selector.md for instructions.
 
 <objective>
 Select the right AI framework for Phase {phase_number}: {phase_name}
@@ -122,7 +122,7 @@ Goal: {phase_goal}
 
 Parse selector output for: `primary_framework`, `system_type`, `model_provider`, `eval_concerns`, `alternative_framework`.
 
-**If selector fails or returns empty:** Exit with error — "Framework selection failed. Re-run /gsd:ai-integration-phase {N} or answer the framework question in /gsd:discuss-phase {N} first."
+**If selector fails or returns empty:** Exit with error — "Framework selection failed. Re-run /rapidx:ai-integration-phase {N} or answer the framework question in /rapidx:discuss-phase {N} first."
 
 ## 6. Initialize AI-SPEC.md
 
@@ -146,7 +146,7 @@ Display:
 
 Spawn `rapidx-ai-researcher` with:
 ```markdown
-Read ~/.claude/agents/gsd:ai-researcher.md for instructions.
+Read ~/.claude/agents/rapidx:ai-researcher.md for instructions.
 
 <objective>
 Research {primary_framework} for Phase {phase_number}: {phase_name}
@@ -176,7 +176,7 @@ Display:
 
 Spawn `rapidx-domain-researcher` with:
 ```markdown
-Read ~/.claude/agents/gsd:domain-researcher.md for instructions.
+Read ~/.claude/agents/rapidx:domain-researcher.md for instructions.
 
 <objective>
 Research the business domain and expert evaluation criteria for Phase {phase_number}: {phase_name}
@@ -206,7 +206,7 @@ Display:
 
 Spawn `rapidx-eval-planner` with:
 ```markdown
-Read ~/.claude/agents/gsd:eval-planner.md for instructions.
+Read ~/.claude/agents/rapidx:eval-planner.md for instructions.
 
 <objective>
 Design evaluation strategy for Phase {phase_number}: {phase_name}
@@ -255,7 +255,7 @@ git commit -m "docs({phase_slug}): generate AI-SPEC.md — {primary_framework} +
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► AI-SPEC COMPLETE — PHASE {N}: {name}
+ RapidX ► AI-SPEC COMPLETE — PHASE {N}: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ◆ Framework: {primary_framework}
@@ -266,7 +266,7 @@ git commit -m "docs({phase_slug}): generate AI-SPEC.md — {primary_framework} +
 ◆ Output: {ai_spec_path}
 
 Next step:
-  /gsd:plan-phase {N}   — planner will consume AI-SPEC.md
+  /rapidx:plan-phase {N}   — planner will consume AI-SPEC.md
 ```
 
 </process>

@@ -3,7 +3,7 @@ description: RapidX Security Reviewer agent — activate when reviewing authenti
 alwaysApply: false
 ---
 
-# Agent: Security Reviewer — Get Things Done
+# Agent: Security Reviewer — RapidX
 
 ## Role
 

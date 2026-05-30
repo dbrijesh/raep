@@ -3,7 +3,7 @@ description: RapidX Python Reviewer — activate when reviewing Python code for 
 alwaysApply: false
 ---
 
-# Agent: Python Reviewer — Get Things Done
+# Agent: Python Reviewer — RapidX
 
 ## Role
 

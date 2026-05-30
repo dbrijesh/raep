@@ -1,4 +1,4 @@
-# Agent: Doc Updater — Get Things Done
+# Agent: Doc Updater — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

@@ -9,7 +9,7 @@
 **Profile:** enterprise-standard
 **Maturity level:** L2
 
-This project uses the **Get Things Done** workflow engine for structured SDLC delivery, combined with the **Everything Claude Code** component library for coding standards and patterns.
+This project uses the **RapidX** workflow engine for structured SDLC delivery, combined with the **Everything Claude Code** component library for coding standards and patterns.
 
 ## Technology stack
 

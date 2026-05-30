@@ -168,15 +168,8 @@ function generateCopilotCommandsIndex(commandsDir) {
     .join('\n');
 
   return `---
-agent: agent
+mode: agent
 description: "[RapidX] Command router — describe what you want and I'll run the right RapidX workflow"
-tools:
-  - codebase
-  - editFiles
-  - runCommands
-  - problems
-  - search
-  - workspaceDetails
 ---
 # RapidX: Command Router
 

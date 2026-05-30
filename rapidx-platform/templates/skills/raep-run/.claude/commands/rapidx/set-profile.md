@@ -1,6 +1,6 @@
 ---
 name: rapidx:set-profile
-description: Switch model profile for Get Things Done agents (quality/balanced/budget/inherit)
+description: Switch model profile for RapidX agents (quality/balanced/budget/inherit)
 argument-hint: <profile (quality|balanced|budget|inherit)>
 model: haiku
 allowed-tools:

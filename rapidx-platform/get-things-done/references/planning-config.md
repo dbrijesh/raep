@@ -36,7 +36,7 @@ Configuration options for `.planning/` directory behavior.
 | `workflow.use_worktrees` | `true` | Whether executor agents run in isolated git worktrees. Set to `false` to disable worktrees — agents execute sequentially on the main working tree instead. Recommended for solo developers or when worktree merges cause issues. |
 | `workflow.subagent_timeout` | `300000` | Timeout in milliseconds for parallel subagent tasks (e.g. codebase mapping). Increase for large codebases or slower models. Default: 300000 (5 minutes). |
 | `workflow.inline_plan_threshold` | `2` | Plans with this many tasks or fewer execute inline (Pattern C) instead of spawning a subagent. Avoids ~14K token spawn overhead for small plans. Set to `0` to always spawn subagents. |
-| `manager.flags.discuss` | `""` | Flags passed to `/gsd:discuss-phase` when dispatched from manager (e.g. `"--auto --analyze"`) |
+| `manager.flags.discuss` | `""` | Flags passed to `/rapidx:discuss-phase` when dispatched from manager (e.g. `"--auto --analyze"`) |
 | `manager.flags.plan` | `""` | Flags passed to plan workflow when dispatched from manager |
 | `manager.flags.execute` | `""` | Flags passed to execute workflow when dispatched from manager |
 | `response_language` | `null` | Language for user-facing questions and prompts across all phases/subagents (e.g. `"Portuguese"`, `"Japanese"`, `"Spanish"`). When set, all spawned agents include a directive to respond in this language. |
@@ -94,7 +94,7 @@ The CLI checks `commit_docs` config and gitignore status internally — no manua
 - Add `--no-ignore` to broad rg searches that should include `.planning/`
 - Only needed when searching entire repo and expecting `.planning/` matches
 
-**Note:** Most GSD operations use direct file reads or explicit paths, which work regardless of gitignore status.
+**Note:** Most RapidX operations use direct file reads or explicit paths, which work regardless of gitignore status.
 
 </search_behavior>
 
@@ -137,7 +137,7 @@ To use uncommitted mode:
 
 **When `git.branching_strategy: "none"` (default):**
 - All work commits to current branch
-- Standard GSD behavior
+- Standard RapidX behavior
 
 **When `git.branching_strategy: "phase"`:**
 - `execute-phase` creates/switches to a branch before execution
@@ -236,7 +236,7 @@ Generated from `CONFIG_DEFAULTS` (core.cjs) and `VALID_CONFIG_KEYS` (config.cjs)
 | `context_window` | number | `200000` | `200000`, `1000000` | Context window size; set `1000000` for 1M-context models |
 | `resolve_model_ids` | boolean\|string | `false` | `false`, `true`, `"omit"` | Map model aliases to full Claude IDs; `"omit"` returns empty string |
 | `context` | string\|null | `null` | `"dev"`, `"research"`, `"review"` | Execution context profile that adjusts agent behavior: `"dev"` for development tasks, `"research"` for investigation/exploration, `"review"` for code review workflows |
-| `review.models.<cli>` | string\|null | `null` | Any model ID string | Per-CLI model override for /gsd:review (e.g., `review.models.gemini`). Falls back to CLI default when null. |
+| `review.models.<cli>` | string\|null | `null` | Any model ID string | Per-CLI model override for /rapidx:review (e.g., `review.models.gemini`). Falls back to CLI default when null. |
 
 ### Workflow Fields
 
@@ -252,7 +252,7 @@ Set via `workflow.*` namespace in config.json (e.g., `"workflow": { "research": 
 | `workflow.auto_advance` | boolean | `false` | `true`, `false` | Auto-advance to next phase after completion |
 | `workflow.node_repair` | boolean | `true` | `true`, `false` | Attempt automatic repair of failed plan nodes |
 | `workflow.node_repair_budget` | number | `2` | Any positive integer | Max repair retries per failed node |
-| `workflow.ai_integration_phase` | boolean | `true` | `true`, `false` | Run /gsd:ai-integration-phase before planning AI system phases |
+| `workflow.ai_integration_phase` | boolean | `true` | `true`, `false` | Run /rapidx:ai-integration-phase before planning AI system phases |
 | `workflow.ui_phase` | boolean | `true` | `true`, `false` | Generate UI-SPEC.md for frontend phases |
 | `workflow.ui_safety_gate` | boolean | `true` | `true`, `false` | Require safety gate approval for UI changes |
 | `workflow.text_mode` | boolean | `false` | `true`, `false` | Use plain-text numbered lists instead of AskUserQuestion menus |
@@ -295,7 +295,7 @@ Set via `features.*` namespace (e.g., `"features": { "thinking_partner": true }`
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
 | `features.thinking_partner` | boolean | `false` | `true`, `false` | Enable conditional extended thinking at workflow decision points (used by discuss-phase and plan-phase for architectural tradeoff analysis) |
-| `features.global_learnings` | boolean | `false` | `true`, `false` | Enable injection of global learnings from `~/.gsd/learnings/` into agent prompts |
+| `features.global_learnings` | boolean | `false` | `true`, `false` | Enable injection of global learnings from `~/.rapidx/learnings/` into agent prompts |
 
 ### Hook Fields
 
@@ -315,11 +315,11 @@ Set via `learnings.*` namespace (e.g., `"learnings": { "max_inject": 5 }`). Used
 
 ### Intel Fields
 
-Set via `intel.*` namespace (e.g., `"intel": { "enabled": true }`). Controls the queryable codebase intelligence system consumed by `/gsd:intel`.
+Set via `intel.*` namespace (e.g., `"intel": { "enabled": true }`). Controls the queryable codebase intelligence system consumed by `/rapidx:intel`.
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `intel.enabled` | boolean | `false` | `true`, `false` | Enable queryable codebase intelligence system. When `true`, `/gsd:intel` commands build and query a JSON index in `.planning/intel/`. |
+| `intel.enabled` | boolean | `false` | `true`, `false` | Enable queryable codebase intelligence system. When `true`, `/rapidx:intel` commands build and query a JSON index in `.planning/intel/`. |
 
 ### Manager Fields
 
@@ -327,7 +327,7 @@ Set via `manager.*` namespace (e.g., `"manager": { "flags": { "discuss": "--auto
 
 | Key | Type | Default | Allowed Values | Description |
 |-----|------|---------|----------------|-------------|
-| `manager.flags.discuss` | string | `""` | Any CLI flags string | Flags passed to `/gsd:discuss-phase` from manager (e.g., `"--auto --analyze"`) |
+| `manager.flags.discuss` | string | `""` | Any CLI flags string | Flags passed to `/rapidx:discuss-phase` from manager (e.g., `"--auto --analyze"`) |
 | `manager.flags.plan` | string | `""` | Any CLI flags string | Flags passed to plan workflow from manager |
 | `manager.flags.execute` | string | `""` | Any CLI flags string | Flags passed to execute workflow from manager |
 
@@ -363,13 +363,13 @@ Several config fields affect each other or trigger special behavior:
 
 4. **`parallelization` polymorphism** -- Accepts both a simple boolean and an object with an `enabled` field. `loadConfig()` normalizes either form to a boolean. `{ "enabled": true }` is equivalent to `true`.
 
-5. **Search API keys and flags** -- `brave_search`, `firecrawl`, and `exa_search` are auto-set to `true` during project creation if the corresponding API key is detected (environment variable or `~/.gsd/<name>_api_key` file). Setting them to `true` without the API key has no effect.
+5. **Search API keys and flags** -- `brave_search`, `firecrawl`, and `exa_search` are auto-set to `true` during project creation if the corresponding API key is detected (environment variable or `~/.rapidx/<name>_api_key` file). Setting them to `true` without the API key has no effect.
 
 6. **`planning.*` and top-level equivalence** -- `planning.commit_docs` and `commit_docs` are equivalent; `planning.search_gitignored` and `search_gitignored` are equivalent. If both are set, the top-level value takes precedence.
 
 7. **`depth` to `granularity` migration** -- The deprecated `depth` key (`quick`/`standard`/`comprehensive`) is automatically migrated to `granularity` (`coarse`/`standard`/`fine`) on config load and persisted back to disk.
 
-8. **`sub_repos` auto-sync** -- On every config load, GSD scans for child directories with `.git` and updates the `sub_repos` array if the filesystem has changed. Legacy `multiRepo: true` is automatically migrated to a detected `sub_repos` array.
+8. **`sub_repos` auto-sync** -- On every config load, RapidX scans for child directories with `.git` and updates the `sub_repos` array if the filesystem has changed. Legacy `multiRepo: true` is automatically migrated to a detected `sub_repos` array.
 
 ---
 

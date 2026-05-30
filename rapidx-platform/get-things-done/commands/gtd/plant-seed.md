@@ -1,5 +1,5 @@
 ---
-name: gsd:plant-seed
+name: rapidx:plant-seed
 description: Capture a forward-looking idea with trigger conditions — surfaces automatically at the right milestone
 argument-hint: "[idea summary]"
 allowed-tools:
@@ -16,7 +16,7 @@ milestone arrives. Seeds solve context rot: instead of a one-liner in Deferred t
 reads, a seed preserves the full WHY, WHEN to surface, and breadcrumbs to details.
 
 Creates: .planning/seeds/SEED-NNN-slug.md
-Consumed by: /gsd:new-milestone (scans seeds and presents matches)
+Consumed by: /rapidx:new-milestone (scans seeds and presents matches)
 </objective>
 
 <execution_context>

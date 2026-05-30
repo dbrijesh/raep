@@ -1,6 +1,6 @@
-# GSD Artifact Types
+# RapidX Artifact Types
 
-This reference documents all artifact types in the GSD planning taxonomy. Each type has a defined
+This reference documents all artifact types in the RapidX planning taxonomy. Each type has a defined
 shape, lifecycle, location, and consumption mechanism. A well-formatted artifact that no workflow
 reads is inert — the consumption mechanism is what gives an artifact meaning.
 
@@ -72,21 +72,21 @@ reads is inert — the consumption mechanism is what gives an artifact meaning.
 - **Location**: `.planning/spikes/SPIKE-NNN/`
 - **Consumed by**: Planner when spike is referenced; `pause-work` for spike context handoff
 
-### Spike README.md / MANIFEST.md (per-spike, via /gsd:spike)
+### Spike README.md / MANIFEST.md (per-spike, via /rapidx:spike)
 - **Shape**: YAML frontmatter (spike, name, validates, verdict, related, tags) + run instructions + results
-- **Lifecycle**: Created by `/gsd:spike` → Verified → Wrapped up by `/gsd:spike-wrap-up`
+- **Lifecycle**: Created by `/rapidx:spike` → Verified → Wrapped up by `/rapidx:spike-wrap-up`
 - **Location**: `.planning/spikes/NNN-name/README.md`, `.planning/spikes/MANIFEST.md`
-- **Consumed by**: `/gsd:spike-wrap-up` for curation; `pause-work` for spike context handoff
+- **Consumed by**: `/rapidx:spike-wrap-up` for curation; `pause-work` for spike context handoff
 
 ### Sketch README.md / MANIFEST.md / index.html (per-sketch)
 - **Shape**: YAML frontmatter (sketch, name, question, winner, tags) + variants as tabbed HTML
-- **Lifecycle**: Created by `/gsd:sketch` → Evaluated → Wrapped up by `/gsd:sketch-wrap-up`
+- **Lifecycle**: Created by `/rapidx:sketch` → Evaluated → Wrapped up by `/rapidx:sketch-wrap-up`
 - **Location**: `.planning/sketches/NNN-name/README.md`, `.planning/sketches/NNN-name/index.html`, `.planning/sketches/MANIFEST.md`
-- **Consumed by**: `/gsd:sketch-wrap-up` for curation; `pause-work` for sketch context handoff
+- **Consumed by**: `/rapidx:sketch-wrap-up` for curation; `pause-work` for sketch context handoff
 
 ### WRAP-UP-SUMMARY.md (per wrap-up session)
 - **Shape**: Curation results, included/excluded items, feature/design area groupings
-- **Lifecycle**: Created by `/gsd:spike-wrap-up` or `/gsd:sketch-wrap-up`
+- **Lifecycle**: Created by `/rapidx:spike-wrap-up` or `/rapidx:sketch-wrap-up`
 - **Location**: `.planning/spikes/WRAP-UP-SUMMARY.md` or `.planning/sketches/WRAP-UP-SUMMARY.md`
 - **Consumed by**: Project history; not read by automated workflows
 

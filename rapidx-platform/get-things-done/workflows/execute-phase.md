@@ -32,7 +32,7 @@ Read STATE.md before any operation to load project context.
 </required_reading>
 
 <available_agent_types>
-These are the valid GSD subagent types registered in .claude/agents/ (or equivalent for your runtime).
+These are the valid RapidX subagent types registered in .claude/agents/ (or equivalent for your runtime).
 Always use the exact name from this list — do not fall back to 'general-purpose' or other built-in types:
 
 - rapidx-executor — Executes plan tasks, commits, creates SUMMARY.md
@@ -199,8 +199,8 @@ checkpoints between tasks. The user can review, modify, or redirect work at any 
 **Benefits of interactive mode:**
 - No subagent overhead — dramatically lower token usage
 - User catches mistakes early — saves costly verification cycles
-- Maintains GSD's planning/tracking structure
-- Best for: small phases, bug fixes, verification gaps, learning GSD
+- Maintains RapidX's planning/tracking structure
+- Best for: small phases, bug fixes, verification gaps, learning RapidX
 
 **Skip to handle_branching step** (interactive plans execute inline after grouping).
 </step>
@@ -811,7 +811,7 @@ Execute each selected wave in sequence. Within a wave: parallel if `PARALLELIZAT
 
 7. **Handle failures:**
 
-   **Known Claude Code bug (classifyHandoffIfNeeded):** If an agent reports "failed" with error containing `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a GSD or agent issue. The error fires in the completion handler AFTER all tool calls finish. In this case: run the same spot-checks as step 5 (SUMMARY.md exists, git commits present, no Self-Check: FAILED). If spot-checks PASS → treat as **successful**. If spot-checks FAIL → treat as real failure below.
+   **Known Claude Code bug (classifyHandoffIfNeeded):** If an agent reports "failed" with error containing `classifyHandoffIfNeeded is not defined`, this is a Claude Code runtime bug — not a RapidX or agent issue. The error fires in the completion handler AFTER all tool calls finish. In this case: run the same spot-checks as step 5 (SUMMARY.md exists, git commits present, no Self-Check: FAILED). If spot-checks PASS → treat as **successful**. If spot-checks FAIL → treat as real failure below.
 
    For real failures: report which plan failed → ask "Continue?" or "Stop?" → if continue, dependent plans may also fail. If stop, partial completion report.
 
@@ -920,13 +920,13 @@ If `SECURITY_CFG` is `true` AND `SECURITY_FILE` is empty (no SECURITY.md yet):
 Include in the next-steps routing output:
 ```
 ⚠ Security enforcement enabled — run before advancing:
-  /gsd:secure-phase {PHASE} ${GSD_WS}
+  /rapidx:secure-phase {PHASE} ${RAPIDX_WS}
 ```
 
 If `SECURITY_CFG` is `true` AND SECURITY.md exists: check frontmatter `threats_open`. If > 0:
 ```
 ⚠ Security gate: {threats_open} threats open
-  /gsd:secure-phase {PHASE} — resolve before advancing
+  /rapidx:secure-phase {PHASE} — resolve before advancing
 ```
 </step>
 
@@ -996,8 +996,8 @@ Apply the same "incomplete" filtering rules as earlier:
 
 Selected wave finished successfully. This phase still has incomplete plans, so phase-level verification and completion were intentionally skipped.
 
-/gsd:execute-phase {phase} ${GSD_WS}                # Continue remaining waves
-/gsd:execute-phase {phase} --wave {next} ${GSD_WS}  # Run the next wave explicitly
+/rapidx:execute-phase {phase} ${RAPIDX_WS}                # Continue remaining waves
+/rapidx:execute-phase {phase} --wave {next} ${RAPIDX_WS}  # Run the next wave explicitly
 ```
 
 **If no incomplete plans remain after the selected wave finishes:**
@@ -1017,7 +1017,7 @@ If `CODE_REVIEW_ENABLED` is `"false"`: display "Code review skipped (workflow.co
 
 **Invoke review:**
 ```
-Skill(skill="gsd:code-review", args="${PHASE_NUMBER}")
+Skill(skill="rapidx:code-review", args="${PHASE_NUMBER}")
 ```
 
 **Check results using deterministic path (not glob):**
@@ -1030,7 +1030,7 @@ REVIEW_STATUS=$(sed -n '/^---$/,/^---$/p' "$REVIEW_FILE" | grep "^status:" | hea
 If REVIEW_STATUS is not "clean" and not "skipped" and not empty, display:
 ```
 Code review found issues. Consider running:
-/gsd:code-review-fix ${PHASE_NUMBER}
+/rapidx:code-review-fix ${PHASE_NUMBER}
 ```
 
 **Error handling:** If the Skill invocation fails or throws, catch the error, display "Code review encountered an error (non-blocking): {error}" and proceed to next step. Review failures must never block execution.
@@ -1168,14 +1168,14 @@ Parse JSON result for: `drift_detected`, `blocking`, `schema_files`, `orms`, `un
 
 Check for override:
 ```bash
-SKIP_SCHEMA=$(echo "${GSD_SKIP_SCHEMA_CHECK:-false}")
+SKIP_SCHEMA=$(echo "${RAPIDX_SKIP_SCHEMA_CHECK:-false}")
 ```
 
 **If `SKIP_SCHEMA` is `true`:**
 
 Display:
 ```
-⚠ Schema drift detected but GSD_SKIP_SCHEMA_CHECK=true — bypassing gate.
+⚠ Schema drift detected but RAPIDX_SKIP_SCHEMA_CHECK=true — bypassing gate.
 
 Schema files changed: {schema_files}
 ORMs requiring push: {unpushed_orms}
@@ -1203,7 +1203,7 @@ Required push commands:
 
 Options:
 1. Run push command now (recommended) — execute the push, then re-verify
-2. Skip schema check (GSD_SKIP_SCHEMA_CHECK=true) — bypass this gate
+2. Skip schema check (RAPIDX_SKIP_SCHEMA_CHECK=true) — bypass this gate
 3. Abort — stop execution and investigate
 ```
 
@@ -1260,7 +1260,7 @@ grep "^status:" "$PHASE_DIR"/*-VERIFICATION.md | cut -d: -f2 | tr -d ' '
 |--------|--------|
 | `passed` | → update_roadmap |
 | `human_needed` | Present items for human testing, get approval or feedback |
-| `gaps_found` | Present gap summary, offer `/gsd:plan-phase {phase} --gaps ${GSD_WS}` |
+| `gaps_found` | Present gap summary, offer `/rapidx:plan-phase {phase} --gaps ${RAPIDX_WS}` |
 
 **If human_needed:**
 
@@ -1315,12 +1315,12 @@ All automated checks passed. {N} items need human testing:
 
 {From VERIFICATION.md human_verification section}
 
-Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/gsd:progress` and `/gsd:audit-uat`.
+Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/rapidx:progress` and `/rapidx:audit-uat`.
 
 "approved" → continue | Report issues → gap closure
 ```
 
-**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/gsd:verify-work` on it.
+**If user says "approved":** Proceed to `update_roadmap`. The HUMAN-UAT.md file persists with `status: partial` and will surface in future progress checks until the user runs `/rapidx:verify-work` on it.
 
 **If user reports issues:** Proceed to gap closure as currently implemented.
 
@@ -1339,13 +1339,13 @@ Items saved to `{phase_num}-HUMAN-UAT.md` — they will appear in `/gsd:progress
 
 `/clear` then:
 
-`/gsd:plan-phase {X} --gaps ${GSD_WS}`
+`/rapidx:plan-phase {X} --gaps ${RAPIDX_WS}`
 
 Also: `cat {phase_dir}/{phase_num}-VERIFICATION.md` — full report
-Also: `/gsd:verify-work {X} ${GSD_WS}` — manual testing first
+Also: `/rapidx:verify-work {X} ${RAPIDX_WS}` — manual testing first
 ```
 
-Gap closure cycle: `/gsd:plan-phase {X} --gaps ${GSD_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/gsd:execute-phase {X} --gaps-only ${GSD_WS}` → verifier re-runs.
+Gap closure cycle: `/rapidx:plan-phase {X} --gaps ${RAPIDX_WS}` reads VERIFICATION.md → creates gap plans with `gap_closure: true` → user runs `/rapidx:execute-phase {X} --gaps-only ${RAPIDX_WS}` → verifier re-runs.
 </step>
 
 <step name="update_roadmap">
@@ -1371,7 +1371,7 @@ Extract from result: `next_phase`, `next_phase_name`, `is_last_phase`, `warnings
 
 {list each warning}
 
-These items are tracked and will appear in `/gsd:progress` and `/gsd:audit-uat`.
+These items are tracked and will appear in `/rapidx:progress` and `/rapidx:audit-uat`.
 ```
 
 ```bash
@@ -1383,7 +1383,7 @@ rapidx-sdk query commit "docs(phase-{X}): complete phase execution" .planning/RO
 **Auto-copy phase learnings to global store (when enabled).**
 
 This step runs AFTER phase completion and SUMMARY.md is written. It copies any LEARNINGS.md
-entries from the completed phase to the global learnings store at `~/.gsd/knowledge/`.
+entries from the completed phase to the global learnings store at `~/.rapidx/knowledge/`.
 
 **Check config gate:**
 ```bash
@@ -1426,7 +1426,7 @@ rapidx-sdk query commit "docs(phase-{X}): evolve PROJECT.md after phase completi
 
 <step name="offer_next">
 
-**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/gsd:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance.
+**Exception:** If `gaps_found`, the `verify_phase_goal` step already presents the gap-closure path (`/rapidx:plan-phase {X} --gaps`). No additional routing needed — skip auto-advance.
 
 **No-transition check (spawned by auto-advance chain):**
 
@@ -1477,7 +1477,7 @@ Read and follow `~/.claude/get-things-done/workflows/transition.md`, passing thr
 
 **STOP. Do not auto-advance. Do not execute transition. Do not plan next phase. Present options to the user and wait.**
 
-**IMPORTANT: There is NO `/gsd:transition` command. Never suggest it. The transition workflow is internal only.**
+**IMPORTANT: There is NO `/rapidx:transition` command. Never suggest it. The transition workflow is internal only.**
 
 Check whether CONTEXT.md already exists for the next phase:
 
@@ -1490,10 +1490,10 @@ If CONTEXT.md does **not** exist for the next phase, present:
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/gsd:progress ${GSD_WS} — see updated roadmap
-/gsd:discuss-phase {next} ${GSD_WS} — start here: discuss next phase before planning  ← recommended
-/gsd:plan-phase {next} ${GSD_WS} — plan next phase (skip discuss)
-/gsd:execute-phase {next} ${GSD_WS} — execute next phase (skip discuss and plan)
+/rapidx:progress ${RAPIDX_WS} — see updated roadmap
+/rapidx:discuss-phase {next} ${RAPIDX_WS} — start here: discuss next phase before planning  ← recommended
+/rapidx:plan-phase {next} ${RAPIDX_WS} — plan next phase (skip discuss)
+/rapidx:execute-phase {next} ${RAPIDX_WS} — execute next phase (skip discuss and plan)
 ```
 
 If CONTEXT.md **exists** for the next phase, present:
@@ -1501,10 +1501,10 @@ If CONTEXT.md **exists** for the next phase, present:
 ```
 ## ✓ Phase {X}: {Name} Complete
 
-/gsd:progress ${GSD_WS} — see updated roadmap
-/gsd:plan-phase {next} ${GSD_WS} — start here: plan next phase (CONTEXT.md already present)  ← recommended
-/gsd:discuss-phase {next} ${GSD_WS} — re-discuss next phase
-/gsd:execute-phase {next} ${GSD_WS} — execute next phase (skip planning)
+/rapidx:progress ${RAPIDX_WS} — see updated roadmap
+/rapidx:plan-phase {next} ${RAPIDX_WS} — start here: plan next phase (CONTEXT.md already present)  ← recommended
+/rapidx:discuss-phase {next} ${RAPIDX_WS} — re-discuss next phase
+/rapidx:execute-phase {next} ${RAPIDX_WS} — execute next phase (skip planning)
 ```
 
 Only suggest the commands listed above. Do not invent or hallucinate command names.
@@ -1523,7 +1523,7 @@ For 1M+ context models, consider:
 </context_efficiency>
 
 <failure_handling>
-- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not GSD. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
+- **classifyHandoffIfNeeded false failure:** Agent reports "failed" but error is `classifyHandoffIfNeeded is not defined` → Claude Code bug, not RapidX. Spot-check (SUMMARY exists, commits present) → if pass, treat as success
 - **Agent fails mid-plan:** Missing SUMMARY.md → report, ask user how to proceed
 - **Dependency chain breaks:** Wave 1 fails → Wave 2 dependents likely fail → user chooses attempt or skip
 - **All agents in wave fail:** Systemic issue → stop, report for investigation
@@ -1531,7 +1531,7 @@ For 1M+ context models, consider:
 </failure_handling>
 
 <resumption>
-Re-run `/gsd:execute-phase {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
+Re-run `/rapidx:execute-phase {phase}` → discover_plans finds completed SUMMARYs → skips them → resumes from first incomplete plan → continues wave execution.
 
 STATE.md tracks: last completed plan, current wave, pending checkpoints.
 </resumption>

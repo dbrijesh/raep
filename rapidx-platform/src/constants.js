@@ -1,9 +1,9 @@
 'use strict';
 
 /**
- * Agents that have pre-built IDE-specific agent files in templates/skills/raep-run/.
- * Used by install-cursor.js and install-vscode.js to determine which agent template
- * files to copy. Update this list whenever a new agent file is added to those directories.
+ * Core agents that have pre-built IDE-specific files in templates/skills/raep-run/
+ * and standalone definitions in templates/agents/*.md.
+ * Used by all IDE installers to determine which agent files to install.
  */
 const AGENT_NAMES = [
   'planner', 'architect', 'tdd-guide', 'code-reviewer', 'security-reviewer',
@@ -12,4 +12,13 @@ const AGENT_NAMES = [
   'csharp-reviewer', 'go-reviewer', 'go-build-resolver', 'python-reviewer',
 ];
 
-module.exports = { AGENT_NAMES };
+/**
+ * Enterprise agents — only present in templates/agents/rapidx/*.md.
+ * Installed for all IDEs alongside core agents when components.agents includes them.
+ */
+const ENTERPRISE_AGENT_NAMES = [
+  'client-onboarder', 'compliance-checker', 'governance-auditor', 'migration-analyst',
+  'invariant-catalog',
+];
+
+module.exports = { AGENT_NAMES, ENTERPRISE_AGENT_NAMES };

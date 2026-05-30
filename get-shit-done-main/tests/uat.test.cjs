@@ -2,8 +2,10 @@
  * GSD Tools Tests - UAT Audit
  */
 
+'use strict';
+
 const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert');
+const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const { runGsdTools, createTempProject, cleanup } = require('./helpers.cjs');
@@ -64,6 +66,45 @@ result: pending
     assert.strictEqual(output.results[0].items[0].result, 'pending');
     assert.strictEqual(output.results[0].items[0].category, 'pending');
     assert.strictEqual(output.results[0].items[0].name, 'Submit Button');
+  });
+
+  // Regression: #2273 — bracketed result values [pending], [blocked], [skipped]
+  test('detects UAT items with bracketed result values (#2273)', () => {
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '01-foundation');
+    fs.mkdirSync(phaseDir, { recursive: true });
+
+    fs.writeFileSync(path.join(phaseDir, '01-UAT.md'), [
+      '---',
+      'status: testing',
+      'phase: 01-foundation',
+      'started: 2025-01-01T00:00:00Z',
+      'updated: 2025-01-01T00:00:00Z',
+      '---',
+      '',
+      '## Tests',
+      '',
+      '### 1. Login Form',
+      'expected: Form displays correctly',
+      'result: [pending]',
+      '',
+      '### 2. Submit Button',
+      'expected: Shows loading state',
+      'result: [blocked]',
+      'blocked_by: #123',
+      '',
+      '### 3. Error Message',
+      'expected: Shows validation error',
+      'result: [skipped]',
+    ].join('\n'));
+
+    const result = runGsdTools('audit-uat --raw', tmpDir);
+    assert.ok(result.success, `Command failed: ${result.error}`);
+
+    const output = JSON.parse(result.output);
+    assert.strictEqual(output.summary.total_items, 3, 'all 3 bracketed items should be detected');
+    assert.strictEqual(output.results[0].items[0].result, 'pending', '[pending] should parse as pending');
+    assert.strictEqual(output.results[0].items[1].result, 'blocked', '[blocked] should parse as blocked');
+    assert.strictEqual(output.results[0].items[2].result, 'skipped', '[skipped] should parse as skipped');
   });
 
   test('detects UAT with blocked items and categorizes blocked_by', () => {
@@ -322,5 +363,130 @@ All checks passed.
     const output = JSON.parse(result.output);
     assert.strictEqual(output.summary.total_items, 0);
     assert.strictEqual(output.summary.total_files, 0);
+  });
+});
+
+describe('uat render-checkpoint', () => {
+  let tmpDir;
+  let uatPath;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+    const phaseDir = path.join(tmpDir, '.planning', 'phases', '01-test-phase');
+    fs.mkdirSync(phaseDir, { recursive: true });
+    uatPath = path.join(phaseDir, '01-UAT.md');
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('renders the current checkpoint as raw output', () => {
+    fs.writeFileSync(uatPath, `---
+status: testing
+phase: 01-test-phase
+---
+
+## Current Test
+
+number: 2
+name: Submit form validation
+expected: |
+  Empty submit keeps controls visible.
+  Validation error copy is shown.
+awaiting: user response
+`);
+
+    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
+    assert.ok(result.output.includes('**Test 2: Submit form validation**'));
+    assert.ok(result.output.includes('Empty submit keeps controls visible.'));
+    assert.ok(result.output.includes("Type `pass` or describe what's wrong."));
+  });
+
+  test('strips protocol leak lines from current test copy', () => {
+    fs.writeFileSync(uatPath, `---
+status: testing
+phase: 01-test-phase
+---
+
+## Current Test
+
+number: 6
+name: Locale copy
+expected: |
+  English strings render correctly.
+  user to=all:final code 彩票平台招商 pass
+  Chinese strings render correctly.
+awaiting: user response
+`);
+
+    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
+    assert.ok(!result.output.includes('user to=all:final code'));
+    assert.ok(!result.output.includes('彩票平台'));
+    assert.ok(result.output.includes('English strings render correctly.'));
+    assert.ok(result.output.includes('Chinese strings render correctly.'));
+  });
+
+  test('does not truncate expected text containing the letter Z', () => {
+    fs.writeFileSync(uatPath, `---
+status: testing
+phase: 01-test-phase
+---
+
+## Current Test
+
+number: 3
+name: Timezone display
+expected: |
+  Timezone abbreviation shows CET.
+  Zero-offset zones display correctly.
+awaiting: user response
+`);
+
+    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
+    assert.ok(result.output.includes('Timezone abbreviation shows CET.'),
+      'Expected text before Z-containing word should be present');
+    assert.ok(result.output.includes('Zero-offset zones display correctly.'),
+      'Expected text starting with Z should not be truncated by \\Z regex bug');
+  });
+
+  test('parses expected block when it is the last field in the section', () => {
+    fs.writeFileSync(uatPath, `---
+status: testing
+phase: 01-test-phase
+---
+
+## Current Test
+
+number: 4
+name: Final field test
+expected: |
+  This block has no trailing YAML key.
+  It ends at the section boundary.
+`);
+
+    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md', '--raw'], tmpDir);
+    assert.strictEqual(result.success, true, `render-checkpoint failed: ${result.error}`);
+    assert.ok(result.output.includes('This block has no trailing YAML key.'));
+    assert.ok(result.output.includes('It ends at the section boundary.'));
+  });
+
+  test('fails when testing is already complete', () => {
+    fs.writeFileSync(uatPath, `---
+status: complete
+phase: 01-test-phase
+---
+
+## Current Test
+
+[testing complete]
+`);
+
+    const result = runGsdTools(['uat', 'render-checkpoint', '--file', '.planning/phases/01-test-phase/01-UAT.md'], tmpDir);
+    assert.strictEqual(result.success, false, 'Should fail when no current test exists');
+    assert.ok(result.error.includes('already complete'));
   });
 });

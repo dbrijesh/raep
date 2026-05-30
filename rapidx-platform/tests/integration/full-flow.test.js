@@ -50,11 +50,15 @@ function cleanup(dir) {
 
     const claudeMd = fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8');
     assert.ok(claudeMd.includes('react'), 'CLAUDE.md should mention react');
-    assert.ok(claudeMd.includes('Get Things Done'), 'CLAUDE.md should say Get Things Done');
+    assert.ok(claudeMd.includes('RapidX'), 'CLAUDE.md should be RapidX-branded');
+    assert.ok(!claudeMd.includes('Get Things Done'), 'CLAUDE.md should not contain legacy engine branding');
     assert.ok(!claudeMd.includes('Get Shit Done'), 'CLAUDE.md should not contain upstream name');
 
     const settings = JSON.parse(fs.readFileSync(path.join(dir, '.claude', 'settings.json'), 'utf8'));
     assert.ok(settings.rapidx, 'Settings should have rapidx namespace');
+    // Hooks must be wired at the TOP LEVEL so Claude Code actually executes them.
+    assert.ok(settings.hooks && settings.hooks.PostToolUse, 'hooks must be at top level for Claude Code');
+    assert.ok(JSON.stringify(settings.hooks).includes('invariant-check'), 'invariant-check hook should be wired');
   } catch (e) {
     // GTD dir may not exist in test environment, that's OK for this test
     if (!e.message.includes('get-things-done') && !e.message.includes('no such file')) {
@@ -104,8 +108,9 @@ function cleanup(dir) {
   assert.ok(content.includes('nextjs'), 'CLAUDE.md should mention nextjs');
   assert.ok(content.includes('nestjs'), 'CLAUDE.md should mention nestjs');
   assert.ok(content.includes('postgresql'), 'CLAUDE.md should mention postgresql');
-  assert.ok(content.includes('Get Things Done'), 'CLAUDE.md should mention Get Things Done');
+  assert.ok(content.includes('RapidX'), 'CLAUDE.md should be RapidX-branded');
   assert.ok(content.includes('14.2.0'), 'CLAUDE.md should include version-specific guidance');
+  assert.ok(!content.includes('Get Things Done'), 'CLAUDE.md should not contain legacy engine branding');
   assert.ok(!content.includes('Get Shit Done'), 'CLAUDE.md must not contain upstream name');
   console.log('  ✓ CLAUDE.md generation is correct and version-aware');
 }
@@ -122,7 +127,8 @@ function cleanup(dir) {
 
   assert.ok(content.includes('planner'), 'AGENTS.md should list planner agent');
   assert.ok(content.includes('go-reviewer'), 'AGENTS.md should list go-reviewer for Go stack');
-  assert.ok(content.includes('Get Things Done'), 'AGENTS.md should mention Get Things Done');
+  assert.ok(content.includes('RapidX'), 'AGENTS.md should be RapidX-branded');
+  assert.ok(!content.includes('Get Things Done'), 'AGENTS.md should not contain legacy engine branding');
   console.log('  ✓ AGENTS.md generation includes Go-specific agents');
 }
 

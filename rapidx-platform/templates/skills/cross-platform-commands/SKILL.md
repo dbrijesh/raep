@@ -6,7 +6,7 @@
 
 ## What this skill does
 
-Ensures that every RapidX and Get Things Done command works consistently across ALL supported AI coding platforms. No matter which tool a developer is using — Claude Code, VS Code Copilot, Cursor, Codex, OpenCode — the same SDLC workflow is available.
+Ensures that every RapidX and RapidX command works consistently across ALL supported AI coding platforms. No matter which tool a developer is using — Claude Code, VS Code Copilot, Cursor, Codex, OpenCode — the same SDLC workflow is available.
 
 ## Command equivalency map
 
@@ -34,7 +34,7 @@ All workflow state is stored in shared files that any platform can read:
 .rapidx/stack.json        ← tech stack (all platforms read this)
 .rapidx/knowledge/        ← learned patterns (all platforms read this)
 .rapidx/CONSTITUTION.md   ← project principles (all platforms read this)
-.planning/config.json     ← GTD state (all platforms read this)
+.planning/config.json     ← RapidX state (all platforms read this)
 specs/{###}/              ← feature specs (all platforms read this)
 CLAUDE.md                 ← Claude Code primary config
 .github/copilot-instructions.md ← Copilot primary config
@@ -70,7 +70,7 @@ A workflow started in one tool can be continued in another — the state files a
 - Agent definitions: `.agents/skills/`
 - Config: `.codex/config.toml`
 - Agent context: `.codex/AGENTS.md`
-- Natural language tasks map to GTD phases
+- Natural language tasks map to RapidX phases
 
 ### OpenCode
 - Instructions: `.opencode/instructions/*.md`

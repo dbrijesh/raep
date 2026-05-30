@@ -7,7 +7,7 @@ Audit Nyquist validation gaps for a completed phase. Generate missing tests. Upd
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-nyquist-auditor — Validates verification coverage
 </available_agent_types>
 
@@ -28,9 +28,9 @@ AUDITOR_MODEL=$(rapidx-sdk query resolve-model rapidx-nyquist-auditor --raw)
 NYQUIST_CFG=$(rapidx-sdk query config-get workflow.nyquist_validation --raw)
 ```
 
-If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /gsd:settings."
+If `NYQUIST_CFG` is `false`: exit with "Nyquist validation is disabled. Enable via /rapidx:settings."
 
-Display banner: `GSD > VALIDATE PHASE {N}: {name}`
+Display banner: `RapidX > VALIDATE PHASE {N}: {name}`
 
 ## 1. Detect Input State
 
@@ -41,7 +41,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`VALIDATION_FILE` non-empty): Audit existing
 - **State B** (`VALIDATION_FILE` empty, `SUMMARY_FILES` non-empty): Reconstruct from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /gsd:execute-phase {N} ${GSD_WS} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rapidx:execute-phase {N} ${RAPIDX_WS} first."
 
 ## 2. Discovery
 
@@ -94,7 +94,7 @@ Call AskUserQuestion with gap table and options:
 
 ```
 Task(
-  prompt="Read ~/.claude/agents/gsd:nyquist-auditor.md for instructions.\n\n" +
+  prompt="Read ~/.claude/agents/rapidx:nyquist-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, VALIDATION.md}</files_to_read>" +
     "<gaps>{gap list}</gaps>" +
     "<test_infrastructure>{framework, config, commands}</test_infrastructure>" +
@@ -144,16 +144,16 @@ rapidx-sdk query commit "docs(phase-${PHASE}): add/update validation strategy"
 
 **Compliant:**
 ```
-GSD > PHASE {N} IS NYQUIST-COMPLIANT
+RapidX > PHASE {N} IS NYQUIST-COMPLIANT
 All requirements have automated verification.
-▶ Next: /gsd:audit-milestone ${GSD_WS}
+▶ Next: /rapidx:audit-milestone ${RAPIDX_WS}
 ```
 
 **Partial:**
 ```
-GSD > PHASE {N} VALIDATED (PARTIAL)
+RapidX > PHASE {N} VALIDATED (PARTIAL)
 {M} automated, {K} manual-only.
-▶ Retry: /gsd:validate-phase {N} ${GSD_WS}
+▶ Retry: /rapidx:validate-phase {N} ${RAPIDX_WS}
 ```
 
 Display `/clear` reminder.

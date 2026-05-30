@@ -3,7 +3,7 @@ description: RapidX Go Build Resolver — activate when diagnosing Go compilatio
 alwaysApply: false
 ---
 
-# Agent: Go Build Resolver — Get Things Done
+# Agent: Go Build Resolver — RapidX
 
 ## Role
 

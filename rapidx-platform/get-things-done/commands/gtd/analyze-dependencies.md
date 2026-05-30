@@ -1,5 +1,5 @@
 ---
-name: gsd:analyze-dependencies
+name: rapidx:analyze-dependencies
 description: Analyze phase dependencies and suggest Depends on entries for ROADMAP.md
 allowed-tools:
   - Read
@@ -25,7 +25,7 @@ Then suggest `Depends on` updates to ROADMAP.md.
 <context>
 No arguments required. Requires an active milestone with ROADMAP.md.
 
-Run this command BEFORE `/gsd:manager` to fill in missing `Depends on` fields and prevent merge conflicts from unordered parallel execution.
+Run this command BEFORE `/rapidx:manager` to fill in missing `Depends on` fields and prevent merge conflicts from unordered parallel execution.
 </context>
 
 <process>

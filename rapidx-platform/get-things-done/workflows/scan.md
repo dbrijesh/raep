@@ -8,7 +8,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-codebase-mapper — Maps project structure and dependencies
 </available_agent_types>
 
@@ -88,7 +88,7 @@ Task(
 **Documents produced:**
 {list of documents written with line counts}
 
-Use `/gsd:map-codebase` for a comprehensive 4-area parallel scan.
+Use `/rapidx:map-codebase` for a comprehensive 4-area parallel scan.
 ```
 
 </process>

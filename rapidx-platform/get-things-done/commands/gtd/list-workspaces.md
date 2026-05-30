@@ -1,12 +1,12 @@
 ---
-name: gsd:list-workspaces
-description: List active Get Things Done workspaces and their status
+name: rapidx:list-workspaces
+description: List active RapidX workspaces and their status
 allowed-tools:
   - Bash
   - Read
 ---
 <objective>
-Scan `~/rapidx-workspaces/` for workspace directories containing `WORKSPACE.md` manifests. Display a summary table with name, path, repo count, strategy, and Get Things Done project status.
+Scan `~/rapidx-workspaces/` for workspace directories containing `WORKSPACE.md` manifests. Display a summary table with name, path, repo count, strategy, and RapidX project status.
 </objective>
 
 <execution_context>

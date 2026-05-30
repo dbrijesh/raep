@@ -1,5 +1,5 @@
 ---
-name: gsd:plan-phase
+name: rapidx:plan-phase
 description: Create detailed phase plan (PLAN.md) with verification loop
 argument-hint: "[phase] [--auto] [--research] [--skip-research] [--gaps] [--skip-verify] [--prd <file>] [--reviews]"
 agent: rapidx-planner
@@ -35,7 +35,7 @@ Phase number: $ARGUMENTS (optional — auto-detects next unplanned phase if omit
 - `--gaps` — Gap closure mode (reads VERIFICATION.md, skips research)
 - `--skip-verify` — Skip verification loop
 - `--prd <file>` — Use a PRD/acceptance criteria file instead of discuss-phase. Parses requirements into CONTEXT.md automatically. Skips discuss-phase entirely.
-- `--reviews` — Replan incorporating cross-AI review feedback from REVIEWS.md (produced by `/gsd:review`)
+- `--reviews` — Replan incorporating cross-AI review feedback from REVIEWS.md (produced by `/rapidx:review`)
 
 Normalize phase input in step 2 before any directory lookups.
 </context>

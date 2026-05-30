@@ -3,7 +3,7 @@ Generate, update, and verify all project documentation — both canonical doc ty
 </purpose>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-doc-writer — Writes and updates project documentation files
 - rapidx-doc-verifier — Verifies factual claims in docs against the live codebase
 </available_agent_types>
@@ -345,12 +345,12 @@ Check for hand-written docs in the queue and gather user decisions before dispat
 Present the following choice using `AskUserQuestion` if available, or inline prompt otherwise:
 
 ```
-{filename} appears to be hand-written (no GSD marker found).
+{filename} appears to be hand-written (no RapidX marker found).
 
 How should this file be handled?
   [1] preserve    -- Skip entirely. Leave unchanged.
   [2] supplement  -- Append only missing sections. Existing content untouched.
-  [3] regenerate  -- Overwrite with a fresh GSD-generated doc.
+  [3] regenerate  -- Overwrite with a fresh RapidX-generated doc.
 ```
 
 Record each decision. Update the doc queue:
@@ -761,7 +761,7 @@ When the `Task` tool is unavailable, generate docs sequentially in the current c
 
 **IMPORTANT:** Do NOT use `browser_subagent`, `Explore`, or any browser-based tool. Use only file system tools (Read, Bash, Write, Grep, Glob, or equivalent tools available in your runtime).
 
-Read `agents/gsd:doc-writer.md` instructions once before beginning. Follow the create_mode or update_mode instructions from that agent for each doc, using the same doc_assignment fields as the parallel path.
+Read `agents/rapidx:doc-writer.md` instructions once before beginning. Follow the create_mode or update_mode instructions from that agent for each doc, using the same doc_assignment fields as the parallel path.
 
 **Wave 1 (sequential — complete all three before starting Wave 2):**
 
@@ -988,8 +988,8 @@ Failed claims:
 
 Display note:
 ```
-To fix failures automatically: /gsd:docs-update (runs generation + fix loop)
-To regenerate all docs from scratch: /gsd:docs-update --force
+To fix failures automatically: /rapidx:docs-update (runs generation + fix loop)
+To regenerate all docs from scratch: /rapidx:docs-update --force
 ```
 
 Clean up temp files: remove `.planning/tmp/verify-*.json` files.
@@ -1024,7 +1024,7 @@ This would expose credentials if committed.
 Action required:
 1. Review the flagged lines above
 2. Remove any real secrets from the doc files
-3. Re-run /gsd:docs-update to regenerate clean docs
+3. Re-run /rapidx:docs-update to regenerate clean docs
 ```
 
 Then confirm with AskUserQuestion:
@@ -1126,7 +1126,7 @@ All generated files committed.
 Remind the user they can fact-check generated docs:
 
 ```
-Run `/gsd:docs-update --verify-only` to fact-check generated docs against the codebase.
+Run `/rapidx:docs-update --verify-only` to fact-check generated docs against the codebase.
 ```
 
 End workflow.
@@ -1141,10 +1141,10 @@ End workflow.
 - [ ] CHANGELOG.md was NOT generated or queued
 - [ ] Each doc was generated in correct mode (create for new, update for existing)
 - [ ] Wave 1 docs (README, ARCHITECTURE, CONFIGURATION) completed before Wave 2 started
-- [ ] Generated docs contain zero GSD methodology content
+- [ ] Generated docs contain zero RapidX methodology content
 - [ ] docs/DEPLOYMENT.md and docs/CONFIGURATION.md use VERIFY markers for undiscoverable claims (if generated)
 - [ ] All generated files committed (if commit_docs is true)
-- [ ] Hand-written docs (no GSD marker) prompted for preserve/supplement/regenerate before dispatch (unless --force)
+- [ ] Hand-written docs (no RapidX marker) prompted for preserve/supplement/regenerate before dispatch (unless --force)
 - [ ] --force flag skipped preservation prompts and regenerated all docs
 - [ ] --verify-only flag reported doc status without generating files
 - [ ] Per-package READMEs generated for monorepo workspaces (if applicable)

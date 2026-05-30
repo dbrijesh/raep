@@ -3,7 +3,7 @@ description: RapidX Architect agent — activate when designing system architect
 alwaysApply: false
 ---
 
-# Agent: Architect — Get Things Done
+# Agent: Architect — RapidX
 
 ## Role
 

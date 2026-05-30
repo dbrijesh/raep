@@ -3,7 +3,7 @@ description: RapidX ADR Writer — activate when documenting architecture decisi
 alwaysApply: false
 ---
 
-# Agent: ADR Writer — Get Things Done
+# Agent: ADR Writer — RapidX
 
 ## Role
 

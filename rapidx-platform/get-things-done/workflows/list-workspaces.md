@@ -1,5 +1,5 @@
 <purpose>
-List all GSD workspaces found in ~/gsd:workspaces/ with their status.
+List all RapidX workspaces found in ~/rapidx:workspaces/ with their status.
 </purpose>
 
 <required_reading>
@@ -22,10 +22,10 @@ Parse JSON for: `workspace_base`, `workspaces`, `workspace_count`.
 **If `workspace_count` is 0:**
 
 ```
-No workspaces found in ~/gsd:workspaces/
+No workspaces found in ~/rapidx:workspaces/
 
 Create one with:
-  /gsd:new-workspace --name my-workspace --repos repo1,repo2
+  /rapidx:new-workspace --name my-workspace --repos repo1,repo2
 ```
 
 Done.
@@ -35,22 +35,22 @@ Done.
 Display a table:
 
 ```
-GSD Workspaces (~/gsd:workspaces/)
+RapidX Workspaces (~/rapidx:workspaces/)
 
-| Name | Repos | Strategy | GSD Project |
+| Name | Repos | Strategy | RapidX Project |
 |------|-------|----------|-------------|
 | feature-a | 3 | worktree | Yes |
 | feature-b | 2 | clone | No |
 
 Manage:
-  cd ~/gsd:workspaces/<name>     # Enter a workspace
-  /gsd:remove-workspace <name>   # Remove a workspace
+  cd ~/rapidx:workspaces/<name>     # Enter a workspace
+  /rapidx:remove-workspace <name>   # Remove a workspace
 ```
 
 For each workspace, show:
 - **Name** — directory name
 - **Repos** — count from init data
 - **Strategy** — from WORKSPACE.md
-- **GSD Project** — whether `.planning/PROJECT.md` exists (Yes/No)
+- **RapidX Project** — whether `.planning/PROJECT.md` exists (Yes/No)
 
 </process>

@@ -1,5 +1,5 @@
 ---
-name: gsd:undo
+name: rapidx:undo
 description: "Safe git revert. Roll back phase or plan commits using the phase manifest with dependency checks."
 argument-hint: "--last N | --phase NN | --plan NN-MM"
 allowed-tools:
@@ -11,10 +11,10 @@ allowed-tools:
 ---
 
 <objective>
-Safe git revert — roll back GSD phase or plan commits using the phase manifest, with dependency checks and a confirmation gate before execution.
+Safe git revert — roll back RapidX phase or plan commits using the phase manifest, with dependency checks and a confirmation gate before execution.
 
 Three modes:
-- **--last N**: Show recent GSD commits for interactive selection
+- **--last N**: Show recent RapidX commits for interactive selection
 - **--phase NN**: Revert all commits for a phase (manifest + git log fallback)
 - **--plan NN-MM**: Revert all commits for a specific plan
 </objective>

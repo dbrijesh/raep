@@ -1,5 +1,5 @@
 ---
-name: gsd:autonomous
+name: rapidx:autonomous
 description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N]"
 allowed-tools:

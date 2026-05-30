@@ -115,7 +115,14 @@ const NO_FRONTMATTER = `# Some doc without frontmatter`;
   const parsed = parseCommandFile(NEW_PROJECT);
   const out = toCopilotPrompt(parsed);
   assert.ok(out.startsWith('---'), 'should start with frontmatter');
-  assert.ok(out.includes('agent: agent'), 'should have agent: agent (VS Code prompt file spec, not mode:)');
+  // VS Code prompt files use the `mode` field (ask|edit|agent). An invalid
+  // `agent:` field leaves mode undefined → Copilot throws "reading 'bind'".
+  assert.ok(/\nmode: agent\n/.test(out), 'should use mode: agent (VS Code prompt file spec)');
+  assert.ok(!out.includes('agent: agent'), 'must NOT use the invalid agent: field');
+  // Must NOT declare a tools list — tool names vary by Copilot version and an
+  // unregistered tool (e.g. editFiles/findTestFiles on 0.48.x) makes Copilot
+  // call .bind on undefined → "reading 'bind'". Omitting tools is version-proof.
+  assert.ok(!/\ntools:\n/.test(out), 'must NOT emit a tools: frontmatter list');
   assert.ok(out.includes('[RapidX]'), 'description should have RapidX prefix');
   assert.ok(out.includes('## What this does'), 'should have objective section');
   assert.ok(out.includes('[--auto]'), 'should include usage hint');

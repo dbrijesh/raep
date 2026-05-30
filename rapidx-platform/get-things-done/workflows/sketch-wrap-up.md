@@ -2,7 +2,7 @@
 Curate sketch design findings and package them into a persistent project skill for future
 UI implementation. Reads from `.planning/sketches/`, writes skill to `./.claude/skills/sketch-findings-[project]/`
 (project-local) and summary to `.planning/sketches/WRAP-UP-SUMMARY.md`.
-Companion to `/gsd:sketch`.
+Companion to `/rapidx:sketch`.
 </purpose>
 
 <required_reading>
@@ -14,7 +14,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="banner">
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SKETCH WRAP-UP
+ RapidX ► SKETCH WRAP-UP
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </step>
@@ -31,7 +31,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 If no unprocessed sketches exist:
 ```
 No unprocessed sketches found in `.planning/sketches/`.
-Run `/gsd:sketch` first to create design explorations.
+Run `/rapidx:sketch` first to create design explorations.
 ```
 Exit.
 
@@ -239,7 +239,7 @@ rapidx-sdk query commit "docs(sketch-wrap-up): package [N] sketch findings into 
 <step name="report">
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SKETCH WRAP-UP COMPLETE ✓
+ RapidX ► SKETCH WRAP-UP COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Curated:** {N} sketches ({included} included, {excluded} excluded)
@@ -257,14 +257,14 @@ The sketch-findings skill will auto-load when building the UI.
 
 **Start building** — implement the validated design
 
-`/gsd:plan-phase`
+`/rapidx:plan-phase`
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/gsd:ui-phase` — generate a UI design contract for a frontend phase
-- `/gsd:sketch` — sketch additional design areas
-- `/gsd:explore` — continue exploring
+- `/rapidx:ui-phase` — generate a UI design contract for a frontend phase
+- `/rapidx:sketch` — sketch additional design areas
+- `/rapidx:explore` — continue exploring
 
 ───────────────────────────────────────────────────────────────
 </step>

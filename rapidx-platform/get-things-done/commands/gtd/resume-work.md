@@ -1,5 +1,5 @@
 ---
-name: gsd:resume-work
+name: rapidx:resume-work
 description: Resume work from previous session with full context restoration
 allowed-tools:
   - Read

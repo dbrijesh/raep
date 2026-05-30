@@ -8,10 +8,11 @@
 process.env.GSD_TEST_MODE = '1';
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert');
+const assert = require('node:assert/strict');
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const { createTempDir, cleanup } = require('./helpers.cjs');
 
 const {
   getDirName,
@@ -35,6 +36,7 @@ describe('getDirName (Antigravity)', () => {
     assert.strictEqual(getDirName('claude'), '.claude');
     assert.strictEqual(getDirName('opencode'), '.opencode');
     assert.strictEqual(getDirName('gemini'), '.gemini');
+    assert.strictEqual(getDirName('kilo'), '.kilo');
     assert.strictEqual(getDirName('codex'), '.codex');
     assert.strictEqual(getDirName('copilot'), '.github');
   });
@@ -96,6 +98,7 @@ describe('getConfigDirFromHome (Antigravity)', () => {
   test('does not change other runtimes', () => {
     assert.strictEqual(getConfigDirFromHome('claude', true), "'.claude'");
     assert.strictEqual(getConfigDirFromHome('gemini', true), "'.gemini'");
+    assert.strictEqual(getConfigDirFromHome('kilo', true), "'.config', 'kilo'");
     assert.strictEqual(getConfigDirFromHome('copilot', true), "'.copilot'");
   });
 });
@@ -287,7 +290,7 @@ describe('copyCommandsAsAntigravitySkills', () => {
   let skillsDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-ag-test-'));
+    tmpDir = createTempDir('gsd-ag-test-');
     srcDir = path.join(tmpDir, 'commands', 'gsd');
     skillsDir = path.join(tmpDir, 'skills');
     fs.mkdirSync(srcDir, { recursive: true });
@@ -381,7 +384,7 @@ describe('writeManifest (Antigravity)', () => {
   let tmpDir;
 
   beforeEach(() => {
-    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-manifest-ag-'));
+    tmpDir = createTempDir('gsd-manifest-ag-');
     // Create minimal structure
     const skillsDir = path.join(tmpDir, 'skills', 'gsd-help');
     fs.mkdirSync(skillsDir, { recursive: true });

@@ -1,7 +1,7 @@
 <purpose>
 Create a clean branch for pull requests by filtering out transient .planning/ commits.
 The PR branch contains only code changes and structural planning state — reviewers
-don't see GSD transient artifacts (PLAN.md, SUMMARY.md, CONTEXT.md, RESEARCH.md, etc.)
+don't see RapidX transient artifacts (PLAN.md, SUMMARY.md, CONTEXT.md, RESEARCH.md, etc.)
 but milestone archives, STATE.md, ROADMAP.md, and PROJECT.md changes are preserved.
 
 Uses git cherry-pick with path filtering to rebuild a clean history.
@@ -32,7 +32,7 @@ fi
 Display:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► PR BRANCH
+ RapidX ► PR BRANCH
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Branch: {CURRENT_BRANCH}
@@ -142,7 +142,7 @@ Next steps:
   git push origin {PR_BRANCH}
   gh pr create --base {TARGET} --head {PR_BRANCH}
 
-Or use /gsd:ship to create the PR automatically.
+Or use /rapidx:ship to create the PR automatically.
 ```
 </step>
 

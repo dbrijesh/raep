@@ -1,4 +1,4 @@
-# Agent: Go Build Resolver — Get Things Done
+# Agent: Go Build Resolver — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

@@ -1,6 +1,6 @@
 # Agent Contracts
 
-Completion markers and handoff schemas for all GSD agents. Workflows use these markers to detect agent completion and route accordingly.
+Completion markers and handoff schemas for all RapidX agents. Workflows use these markers to detect agent completion and route accordingly.
 
 This doc describes what IS, not what should be. Casing inconsistencies are documented as they appear in agent source files.
 

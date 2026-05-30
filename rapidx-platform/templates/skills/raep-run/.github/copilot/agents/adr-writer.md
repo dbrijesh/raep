@@ -1,4 +1,4 @@
-# Agent: ADR Writer — Get Things Done
+# Agent: ADR Writer — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

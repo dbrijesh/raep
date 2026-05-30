@@ -9,7 +9,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 
 Key references:
 - @$HOME/.claude/get-things-done/references/ui-brand.md (display patterns)
-- @$HOME/.claude/agents/gsd:user-profiler.md (profiler agent definition)
+- @$HOME/.claude/agents/rapidx:user-profiler.md (profiler agent definition)
 - @$HOME/.claude/get-things-done/references/user-profiling.md (profiling reference doc)
 </required_reading>
 
@@ -66,7 +66,7 @@ Display consent screen:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD > PROFILE YOUR CODING STYLE
+ RapidX > PROFILE YOUR CODING STYLE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Claude starts every conversation generic. A profile teaches Claude
@@ -120,7 +120,7 @@ Use AskUserQuestion:
 - options:
   - "Let's go" -- Proceed to step 3 (session analysis)
   - "Use questionnaire instead" -- Jump to step 4b (questionnaire path)
-  - "Not now" -- Display "No worries. Run /gsd:profile-user when ready." and exit
+  - "Not now" -- Display "No worries. Run /rapidx:profile-user when ready." and exit
 
 ---
 
@@ -217,7 +217,7 @@ Collect all answers into an answers JSON object mapping dimension keys to select
 
 **Save answers to temp file:**
 ```bash
-ANSWERS_PATH=$(mktemp /tmp/gsd:profile-answers-XXXXXX.json)
+ANSWERS_PATH=$(mktemp /tmp/rapidx:profile-answers-XXXXXX.json)
 ```
 
 Write the answers JSON to `$ANSWERS_PATH`.
@@ -231,7 +231,7 @@ Parse the analysis JSON from the result.
 
 Save analysis JSON to a temp file:
 ```bash
-ANALYSIS_PATH=$(mktemp /tmp/gsd:profile-analysis-XXXXXX.json)
+ANALYSIS_PATH=$(mktemp /tmp/rapidx:profile-analysis-XXXXXX.json)
 ```
 
 Write the analysis JSON to `$ANALYSIS_PATH`.
@@ -335,7 +335,7 @@ Use AskUserQuestion with multiSelect:
 - header: "Artifacts"
 - question: "Which artifacts should I generate?"
 - options (ALL pre-selected by default):
-  - "/gsd:dev-preferences command file" -- "Load your preferences in any session"
+  - "/rapidx:dev-preferences command file" -- "Load your preferences in any session"
   - "CLAUDE.md profile section" -- "Add profile to this project's CLAUDE.md"
   - "Global CLAUDE.md" -- "Add profile to $HOME/.claude/CLAUDE.md for all projects"
 
@@ -347,13 +347,13 @@ Use AskUserQuestion with multiSelect:
 
 Generate selected artifacts sequentially (file I/O is fast, no benefit from parallel agents):
 
-**For /gsd:dev-preferences (if selected):**
+**For /rapidx:dev-preferences (if selected):**
 
 ```bash
 rapidx-sdk query generate-dev-preferences --analysis "$ANALYSIS_PATH" --json 2>/dev/null
 ```
 
-Display: "✓ Generated /gsd:dev-preferences at $HOME/.claude/commands/gsd/dev-preferences.md"
+Display: "✓ Generated /rapidx:dev-preferences at $HOME/.claude/commands/rapidx/dev-preferences.md"
 
 **For CLAUDE.md profile section (if selected):**
 
@@ -403,7 +403,7 @@ If nothing changed: Display "No changes detected -- your profile is already up t
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD > PROFILE COMPLETE ✓
+ RapidX > PROFILE COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Your profile:    $HOME/.claude/get-things-done/USER-PROFILE.md
@@ -412,7 +412,7 @@ Your profile:    $HOME/.claude/get-things-done/USER-PROFILE.md
 Then list paths for each generated artifact:
 ```
 Artifacts:
-  ✓ /gsd:dev-preferences   $HOME/.claude/commands/gsd/dev-preferences.md
+  ✓ /rapidx:dev-preferences   $HOME/.claude/commands/rapidx/dev-preferences.md
   ✓ CLAUDE.md section       ./CLAUDE.md
   ✓ Global CLAUDE.md        $HOME/.claude/CLAUDE.md
 ```

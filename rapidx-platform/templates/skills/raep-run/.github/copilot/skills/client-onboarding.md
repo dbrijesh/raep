@@ -35,7 +35,7 @@ Provides a structured checklist and process for onboarding a new client engageme
 - [ ] Configure language-specific rules for the stack
 
 ### 4. Workflow setup
-- [ ] Initialize Get Things Done with `/rapidx:new-project` or `/rapidx:map-codebase`
+- [ ] Initialize RapidX with `/rapidx:new-project` or `/rapidx:map-codebase`
 - [ ] Create initial PROJECT.md
 - [ ] Set up first milestone
 

@@ -15,7 +15,7 @@ Display the stage banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► INGEST DOCS
+ RapidX ► INGEST DOCS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -118,9 +118,9 @@ De-duplicate the union (a file matched by multiple patterns is one doc).
 **Cap:** hard limit of 50 docs per invocation (documented v1 constraint). If the discovered set exceeds 50:
 
 ```
-GSD > Discovered {N} docs, which exceeds the v1 cap of 50.
+RapidX > Discovered {N} docs, which exceeds the v1 cap of 50.
       Use --manifest to narrow the set to ≤ 50 files, or run
-      /gsd:ingest-docs again with a narrower <path>.
+      /rapidx:ingest-docs again with a narrower <path>.
 ```
 
 Exit without proceeding.
@@ -164,7 +164,7 @@ Per-spawn prompt fields:
 - `OUTPUT_DIR` — `.planning/intel/classifications/`
 - `MANIFEST_TYPE` — the type from the manifest if present, else omit
 - `MANIFEST_PRECEDENCE` — the precedence integer from the manifest if present, else omit
-- `<required_reading>` — `agents/gsd:doc-classifier.md` (the agent definition itself)
+- `<required_reading>` — `agents/rapidx:doc-classifier.md` (the agent definition itself)
 
 Collect the one-line confirmations from each classifier. If any classifier errors out, surface the error and abort without touching `.planning/` further.
 
@@ -186,7 +186,7 @@ Task({
     PRECEDENCE: {array from manifest defaults or default ['ADR','SPEC','PRD','DOC']}
 
     <required_reading>
-    - agents/gsd:doc-synthesizer.md
+    - agents/rapidx:doc-synthesizer.md
     - get-things-done/references/doc-conflict-engine.md
     </required_reading>
   "
@@ -211,7 +211,7 @@ Apply the safety semantics from `references/doc-conflict-engine.md`. Operation n
 Render the report to the user, then display:
 
 ```
-GSD > BLOCKED: {N} blockers must be resolved before ingest can proceed.
+RapidX > BLOCKED: {N} blockers must be resolved before ingest can proceed.
 ```
 
 Exit WITHOUT writing PROJECT.md, REQUIREMENTS.md, ROADMAP.md, or STATE.md. The staging intel files remain for inspection. The safety gate holds — no destination files are written when blockers exist.
@@ -227,7 +227,7 @@ On Abort: exit cleanly with "Ingest cancelled. Staged intel preserved at `.plann
 
 **If BLOCKERS = 0 and WARNINGS = 0:**
 
-Proceed to routing silently, or optionally display `GSD > No conflicts. Auto-resolved: {N}.`
+Proceed to routing silently, or optionally display `RapidX > No conflicts. Auto-resolved: {N}.`
 
 </step>
 
@@ -298,7 +298,7 @@ Display completion:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► INGEST DOCS COMPLETE
+ RapidX ► INGEST DOCS COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -307,7 +307,7 @@ Show:
 - Docs ingested (count + type breakdown)
 - Decisions locked, requirements created, constraints captured
 - Conflict report path (`.planning/INGEST-CONFLICTS.md`)
-- Next step: `/gsd:plan-phase 1` (new mode) or `/gsd:plan-phase N` (merge, pointing at the first newly-added phase)
+- Next step: `/rapidx:plan-phase 1` (new mode) or `/rapidx:plan-phase N` (merge, pointing at the first newly-added phase)
 
 </step>
 

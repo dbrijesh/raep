@@ -3,7 +3,7 @@ description: RapidX Code Reviewer agent — activate when reviewing code, checki
 alwaysApply: false
 ---
 
-# Agent: Code Reviewer — Get Things Done
+# Agent: Code Reviewer — RapidX
 
 ## Role
 

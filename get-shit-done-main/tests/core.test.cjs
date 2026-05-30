@@ -6,7 +6,7 @@
  */
 
 const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert');
+const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -30,6 +30,8 @@ const {
   findPhaseInternal,
   findProjectRoot,
   detectSubRepos,
+  planningDir,
+  timeAgo,
 } = require('../get-shit-done/bin/lib/core.cjs');
 
 // ─── loadConfig ────────────────────────────────────────────────────────────────
@@ -98,6 +100,18 @@ describe('loadConfig', () => {
     assert.strictEqual(config.model_overrides, null);
   });
 
+  test('reads response_language when set', () => {
+    writeConfig({ response_language: 'Portuguese' });
+    const config = loadConfig(tmpDir);
+    assert.strictEqual(config.response_language, 'Portuguese');
+  });
+
+  test('returns response_language as null when not set', () => {
+    writeConfig({ model_profile: 'balanced' });
+    const config = loadConfig(tmpDir);
+    assert.strictEqual(config.response_language, null);
+  });
+
   test('returns defaults when config.json contains invalid JSON', () => {
     fs.writeFileSync(
       path.join(tmpDir, '.planning', 'config.json'),
@@ -124,6 +138,55 @@ describe('loadConfig', () => {
     writeConfig({ commit_docs: false, planning: { commit_docs: true } });
     const config = loadConfig(tmpDir);
     assert.strictEqual(config.commit_docs, false);
+  });
+
+  test('warns on unknown config keys to stderr (#1535)', (t) => {
+    writeConfig({ model_profile: 'quality', active_project: 'my-project', custom_flag: true });
+    const origWrite = process.stderr.write;
+    let stderrOutput = '';
+    process.stderr.write = (chunk) => { stderrOutput += chunk; };
+    t.after(() => { process.stderr.write = origWrite; });
+    const config = loadConfig(tmpDir);
+    // Known key still loads correctly
+    assert.strictEqual(config.model_profile, 'quality');
+    // Warning emitted for unknown keys
+    assert.ok(stderrOutput.includes('active_project'), 'should warn about active_project');
+    assert.ok(stderrOutput.includes('custom_flag'), 'should warn about custom_flag');
+    assert.ok(stderrOutput.includes('ignored'), 'should mention keys will be ignored');
+  });
+
+  test('known config keys are derived from VALID_CONFIG_KEYS (not hardcoded)', () => {
+    // Verify that loadConfig's unknown-key check uses config-set's VALID_CONFIG_KEYS
+    // as its source of truth. If a new key is added to config-set, it should
+    // automatically be recognized by loadConfig without a separate update.
+    const { VALID_CONFIG_KEYS } = require('../get-shit-done/bin/lib/config.cjs');
+    // Every top-level key from VALID_CONFIG_KEYS should be recognized
+    const topLevelKeys = [...VALID_CONFIG_KEYS].map(k => k.split('.')[0]);
+    for (const key of topLevelKeys) {
+      writeConfig({ [key]: 'test-value' });
+      const origWrite = process.stderr.write;
+      let stderrOutput = '';
+      process.stderr.write = (chunk) => { stderrOutput += chunk; };
+      try {
+        loadConfig(tmpDir);
+        assert.ok(
+          !stderrOutput.includes(key),
+          `VALID_CONFIG_KEYS key "${key}" should not trigger unknown-key warning`
+        );
+      } finally {
+        process.stderr.write = origWrite;
+      }
+    }
+  });
+
+  test('does not warn when all config keys are known', (t) => {
+    writeConfig({ model_profile: 'balanced', workflow: { research: false }, git: { branching_strategy: 'per-phase' } });
+    const origWrite = process.stderr.write;
+    let stderrOutput = '';
+    process.stderr.write = (chunk) => { stderrOutput += chunk; };
+    t.after(() => { process.stderr.write = origWrite; });
+    loadConfig(tmpDir);
+    assert.strictEqual(stderrOutput, '', 'should not emit any warnings for valid config');
   });
 });
 
@@ -365,6 +428,17 @@ describe('generateSlugInternal', () => {
 
   test('returns null for empty string', () => {
     assert.strictEqual(generateSlugInternal(''), null);
+  });
+
+  test('strips newlines and control characters', () => {
+    assert.strictEqual(generateSlugInternal('hello\nworld'), 'hello-world');
+    assert.strictEqual(generateSlugInternal('tab\there'), 'tab-here');
+  });
+
+  test('truncates to 60 characters', () => {
+    const long = 'a'.repeat(100);
+    const result = generateSlugInternal(long);
+    assert.ok(result.length <= 60, `slug should be <=60 chars, got ${result.length}`);
   });
 });
 
@@ -996,19 +1070,56 @@ describe('stale hook filter', () => {
 // ─── stale hook path regression (#1249) ──────────────────────────────────────
 
 describe('stale hook path', () => {
-  test('gsd-check-update.js checks get-shit-done/hooks/ not configDir/hooks/', () => {
+  test('gsd-check-update.js checks configDir/hooks/ where hooks are actually installed (#1421)', () => {
+    // The stale-hook scan logic lives in the worker (moved from inline -e template literal).
+    // The worker receives configDir via env and constructs the hooksDir path.
+    const content = fs.readFileSync(
+      path.join(__dirname, '..', 'hooks', 'gsd-check-update-worker.js'), 'utf-8'
+    );
+    // Hooks are installed at configDir/hooks/ (e.g. ~/.claude/hooks/),
+    // not configDir/get-shit-done/hooks/ which doesn't exist (#1421)
+    assert.ok(
+      content.includes("path.join(configDir, 'hooks')"),
+      'stale hook check must look in configDir/hooks/ where hooks are actually installed'
+    );
+  });
+});
+
+// ─── shared cache directory regression (#1421) ─────────────────────────────────
+
+describe('shared cache directory (#1421)', () => {
+  test('gsd-check-update.js writes cache to shared ~/.cache/gsd/ directory', () => {
     const content = fs.readFileSync(
       path.join(__dirname, '..', 'hooks', 'gsd-check-update.js'), 'utf-8'
     );
+    // Cache must use a tool-agnostic path so statusline can find it
+    // regardless of which runtime (Claude, Gemini, OpenCode) ran the check
     assert.ok(
-      content.includes("path.join(configDir, 'get-shit-done', 'hooks')"),
-      'stale hook check must look in configDir/get-shit-done/hooks/, not configDir/hooks/'
+      content.includes("path.join(homeDir, '.cache', 'gsd')"),
+      'check-update must write cache to ~/.cache/gsd/ (shared, tool-agnostic)'
     );
+  });
+
+  test('gsd-statusline.js checks shared cache first, falls back to legacy (#1421)', () => {
+    const content = fs.readFileSync(
+      path.join(__dirname, '..', 'hooks', 'gsd-statusline.js'), 'utf-8'
+    );
+    // Statusline must check the shared cache path first
     assert.ok(
-      !content.includes("path.join(configDir, 'hooks')") ||
-      content.indexOf("path.join(configDir, 'get-shit-done', 'hooks')") <
-      content.indexOf("path.join(configDir, 'hooks')") + 100, // allow the old pattern only if corrected version exists first
-      'should not use the wrong hooks path'
+      content.includes("path.join(homeDir, '.cache', 'gsd', 'gsd-update-check.json')"),
+      'statusline must check shared cache at ~/.cache/gsd/gsd-update-check.json'
+    );
+    // Must fall back to legacy runtime-specific cache for backward compat
+    assert.ok(
+      content.includes("path.join(claudeDir, 'cache', 'gsd-update-check.json')"),
+      'statusline must fall back to legacy cache at claudeDir/cache/gsd-update-check.json'
+    );
+    // Shared cache must be checked before legacy (existsSync order matters)
+    const sharedIdx = content.indexOf('sharedCacheFile');
+    const legacyIdx = content.indexOf('legacyCacheFile');
+    assert.ok(
+      sharedIdx < legacyIdx,
+      'shared cache must be defined and checked before legacy cache'
     );
   });
 });
@@ -1017,25 +1128,132 @@ describe('stale hook path', () => {
 
 describe('resolveWorktreeRoot', () => {
   const { resolveWorktreeRoot } = require('../get-shit-done/bin/lib/core.cjs');
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
 
   test('returns cwd when not in a git repo', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-wt-test-'));
-    try {
-      assert.strictEqual(resolveWorktreeRoot(tmpDir), tmpDir);
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    }
+    assert.strictEqual(resolveWorktreeRoot(tmpDir), tmpDir);
   });
 
   test('returns cwd in a normal git repo (not a worktree)', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-wt-test-'));
-    try {
-      const { execSync } = require('child_process');
-      execSync('git init', { cwd: tmpDir, stdio: 'pipe' });
-      assert.strictEqual(resolveWorktreeRoot(tmpDir), tmpDir);
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
+    const { execSync: execSyncLocal } = require('child_process');
+    execSyncLocal('git init', { cwd: tmpDir, stdio: 'pipe' });
+    assert.strictEqual(resolveWorktreeRoot(tmpDir), tmpDir);
+  });
+});
+
+// ─── resolveWorktreeRoot — linked worktree with .planning/ (#1315) ───────────
+
+describe('resolveWorktreeRoot with linked worktree .planning/', () => {
+  const { resolveWorktreeRoot } = require('../get-shit-done/bin/lib/core.cjs');
+  const { execSync: execSyncLocal } = require('child_process');
+  // On Windows CI, os.tmpdir() may return 8.3 short paths (RUNNER~1) while
+  // git returns long paths (runneradmin). realpathSync.native resolves both.
+  const normalizePath = (p) => {
+    try { return fs.realpathSync.native(p); } catch { return fs.realpathSync(p); }
+  };
+
+  let mainDir;
+  let worktreeDir;
+
+  function initBareGitRepo() {
+    const dir = normalizePath(fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-wt-main-')));
+    execSyncLocal('git init', { cwd: dir, stdio: 'pipe' });
+    execSyncLocal('git config user.email "test@test.com"', { cwd: dir, stdio: 'pipe' });
+    execSyncLocal('git config user.name "Test"', { cwd: dir, stdio: 'pipe' });
+    execSyncLocal('git config commit.gpgsign false', { cwd: dir, stdio: 'pipe' });
+    fs.writeFileSync(path.join(dir, 'README.md'), '# Main');
+    execSyncLocal('git add -A', { cwd: dir, stdio: 'pipe' });
+    execSyncLocal('git commit -m "initial"', { cwd: dir, stdio: 'pipe' });
+    return dir;
+  }
+
+  beforeEach(() => {
+    mainDir = initBareGitRepo();
+    worktreeDir = null;
+  });
+
+  afterEach(() => {
+    if (worktreeDir) {
+      try { execSyncLocal(`git worktree remove "${worktreeDir}" --force`, { cwd: mainDir, stdio: 'pipe' }); } catch { /* ok */ }
+      try { fs.rmSync(worktreeDir, { recursive: true, force: true }); } catch { /* ok */ }
     }
+    cleanup(mainDir);
+  });
+
+  test('returns linked worktree cwd when it has its own .planning/', () => {
+    // Add .planning/ to main repo
+    fs.mkdirSync(path.join(mainDir, '.planning'), { recursive: true });
+
+    // Create a linked worktree
+    worktreeDir = normalizePath(fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-wt-linked-')));
+    fs.rmSync(worktreeDir, { recursive: true, force: true });
+    execSyncLocal(`git worktree add "${worktreeDir}" -b test-linked`, { cwd: mainDir, stdio: 'pipe' });
+
+    // Give the linked worktree its own .planning/
+    fs.mkdirSync(path.join(worktreeDir, '.planning'), { recursive: true });
+
+    // resolveWorktreeRoot should return the linked worktree dir, not the main repo
+    const result = normalizePath(resolveWorktreeRoot(worktreeDir));
+    assert.strictEqual(result, worktreeDir,
+      'linked worktree with .planning/ should resolve to itself, not the main repo');
+  });
+
+  test('returns main repo root when linked worktree has no .planning/', () => {
+    // Create a linked worktree (no .planning/ in main or worktree)
+    worktreeDir = normalizePath(fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-wt-linked-')));
+    fs.rmSync(worktreeDir, { recursive: true, force: true });
+    execSyncLocal(`git worktree add "${worktreeDir}" -b test-linked-no-plan`, { cwd: mainDir, stdio: 'pipe' });
+
+    // resolveWorktreeRoot should return the main repo root
+    const result = normalizePath(resolveWorktreeRoot(worktreeDir));
+    const expected = normalizePath(mainDir);
+    assert.strictEqual(result, expected,
+      'linked worktree without .planning/ should resolve to main repo root');
+  });
+});
+
+// ─── monorepo worktree CWD preservation (#1283) ─────────────────────────────
+
+describe('monorepo worktree CWD preservation', () => {
+  const { resolveWorktreeRoot } = require('../get-shit-done/bin/lib/core.cjs');
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-monorepo-wt-'));
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
+
+  test('CWD with .planning/ skips worktree resolution (monorepo subdirectory)', () => {
+    const subDir = path.join(tmpDir, 'service-alpha');
+    fs.mkdirSync(path.join(subDir, '.planning'), { recursive: true });
+    let cwd = subDir;
+    if (!fs.existsSync(path.join(cwd, '.planning'))) {
+      const worktreeRoot = resolveWorktreeRoot(cwd);
+      if (worktreeRoot !== cwd) cwd = worktreeRoot;
+    }
+    assert.strictEqual(cwd, subDir, 'CWD with .planning/ must not be overridden by worktree resolution');
+  });
+
+  test('CWD without .planning/ still goes through worktree resolution', () => {
+    let cwd = tmpDir;
+    let worktreeResolutionCalled = false;
+    if (!fs.existsSync(path.join(cwd, '.planning'))) {
+      worktreeResolutionCalled = true;
+      const worktreeRoot = resolveWorktreeRoot(cwd);
+      if (worktreeRoot !== cwd) cwd = worktreeRoot;
+    }
+    assert.ok(worktreeResolutionCalled, 'worktree resolution must be called when .planning/ is absent');
   });
 });
 
@@ -1043,50 +1261,40 @@ describe('resolveWorktreeRoot', () => {
 
 describe('withPlanningLock', () => {
   const { withPlanningLock, planningDir } = require('../get-shit-done/bin/lib/core.cjs');
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = createTempProject();
+  });
+
+  afterEach(() => {
+    cleanup(tmpDir);
+  });
 
   test('executes function and returns result', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lock-test-'));
-    fs.mkdirSync(path.join(tmpDir, '.planning'), { recursive: true });
-    try {
-      const result = withPlanningLock(tmpDir, () => 42);
-      assert.strictEqual(result, 42);
-      // Lock file should be cleaned up
-      assert.ok(!fs.existsSync(path.join(planningDir(tmpDir), '.lock')));
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    }
+    const result = withPlanningLock(tmpDir, () => 42);
+    assert.strictEqual(result, 42);
+    // Lock file should be cleaned up
+    assert.ok(!fs.existsSync(path.join(planningDir(tmpDir), '.lock')));
   });
 
   test('cleans up lock file even on error', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lock-test-'));
-    fs.mkdirSync(path.join(tmpDir, '.planning'), { recursive: true });
-    try {
-      assert.throws(() => {
-        withPlanningLock(tmpDir, () => { throw new Error('test'); });
-      }, /test/);
-      assert.ok(!fs.existsSync(path.join(planningDir(tmpDir), '.lock')));
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    }
+    assert.throws(() => {
+      withPlanningLock(tmpDir, () => { throw new Error('test'); });
+    }, /test/);
+    assert.ok(!fs.existsSync(path.join(planningDir(tmpDir), '.lock')));
   });
 
   test('recovers from stale lock (>30s old)', () => {
-    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gsd-lock-test-'));
-    const planDir = path.join(tmpDir, '.planning');
-    fs.mkdirSync(planDir, { recursive: true });
-    const lockPath = path.join(planDir, '.lock');
-    try {
-      // Create a stale lock
-      fs.writeFileSync(lockPath, '{"pid":99999}');
-      // Backdate the lock file by 31 seconds
-      const staleTime = new Date(Date.now() - 31000);
-      fs.utimesSync(lockPath, staleTime, staleTime);
+    const lockPath = path.join(tmpDir, '.planning', '.lock');
+    // Create a stale lock
+    fs.writeFileSync(lockPath, '{"pid":99999}');
+    // Backdate the lock file by 31 seconds
+    const staleTime = new Date(Date.now() - 31000);
+    fs.utimesSync(lockPath, staleTime, staleTime);
 
-      const result = withPlanningLock(tmpDir, () => 'recovered');
-      assert.strictEqual(result, 'recovered');
-    } finally {
-      fs.rmSync(tmpDir, { recursive: true, force: true });
-    }
+    const result = withPlanningLock(tmpDir, () => 'recovered');
+    assert.strictEqual(result, 'recovered');
   });
 });
 
@@ -1360,14 +1568,75 @@ describe('findProjectRoot', () => {
 
     assert.strictEqual(findProjectRoot(backendDir), backendDir);
   });
+
+  test('walks up from subdirectory when .git is at same level as .planning/ (single-repo)', () => {
+    // Common single-repo layout: .git and .planning are siblings at project root
+    fs.mkdirSync(path.join(projectRoot, '.planning'), { recursive: true });
+    fs.mkdirSync(path.join(projectRoot, '.git'), { recursive: true });
+
+    // User cwd is a subdirectory (e.g., src/)
+    const srcDir = path.join(projectRoot, 'src');
+    fs.mkdirSync(srcDir, { recursive: true });
+
+    // Should detect that parent has .planning/ and .git is at that same level
+    assert.strictEqual(findProjectRoot(srcDir), projectRoot);
+  });
+
+  test('walks up from deep subdirectory when .git is at same level as .planning/', () => {
+    // Single-repo: .git and .planning at root, cwd deep inside
+    fs.mkdirSync(path.join(projectRoot, '.planning'), { recursive: true });
+    fs.mkdirSync(path.join(projectRoot, '.git'), { recursive: true });
+
+    const deepDir = path.join(projectRoot, 'src', 'lib', 'utils');
+    fs.mkdirSync(deepDir, { recursive: true });
+
+    assert.strictEqual(findProjectRoot(deepDir), projectRoot);
+  });
+
+  test('returns startDir when .planning exists at same level (cwd is project root)', () => {
+    // User is already at project root — no parent to walk up to
+    fs.mkdirSync(path.join(projectRoot, '.planning'), { recursive: true });
+    fs.mkdirSync(path.join(projectRoot, '.git'), { recursive: true });
+
+    assert.strictEqual(findProjectRoot(projectRoot), projectRoot);
+  });
+
+  test('does not walk past child with own .planning/ to workspace parent (#1362)', () => {
+    // Workspace layout: parent has .planning/, child git repo also has .planning/
+    // findProjectRoot should return the child (startDir), not the parent
+    fs.mkdirSync(path.join(projectRoot, '.planning'), { recursive: true });
+
+    const childRepo = path.join(projectRoot, 'authenticator');
+    fs.mkdirSync(path.join(childRepo, '.planning'), { recursive: true });
+    fs.mkdirSync(path.join(childRepo, '.git'), { recursive: true });
+
+    assert.strictEqual(findProjectRoot(childRepo), childRepo);
+  });
+
+  test('does not walk past nested dir whose git root has .planning/ (#1362)', () => {
+    // Workspace layout: parent has .planning/, child git repo also has .planning/
+    // cwd is deep inside child — should resolve to child root, not workspace root
+    fs.mkdirSync(path.join(projectRoot, '.planning'), { recursive: true });
+
+    const childRepo = path.join(projectRoot, 'authenticator');
+    fs.mkdirSync(path.join(childRepo, '.planning'), { recursive: true });
+    fs.mkdirSync(path.join(childRepo, '.git'), { recursive: true });
+
+    const deepDir = path.join(childRepo, 'src', 'lib');
+    fs.mkdirSync(deepDir, { recursive: true });
+
+    assert.strictEqual(findProjectRoot(deepDir), childRepo);
+  });
 });
 
 // ─── reapStaleTempFiles ─────────────────────────────────────────────────────
 
 describe('reapStaleTempFiles', () => {
+  const gsdTmpDir = path.join(os.tmpdir(), 'gsd');
+
   test('removes stale gsd-*.json files older than maxAgeMs', () => {
-    const tmpDir = os.tmpdir();
-    const stalePath = path.join(tmpDir, `gsd-reap-test-${Date.now()}.json`);
+    fs.mkdirSync(gsdTmpDir, { recursive: true });
+    const stalePath = path.join(gsdTmpDir, `gsd-reap-test-${Date.now()}.json`);
     fs.writeFileSync(stalePath, '{}');
     // Set mtime to 10 minutes ago
     const oldTime = new Date(Date.now() - 10 * 60 * 1000);
@@ -1379,8 +1648,8 @@ describe('reapStaleTempFiles', () => {
   });
 
   test('preserves fresh gsd-*.json files', () => {
-    const tmpDir = os.tmpdir();
-    const freshPath = path.join(tmpDir, `gsd-reap-fresh-${Date.now()}.json`);
+    fs.mkdirSync(gsdTmpDir, { recursive: true });
+    const freshPath = path.join(gsdTmpDir, `gsd-reap-fresh-${Date.now()}.json`);
     fs.writeFileSync(freshPath, '{}');
 
     reapStaleTempFiles('gsd-reap-fresh-', { maxAgeMs: 5 * 60 * 1000 });
@@ -1391,8 +1660,8 @@ describe('reapStaleTempFiles', () => {
   });
 
   test('removes stale temp directories when present', () => {
-    const tmpDir = os.tmpdir();
-    const staleDir = fs.mkdtempSync(path.join(tmpDir, 'gsd-reap-dir-'));
+    fs.mkdirSync(gsdTmpDir, { recursive: true });
+    const staleDir = fs.mkdtempSync(path.join(gsdTmpDir, 'gsd-reap-dir-'));
     fs.writeFileSync(path.join(staleDir, 'data.jsonl'), 'test');
     // Set mtime to 10 minutes ago
     const oldTime = new Date(Date.now() - 10 * 60 * 1000);
@@ -1407,5 +1676,180 @@ describe('reapStaleTempFiles', () => {
     assert.doesNotThrow(() => {
       reapStaleTempFiles('gsd-nonexistent-prefix-xyz-', { maxAgeMs: 0 });
     });
+  });
+});
+
+// ─── planningDir ──────────────────────────────────────────────────────────────
+
+describe('planningDir', () => {
+  const cwd = '/fake/repo';
+  let savedProject, savedWorkstream;
+
+  beforeEach(() => {
+    savedProject = process.env.GSD_PROJECT;
+    savedWorkstream = process.env.GSD_WORKSTREAM;
+    delete process.env.GSD_PROJECT;
+    delete process.env.GSD_WORKSTREAM;
+  });
+
+  afterEach(() => {
+    if (savedProject !== undefined) process.env.GSD_PROJECT = savedProject;
+    else delete process.env.GSD_PROJECT;
+    if (savedWorkstream !== undefined) process.env.GSD_WORKSTREAM = savedWorkstream;
+    else delete process.env.GSD_WORKSTREAM;
+  });
+
+  test('returns .planning/ when neither project nor workstream is set', () => {
+    const result = planningDir(cwd, null, null);
+    assert.strictEqual(result, path.join(cwd, '.planning'));
+  });
+
+  test('returns .planning/{project}/ when project is set', () => {
+    const result = planningDir(cwd, null, 'my-app');
+    assert.strictEqual(result, path.join(cwd, '.planning', 'my-app'));
+  });
+
+  test('returns .planning/workstreams/{ws}/ when workstream is set', () => {
+    const result = planningDir(cwd, 'feature-x', null);
+    assert.strictEqual(result, path.join(cwd, '.planning', 'workstreams', 'feature-x'));
+  });
+
+  test('returns .planning/{project}/workstreams/{ws}/ when both are set', () => {
+    const result = planningDir(cwd, 'feature-x', 'my-app');
+    assert.strictEqual(result, path.join(cwd, '.planning', 'my-app', 'workstreams', 'feature-x'));
+  });
+
+  test('reads GSD_PROJECT from env when project param is undefined', () => {
+    process.env.GSD_PROJECT = 'env-project';
+    const result = planningDir(cwd);
+    assert.strictEqual(result, path.join(cwd, '.planning', 'env-project'));
+  });
+
+  test('rejects path traversal in project name', () => {
+    assert.throws(
+      () => planningDir(cwd, null, '../../etc'),
+      /invalid path characters/
+    );
+  });
+
+  test('rejects forward slash in project name', () => {
+    assert.throws(
+      () => planningDir(cwd, null, 'foo/bar'),
+      /invalid path characters/
+    );
+  });
+
+  test('rejects backslash in project name', () => {
+    assert.throws(
+      () => planningDir(cwd, null, 'foo\\bar'),
+      /invalid path characters/
+    );
+  });
+
+  test('rejects path traversal in workstream name', () => {
+    assert.throws(
+      () => planningDir(cwd, '../../../tmp', null),
+      /invalid path characters/
+    );
+  });
+});
+
+// ─── timeAgo ──────────────────────────────────────────────────────────────────
+
+describe('timeAgo', () => {
+  const now = () => Date.now();
+  const dateAt = (msAgo) => new Date(now() - msAgo);
+
+  // ─── seconds boundary ───
+  test('returns "just now" for dates under 5 seconds old', () => {
+    assert.strictEqual(timeAgo(dateAt(0)), 'just now');
+    assert.strictEqual(timeAgo(dateAt(4_000)), 'just now');
+  });
+
+  test('returns "N seconds ago" between 5 and 59 seconds', () => {
+    assert.strictEqual(timeAgo(dateAt(5_000)), '5 seconds ago');
+    assert.strictEqual(timeAgo(dateAt(30_000)), '30 seconds ago');
+    assert.strictEqual(timeAgo(dateAt(59_000)), '59 seconds ago');
+  });
+
+  // ─── minutes boundary ───
+  test('transitions to minutes at 60 seconds', () => {
+    assert.strictEqual(timeAgo(dateAt(60_000)), '1 minute ago');
+  });
+
+  test('uses singular "1 minute ago" for exactly one minute', () => {
+    assert.strictEqual(timeAgo(dateAt(60_000)), '1 minute ago');
+    assert.strictEqual(timeAgo(dateAt(119_000)), '1 minute ago');
+  });
+
+  test('uses plural "N minutes ago" for 2-59 minutes', () => {
+    assert.strictEqual(timeAgo(dateAt(120_000)), '2 minutes ago');
+    assert.strictEqual(timeAgo(dateAt(5 * 60_000)), '5 minutes ago');
+    assert.strictEqual(timeAgo(dateAt(59 * 60_000)), '59 minutes ago');
+  });
+
+  // ─── hours boundary ───
+  test('transitions to hours at 60 minutes', () => {
+    assert.strictEqual(timeAgo(dateAt(60 * 60_000)), '1 hour ago');
+  });
+
+  test('uses singular "1 hour ago" for exactly one hour', () => {
+    assert.strictEqual(timeAgo(dateAt(60 * 60_000)), '1 hour ago');
+    assert.strictEqual(timeAgo(dateAt(119 * 60_000)), '1 hour ago');
+  });
+
+  test('uses plural "N hours ago" for 2-23 hours', () => {
+    assert.strictEqual(timeAgo(dateAt(2 * 3600_000)), '2 hours ago');
+    assert.strictEqual(timeAgo(dateAt(23 * 3600_000)), '23 hours ago');
+  });
+
+  // ─── days boundary ───
+  test('transitions to days at 24 hours', () => {
+    assert.strictEqual(timeAgo(dateAt(24 * 3600_000)), '1 day ago');
+  });
+
+  test('uses singular "1 day ago" for exactly one day', () => {
+    assert.strictEqual(timeAgo(dateAt(24 * 3600_000)), '1 day ago');
+  });
+
+  test('uses plural "N days ago" for 2-29 days', () => {
+    assert.strictEqual(timeAgo(dateAt(2 * 86400_000)), '2 days ago');
+    assert.strictEqual(timeAgo(dateAt(29 * 86400_000)), '29 days ago');
+  });
+
+  // ─── months boundary ───
+  test('transitions to months at 30 days', () => {
+    assert.strictEqual(timeAgo(dateAt(30 * 86400_000)), '1 month ago');
+  });
+
+  test('uses singular "1 month ago" for exactly one month (30 days)', () => {
+    assert.strictEqual(timeAgo(dateAt(30 * 86400_000)), '1 month ago');
+    assert.strictEqual(timeAgo(dateAt(59 * 86400_000)), '1 month ago');
+  });
+
+  test('uses plural "N months ago" for 2-11 months', () => {
+    assert.strictEqual(timeAgo(dateAt(60 * 86400_000)), '2 months ago');
+    assert.strictEqual(timeAgo(dateAt(180 * 86400_000)), '6 months ago');
+  });
+
+  // ─── years boundary ───
+  test('transitions to years at 365 days', () => {
+    assert.strictEqual(timeAgo(dateAt(365 * 86400_000)), '1 year ago');
+  });
+
+  test('uses singular "1 year ago" for exactly one year', () => {
+    assert.strictEqual(timeAgo(dateAt(365 * 86400_000)), '1 year ago');
+  });
+
+  test('uses plural "N years ago" for 2+ years', () => {
+    assert.strictEqual(timeAgo(dateAt(2 * 365 * 86400_000)), '2 years ago');
+    assert.strictEqual(timeAgo(dateAt(10 * 365 * 86400_000)), '10 years ago');
+  });
+
+  // ─── edge cases ───
+  test('handles future dates as "just now" (negative elapsed)', () => {
+    // A date 5 seconds in the future has negative elapsed time, which floors to a negative
+    // number of seconds and hits the "under 5 seconds" branch.
+    assert.strictEqual(timeAgo(new Date(Date.now() + 5_000)), 'just now');
   });
 });

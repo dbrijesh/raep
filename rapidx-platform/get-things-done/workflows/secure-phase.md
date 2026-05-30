@@ -7,7 +7,7 @@ Verify threat mitigations for a completed phase. Confirm PLAN.md threat register
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-security-auditor — Verifies threat mitigation coverage
 </available_agent_types>
 
@@ -28,9 +28,9 @@ AUDITOR_MODEL=$(rapidx-sdk query resolve-model rapidx-security-auditor --raw)
 SECURITY_CFG=$(rapidx-sdk query config-get workflow.security_enforcement --raw 2>/dev/null || echo "true")
 ```
 
-If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /gsd:settings."
+If `SECURITY_CFG` is `false`: exit with "Security enforcement disabled. Enable via /rapidx:settings."
 
-Display banner: `GSD > SECURE PHASE {N}: {name}`
+Display banner: `RapidX > SECURE PHASE {N}: {name}`
 
 ## 1. Detect Input State
 
@@ -42,7 +42,7 @@ SUMMARY_FILES=$(ls "${PHASE_DIR}"/*-SUMMARY.md 2>/dev/null)
 
 - **State A** (`SECURITY_FILE` non-empty): Audit existing
 - **State B** (`SECURITY_FILE` empty, `PLAN_FILES` and `SUMMARY_FILES` non-empty): Run from artifacts
-- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /gsd:execute-phase {N} first."
+- **State C** (`SUMMARY_FILES` empty): Exit — "Phase {N} not executed. Run /rapidx:execute-phase {N} first."
 
 ## 2. Discovery
 
@@ -84,7 +84,7 @@ Call AskUserQuestion with threat table and options:
 
 ```
 Task(
-  prompt="Read ~/.claude/agents/gsd:security-auditor.md for instructions.\n\n" +
+  prompt="Read ~/.claude/agents/rapidx:security-auditor.md for instructions.\n\n" +
     "<files_to_read>{PLAN, SUMMARY, impl files, SECURITY.md}</files_to_read>" +
     "<threat_register>{threat register}</threat_register>" +
     "<config>asvs_level: {SECURITY_ASVS}, block_on: {SECURITY_BLOCK_ON}</config>" +
@@ -123,9 +123,9 @@ Handle return:
 **ENFORCING GATE:** If `threats_open > 0` after all options exhausted (user did not accept, not all verified closed):
 
 ```
-GSD > PHASE {N} SECURITY BLOCKED
+RapidX > PHASE {N} SECURITY BLOCKED
 {K} threats open — phase advancement blocked until threats_open: 0
-▶ Fix mitigations then re-run: /gsd:secure-phase {N}
+▶ Fix mitigations then re-run: /rapidx:secure-phase {N}
 ▶ Or document accepted risks in SECURITY.md and re-run.
 ```
 
@@ -141,10 +141,10 @@ rapidx-sdk query commit "docs(phase-${PHASE}): add/update security threat verifi
 
 **Secured (threats_open: 0):**
 ```
-GSD > PHASE {N} THREAT-SECURE
+RapidX > PHASE {N} THREAT-SECURE
 threats_open: 0 — all threats have dispositions.
-▶ /gsd:validate-phase {N}    validate test coverage
-▶ /gsd:verify-work {N}       run UAT
+▶ /rapidx:validate-phase {N}    validate test coverage
+▶ /rapidx:verify-work {N}       run UAT
 ```
 
 Display `/clear` reminder.

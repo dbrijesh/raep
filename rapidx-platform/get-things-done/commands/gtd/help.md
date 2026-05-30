@@ -1,9 +1,9 @@
 ---
-name: gsd:help
-description: Show available Get Things Done commands and usage guide
+name: rapidx:help
+description: Show available RapidX commands and usage guide
 ---
 <objective>
-Display the complete Get Things Done command reference.
+Display the complete RapidX command reference.
 
 Output ONLY the reference content below. Do NOT add:
 - Project-specific analysis
@@ -17,6 +17,6 @@ Output ONLY the reference content below. Do NOT add:
 </execution_context>
 
 <process>
-Output the complete Get Things Done command reference from @~/.claude/get-things-done/workflows/help.md.
+Output the complete RapidX command reference from @~/.claude/get-things-done/workflows/help.md.
 Display the reference content directly — no additions or modifications.
 </process>

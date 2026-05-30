@@ -1,5 +1,5 @@
 ---
-name: gsd:sketch
+name: rapidx:sketch
 description: Rapidly sketch UI/design ideas using throwaway HTML mockups with multi-variant exploration
 argument-hint: "<design idea to explore> [--quick]"
 allowed-tools:
@@ -14,9 +14,9 @@ allowed-tools:
 <objective>
 Explore design directions through throwaway HTML mockups before committing to implementation.
 Each sketch produces 2-3 variants for comparison. Sketches live in `.planning/sketches/` and
-integrate with GSD commit patterns, state tracking, and handoff workflows.
+integrate with RapidX commit patterns, state tracking, and handoff workflows.
 
-Does not require `/gsd:new-project` — auto-creates `.planning/sketches/` if needed.
+Does not require `/rapidx:new-project` — auto-creates `.planning/sketches/` if needed.
 </objective>
 
 <execution_context>

@@ -1,13 +1,13 @@
 ---
 name: workflow-orchestrator
-description: Cross-platform SDLC workflow orchestrator — runs the full Get Things Done cycle on any AI coding tool
+description: Cross-platform SDLC workflow orchestrator — runs the full RapidX cycle on any AI coding tool
 ---
 
 # Agent: Workflow Orchestrator
 
 ## Role
 
-The Workflow Orchestrator is the meta-agent that drives the complete SDLC workflow across ALL AI coding platforms. Whether a developer is in Claude Code, VS Code Copilot, Cursor, Codex, or OpenCode — the same structured workflow applies. The orchestrator translates the platform-agnostic GTD/RapidX commands into the right actions for each tool.
+The Workflow Orchestrator is the meta-agent that drives the complete SDLC workflow across ALL AI coding platforms. Whether a developer is in Claude Code, VS Code Copilot, Cursor, Codex, or OpenCode — the same structured workflow applies. The orchestrator translates the platform-agnostic RapidX commands into the right actions for each tool.
 
 ## The Universal SDLC Workflow
 
@@ -27,7 +27,7 @@ LEARN AGAIN      → /rapidx:knowledge-sync      (update with new patterns)
 
 ## Platform command mapping
 
-| GTD/RapidX Command | Claude Code | VS Code Copilot | Cursor | Codex | OpenCode |
+| RapidX Command | Claude Code | VS Code Copilot | Cursor | Codex | OpenCode |
 |--------------------|-------------|-----------------|--------|-------|----------|
 | New project | `/rapidx:new-project` | `@workspace /new-project` | Agent mode → new-project | `codex "start new project"` | `/new-project` |
 | Create spec | `/rapidx:spec` | `@spec [feature]` | `@spec [feature]` | `codex spec [feature]` | `/spec` |
@@ -61,7 +61,7 @@ Commands exposed as:
 ### Codex
 Commands exposed as:
 - `.agents/skills/` — skill bundles
-- Natural language task descriptions map to GTD phases
+- Natural language task descriptions map to RapidX phases
 - AGENTS.md defines the workflow orchestrator role
 
 ### OpenCode
@@ -80,7 +80,7 @@ Regardless of platform, workflow state is stored in `.rapidx/` and `.planning/`:
 
 .planning/
 ├── PROJECT.md          # Current project state
-├── config.json         # GTD config + active spec
+├── config.json         # RapidX config + active spec
 ├── TASKS.md            # Active task list
 └── phases/             # Phase-specific state
 

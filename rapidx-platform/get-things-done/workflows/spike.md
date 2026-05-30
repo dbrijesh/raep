@@ -1,7 +1,7 @@
 <purpose>
 Rapid feasibility validation through focused, throwaway experiments. Each spike answers one
 specific question with observable evidence. Saves artifacts to `.planning/spikes/`.
-Companion to `/gsd:spike-wrap-up`.
+Companion to `/rapidx:spike-wrap-up`.
 </purpose>
 
 <required_reading>
@@ -13,7 +13,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 <step name="banner">
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKING
+ RapidX ► SPIKING
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -218,7 +218,7 @@ After all spikes complete, present the consolidated report:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SPIKE COMPLETE ✓
+ RapidX ► SPIKE COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Verdicts
@@ -244,14 +244,14 @@ After all spikes complete, present the consolidated report:
 
 **Package findings** — wrap spike knowledge into a reusable skill
 
-`/gsd:spike-wrap-up`
+`/rapidx:spike-wrap-up`
 
 ───────────────────────────────────────────────────────────────
 
 **Also available:**
-- `/gsd:plan-phase` — start planning the real implementation
-- `/gsd:explore` — continue exploring the idea
-- `/gsd:add-phase` — add a phase to the roadmap based on findings
+- `/rapidx:plan-phase` — start planning the real implementation
+- `/rapidx:explore` — continue exploring the idea
+- `/rapidx:add-phase` — add a phase to the roadmap based on findings
 
 ───────────────────────────────────────────────────────────────
 </step>

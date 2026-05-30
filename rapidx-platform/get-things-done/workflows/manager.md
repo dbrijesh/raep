@@ -26,7 +26,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 Parse JSON for: `milestone_version`, `milestone_name`, `phase_count`, `completed_count`, `in_progress_count`, `phases`, `recommended_actions`, `all_complete`, `waiting_signal`, `manager_flags`.
 
 `manager_flags` contains per-step passthrough flags from config:
-- `manager_flags.discuss` — appended to `/gsd:discuss-phase` args (e.g. `"--auto --analyze"`)
+- `manager_flags.discuss` — appended to `/rapidx:discuss-phase` args (e.g. `"--auto --analyze"`)
 - `manager_flags.plan` — appended to plan agent init command
 - `manager_flags.execute` — appended to execute agent init command
 
@@ -38,7 +38,7 @@ Display startup banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► MANAGER
+ RapidX ► MANAGER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  {milestone_version} — {milestone_name}
@@ -89,7 +89,7 @@ Example output:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► DASHBOARD
+ RapidX ► DASHBOARD
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  ████████████░░░░░░░░ 60%  (3/5 phases)
  ◆ Background: Planning Phase 4
@@ -113,8 +113,8 @@ If `all_complete` is true:
 ╚══════════════════════════════════════════════════════════════╝
 
 All {phase_count} phases done. Ready for final steps:
-  → /gsd:verify-work — run acceptance testing
-  → /gsd:complete-milestone — archive and wrap up
+  → /rapidx:verify-work — run acceptance testing
+  → /rapidx:complete-milestone — archive and wrap up
 ```
 
 
@@ -124,8 +124,8 @@ Ask user via AskUserQuestion:
 - **options:** "Verify work" / "Complete milestone" / "Exit manager"
 
 Handle responses:
-- "Verify work": `Skill(skill="gsd-verify-work")`  then loop to dashboard.
-- "Complete milestone": `Skill(skill="gsd-complete-milestone")` then exit.
+- "Verify work": `Skill(skill="rapidx-verify-work")`  then loop to dashboard.
+- "Complete milestone": `Skill(skill="rapidx-complete-milestone")` then exit.
 - "Exit manager": Go to exit step.
 
 **If NOT all_complete**, build compound options from `recommended_actions`:
@@ -170,7 +170,7 @@ Continue:
   → Discuss Phase 35 (inline)
 ```
 
-**Auto-refresh:** If background agents are running (`is_active` is true for any phase), set a 60-second auto-refresh cycle. After presenting the action menu, if no user input is received within 60 seconds, automatically refresh the dashboard. This interval is configurable via `manager_refresh_interval` in GSD config (default: 60 seconds, set to 0 to disable).
+**Auto-refresh:** If background agents are running (`is_active` is true for any phase), set a 60-second auto-refresh cycle. After presenting the action menu, if no user input is received within 60 seconds, automatically refresh the dashboard. This interval is configurable via `manager_refresh_interval` in RapidX config (default: 60 seconds, set to 0 to disable).
 
 Present via AskUserQuestion:
 - **question:** "What would you like to do?"
@@ -202,7 +202,7 @@ When the user selects a compound option:
 2. **Then run the inline discuss:**
 
 ```
-Skill(skill="gsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
+Skill(skill="rapidx-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step (background agents continue running).
@@ -212,7 +212,7 @@ After discuss completes, loop back to dashboard step (background agents continue
 Discussion is interactive — needs user input. Run inline with any configured flags:
 
 ```
-Skill(skill="gsd-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
+Skill(skill="rapidx-discuss-phase", args="{PHASE_NUM} {manager_flags.discuss}")
 ```
 
 After discuss completes, loop back to dashboard step.
@@ -225,7 +225,7 @@ Planning runs autonomously. Spawn a background agent that delegates to the Skill
 Task(
   description="Plan phase {N}: {phase_name}",
   run_in_background=true,
-  prompt="You are running the GSD plan-phase workflow for phase {N} of the project.
+  prompt="You are running the RapidX plan-phase workflow for phase {N} of the project.
 
 Working directory: {cwd}
 Phase: {N} — {phase_name}
@@ -233,7 +233,7 @@ Goal: {goal}
 Manager flags: {manager_flags.plan}
 
 Run the plan-phase Skill with any configured manager flags:
-Skill(skill=\"gsd-plan-phase\", args=\"{N} --auto {manager_flags.plan}\")
+Skill(skill=\"rapidx-plan-phase\", args=\"{N} --auto {manager_flags.plan}\")
 
 This delegates to the full plan-phase pipeline including local patches, research, plan-checker, and all quality gates.
 
@@ -257,7 +257,7 @@ Execution runs autonomously. Spawn a background agent that delegates to the Skil
 Task(
   description="Execute phase {N}: {phase_name}",
   run_in_background=true,
-  prompt="You are running the GSD execute-phase workflow for phase {N} of the project.
+  prompt="You are running the RapidX execute-phase workflow for phase {N} of the project.
 
 Working directory: {cwd}
 Phase: {N} — {phase_name}
@@ -265,7 +265,7 @@ Goal: {goal}
 Manager flags: {manager_flags.execute}
 
 Run the execute-phase Skill with any configured manager flags:
-Skill(skill=\"gsd-execute-phase\", args=\"{N} {manager_flags.execute}\")
+Skill(skill=\"rapidx-execute-phase\", args=\"{N} {manager_flags.execute}\")
 
 This delegates to the full execute-phase pipeline including local patches, branching, wave-based execution, verification, and all quality gates.
 
@@ -309,7 +309,7 @@ Classify the error:
   - **question:** "Phase {N} failed — permission denied for `{tool_or_command}`. Want me to add it to settings.local.json so it's allowed?"
   - **options:** "Add permission and retry" / "Run this phase inline instead" / "Skip and continue"
   - "Add permission and retry": Use `Skill(skill="update-config")` to add the permission to `settings.local.json`, then re-spawn the background agent. Loop to dashboard.
-  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="gsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="gsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run this phase inline instead": Dispatch the same action inline via the appropriate Skill — use `Skill(skill="rapidx-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="rapidx-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
 
 **Other errors** (git lock, file conflict, logic error, etc.):
@@ -317,7 +317,7 @@ Classify the error:
   - **question:** "Background agent for Phase {N} encountered an issue: {error}. What next?"
   - **options:** "Retry" / "Run inline instead" / "Skip and continue" / "View details"
   - "Retry": Re-spawn the same background agent. Loop to dashboard.
-  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="gsd-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="gsd-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
+  - "Run inline instead": Dispatch the action inline via the appropriate Skill — use `Skill(skill="rapidx-plan-phase", args="{N}")` if the failed action was planning, or `Skill(skill="rapidx-execute-phase", args="{N}")` if the failed action was execution. Loop to dashboard after.
   - "Skip and continue": Loop to dashboard (phase stays in current state).
   - "View details": Read STATE.md blockers section, display, then re-present options.
 
@@ -331,17 +331,17 @@ Display final status with progress bar:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► SESSION END
+ RapidX ► SESSION END
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
  {milestone_version} — {milestone_name}
  {PROGRESS_BAR} {progress_pct}%  ({completed_count}/{phase_count} phases)
 
- Resume anytime: /gsd:manager
+ Resume anytime: /rapidx:manager
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**Note:** Any background agents still running will continue to completion. Their results will be visible on next `/gsd:manager` or `/gsd:progress` invocation.
+**Note:** Any background agents still running will continue to completion. Their results will be visible on next `/rapidx:manager` or `/rapidx:progress` invocation.
 
 </step>
 

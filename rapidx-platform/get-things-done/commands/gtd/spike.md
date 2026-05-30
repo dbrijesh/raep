@@ -1,5 +1,5 @@
 ---
-name: gsd:spike
+name: rapidx:spike
 description: Rapidly spike an idea with throwaway experiments to validate feasibility before planning
 argument-hint: "<idea to validate> [--quick]"
 allowed-tools:
@@ -14,9 +14,9 @@ allowed-tools:
 <objective>
 Rapid feasibility validation through focused, throwaway experiments. Each spike answers one
 specific question with observable evidence. Spikes live in `.planning/spikes/` and integrate
-with GSD commit patterns, state tracking, and handoff workflows.
+with RapidX commit patterns, state tracking, and handoff workflows.
 
-Does not require `/gsd:new-project` — auto-creates `.planning/spikes/` if needed.
+Does not require `/rapidx:new-project` — auto-creates `.planning/spikes/` if needed.
 </objective>
 
 <execution_context>

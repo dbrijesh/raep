@@ -1,5 +1,5 @@
 ---
-name: gsd:graphify
+name: rapidx:graphify
 description: "Build, query, and inspect the project knowledge graph in .planning/graphs/"
 argument-hint: "[build|query <term>|status|diff]"
 allowed-tools:
@@ -17,7 +17,7 @@ allowed-tools:
 **Before ANY tool calls**, display this banner:
 
 ```
-GSD > GRAPHIFY
+RapidX > GRAPHIFY
 ```
 
 Then proceed to Step 1.
@@ -26,7 +26,7 @@ Then proceed to Step 1.
 
 Check if graphify is enabled by reading `.planning/config.json` directly using the Read tool.
 
-**DO NOT use the gsd-tools config get-value command** -- it hard-exits on missing keys.
+**DO NOT use the rapidx-tools config get-value command** -- it hard-exits on missing keys.
 
 1. Read `.planning/config.json` using the Read tool
 2. If the file does not exist: display the disabled message below and **STOP**
@@ -37,13 +37,13 @@ Check if graphify is enabled by reading `.planning/config.json` directly using t
 **Disabled message:**
 
 ```
-GSD > GRAPHIFY
+RapidX > GRAPHIFY
 
 Knowledge graph is disabled. To activate:
 
   node $HOME/.claude/get-things-done/bin/rapidx-tools.cjs config-set graphify.enabled true
 
-Then run /gsd:graphify build to create the initial graph.
+Then run /rapidx:graphify build to create the initial graph.
 ```
 
 ---
@@ -63,9 +63,9 @@ Parse `$ARGUMENTS` to determine the operation mode:
 **Usage message** (shown when no argument or unrecognized argument):
 
 ```
-GSD > GRAPHIFY
+RapidX > GRAPHIFY
 
-Usage: /gsd:graphify <mode>
+Usage: /rapidx:graphify <mode>
 
 Modes:
   build           Build or rebuild the knowledge graph
@@ -85,7 +85,7 @@ node $HOME/.claude/get-things-done/bin/rapidx-tools.cjs graphify query <term>
 Parse the JSON output and display results:
 - If the output contains `"disabled": true`, display the disabled message from Step 1 and **STOP**
 - If the output contains `"error"` field, display the error message and **STOP**
-- If no nodes found, display: `No graph matches for '<term>'. Try /gsd:graphify build to create or rebuild the graph.`
+- If no nodes found, display: `No graph matches for '<term>'. Try /rapidx:graphify build to create or rebuild the graph.`
 - Otherwise, display matched nodes grouped by type, with edge relationships and confidence tiers (EXTRACTED/INFERRED/AMBIGUOUS)
 
 **STOP** after displaying results. Do not spawn an agent.
@@ -135,7 +135,7 @@ If pre-flight returns `disabled: true` or `error`, display the message and **STO
 If pre-flight returns `action: "spawn_agent"`, display:
 
 ```
-GSD > Spawning graphify-builder agent...
+RapidX > Spawning graphify-builder agent...
 ```
 
 Spawn a Task:
@@ -146,7 +146,7 @@ Task(
   prompt="You are the graphify-builder agent. Your job is to build or rebuild the project knowledge graph using the graphify CLI.
 
 Project root: ${CWD}
-gsd-tools path: $HOME/.claude/get-things-done/bin/rapidx-tools.cjs
+rapidx-tools path: $HOME/.claude/get-things-done/bin/rapidx-tools.cjs
 
 ## Instructions
 
@@ -198,4 +198,4 @@ Wait for the agent to complete.
 1. DO NOT spawn an agent for query/status/diff operations -- these are inline CLI calls
 2. DO NOT modify graph files directly -- the build agent handles writes
 3. DO NOT skip the config gate check
-4. DO NOT use gsd-tools config get-value for the config gate -- it exits on missing keys
+4. DO NOT use rapidx-tools config get-value for the config gate -- it exits on missing keys

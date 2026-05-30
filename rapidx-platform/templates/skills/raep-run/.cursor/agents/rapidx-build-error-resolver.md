@@ -3,7 +3,7 @@ description: RapidX Build Error Resolver agent — activate when there is a buil
 alwaysApply: false
 ---
 
-# Agent: Build Error Resolver — Get Things Done
+# Agent: Build Error Resolver — RapidX
 
 ## Role
 

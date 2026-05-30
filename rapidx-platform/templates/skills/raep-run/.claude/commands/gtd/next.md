@@ -1,6 +1,6 @@
 ---
 name: gsd:next
-description: Automatically advance to the next logical step in the Get Things Done workflow
+description: Automatically advance to the next logical step in the RapidX workflow
 allowed-tools:
   - Read
   - Bash
@@ -9,7 +9,7 @@ allowed-tools:
   - SlashCommand
 ---
 <objective>
-Detect the current project state and automatically invoke the next logical Get Things Done workflow step.
+Detect the current project state and automatically invoke the next logical RapidX workflow step.
 No arguments needed — reads STATE.md, ROADMAP.md, and phase directories to determine what comes next.
 
 Designed for rapid multi-project workflows where remembering which phase/step you're on is overhead.

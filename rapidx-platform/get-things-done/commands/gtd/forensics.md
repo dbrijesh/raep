@@ -1,7 +1,7 @@
 ---
 type: prompt
-name: gsd:forensics
-description: Post-mortem investigation for failed GSD workflows — analyzes git history, artifacts, and state to diagnose what went wrong
+name: rapidx:forensics
+description: Post-mortem investigation for failed RapidX workflows — analyzes git history, artifacts, and state to diagnose what went wrong
 argument-hint: "[problem description]"
 allowed-tools:
   - Read
@@ -12,7 +12,7 @@ allowed-tools:
 ---
 
 <objective>
-Investigate what went wrong during a GSD workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
+Investigate what went wrong during a RapidX workflow execution. Analyzes git history, `.planning/` artifacts, and file system state to detect anomalies and generate a structured diagnostic report.
 
 Purpose: Diagnose failed or stuck workflows so the user can understand root cause and take corrective action.
 Output: Forensic report saved to `.planning/forensics/`, presented inline, with optional issue creation.

@@ -1,5 +1,5 @@
 <purpose>
-Retroactive 6-pillar visual audit of implemented frontend code. Standalone command that works on any project — GSD-managed or not. Produces scored UI-REVIEW.md with actionable findings.
+Retroactive 6-pillar visual audit of implemented frontend code. Standalone command that works on any project — RapidX-managed or not. Produces scored UI-REVIEW.md with actionable findings.
 </purpose>
 
 <required_reading>
@@ -7,7 +7,7 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 </required_reading>
 
 <available_agent_types>
-Valid GSD subagent types (use exact names — do not fall back to 'general-purpose'):
+Valid RapidX subagent types (use exact names — do not fall back to 'general-purpose'):
 - rapidx-ui-auditor — Audits UI against design requirements
 </available_agent_types>
 
@@ -18,7 +18,7 @@ Valid GSD subagent types (use exact names — do not fall back to 'general-purpo
 ```bash
 INIT=$(rapidx-sdk query init.phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
-AGENT_SKILLS_UI_REVIEWER=$(rapidx-sdk query agent-skills gsd-ui-reviewer 2>/dev/null)
+AGENT_SKILLS_UI_REVIEWER=$(rapidx-sdk query agent-skills rapidx-ui-reviewer 2>/dev/null)
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `commit_docs`.
@@ -30,7 +30,7 @@ UI_AUDITOR_MODEL=$(rapidx-sdk query resolve-model rapidx-ui-auditor --raw)
 Display banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI AUDIT — PHASE {N}: {name}
+ RapidX ► UI AUDIT — PHASE {N}: {name}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -42,7 +42,7 @@ UI_SPEC_FILE=$(ls "${PHASE_DIR}"/*-UI-SPEC.md 2>/dev/null | head -1)
 UI_REVIEW_FILE=$(ls "${PHASE_DIR}"/*-UI-REVIEW.md 2>/dev/null | head -1)
 ```
 
-**If `SUMMARY_FILES` empty:** Exit — "Phase {N} not executed. Run /gsd:execute-phase {N} first."
+**If `SUMMARY_FILES` empty:** Exit — "Phase {N} not executed. Run /rapidx:execute-phase {N} first."
 
 
 **Text mode (`workflow.text_mode: true` in config or `--text` flag):** Set `TEXT_MODE=true` if `--text` is present in `$ARGUMENTS` OR `text_mode` from init JSON is `true`. When TEXT_MODE is active, replace every `AskUserQuestion` call with a plain-text numbered list and ask the user to type their choice number. This is required for non-Claude runtimes (OpenAI Codex, Gemini CLI, etc.) where `AskUserQuestion` is not available.
@@ -73,7 +73,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read ~/.claude/agents/gsd:ui-auditor.md for instructions.
+Read ~/.claude/agents/rapidx:ui-auditor.md for instructions.
 
 <objective>
 Conduct 6-pillar visual audit of Phase {phase_number}: {phase_name}
@@ -115,7 +115,7 @@ Display score summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- GSD ► UI AUDIT COMPLETE ✓
+ RapidX ► UI AUDIT COMPLETE ✓
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 **Phase {N}: {Name}** — Overall: {score}/24
@@ -142,11 +142,11 @@ Full review: {path to UI-REVIEW.md}
 
 `/clear` then one of:
 
-- `/gsd:verify-work {N}` — UAT testing
-- `/gsd:plan-phase {N+1}` — plan next phase
+- `/rapidx:verify-work {N}` — UAT testing
+- `/rapidx:plan-phase {N+1}` — plan next phase
 
-- `/gsd:verify-work {N}` — UAT testing
-- `/gsd:plan-phase {N+1}` — plan next phase
+- `/rapidx:verify-work {N}` — UAT testing
+- `/rapidx:plan-phase {N+1}` — plan next phase
 
 ───────────────────────────────────────────────────────────────
 ```

@@ -19,7 +19,7 @@ Tracks and improves a delivery team's maturity in using AI-assisted engineering 
 - **Upgrade path:** Install RapidX, run `/rapidx:new-project`
 
 ### L1 — Structured
-- Get Things Done workflow active
+- RapidX workflow active
 - Basic coding standards installed
 - Session audit trail active
 - **Indicators:** Team uses `/rapidx:*` commands regularly

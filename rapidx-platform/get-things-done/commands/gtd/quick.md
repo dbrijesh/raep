@@ -1,6 +1,6 @@
 ---
-name: gsd:quick
-description: Execute a quick task with Get Things Done guarantees (atomic commits, state tracking) but skip optional agents
+name: rapidx:quick
+description: Execute a quick task with RapidX guarantees (atomic commits, state tracking) but skip optional agents
 argument-hint: "[--full] [--discuss] [--research]"
 allowed-tools:
   - Read
@@ -13,7 +13,7 @@ allowed-tools:
   - AskUserQuestion
 ---
 <objective>
-Execute small, ad-hoc tasks with Get Things Done guarantees (atomic commits, STATE.md tracking).
+Execute small, ad-hoc tasks with RapidX guarantees (atomic commits, STATE.md tracking).
 
 Quick mode is the same system with a shorter path:
 - Spawns rapidx-planner (quick mode) + rapidx-executor(s)

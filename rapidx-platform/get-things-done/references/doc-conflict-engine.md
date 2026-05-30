@@ -1,6 +1,6 @@
 # Doc Conflict Engine
 
-Shared conflict-detection contract for workflows that ingest external content into `.planning/` (e.g., `/gsd:import`, `/gsd:ingest-docs`). Defines the report format, severity semantics, and safety-gate behavior. The specific checks that populate each severity bucket are workflow-specific and defined by the calling workflow.
+Shared conflict-detection contract for workflows that ingest external content into `.planning/` (e.g., `/rapidx:import`, `/rapidx:ingest-docs`). Defines the report format, severity semantics, and safety-gate behavior. The specific checks that populate each severity bucket are workflow-specific and defined by the calling workflow.
 
 ---
 
@@ -49,7 +49,7 @@ Every entry requires `Found:` plus one of `Expected:`/`Impact:`/`Note:` plus (fo
 
 Display:
 ```
-GSD > BLOCKED: {N} blockers must be resolved before {operation} can proceed.
+RapidX > BLOCKED: {N} blockers must be resolved before {operation} can proceed.
 ```
 
 Exit WITHOUT writing any destination files. The gate must hold regardless of WARNING/INFO counts.
@@ -60,7 +60,7 @@ Render the full report, then prompt for approval via the `approve-revise-abort` 
 
 **If the report is empty (no entries in any bucket):**
 
-Proceed silently or display `GSD > No conflicts detected.` Either is acceptable; workflows choose based on verbosity context.
+Proceed silently or display `RapidX > No conflicts detected.` Either is acceptable; workflows choose based on verbosity context.
 
 ---
 

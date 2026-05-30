@@ -11,8 +11,8 @@ Display the current maturity level (L0-L4) and what is required to progress to t
 
 <maturity-levels>
 - **L0 — Ad-hoc**: No structured workflow. Starting point.
-- **L1 — Structured**: Get Things Done workflow installed, basic coding standards active.
-  - Requirements: GTD commands installed, coding-standards skill active, session audit trail
+- **L1 — Structured**: RapidX workflow installed, basic coding standards active.
+  - Requirements: RapidX commands installed, coding-standards skill active, session audit trail
 - **L2 — Governed**: Review gates active, security scanning, client profile configured.
   - Requirements: L1 + review gates + secret scanning + client profile + security-review skill
 - **L3 — Optimized**: Full test coverage, deployment pipelines, architecture patterns enforced.
