@@ -6,6 +6,7 @@ const { generateAgentsMd } = require('./generate-agents-md');
 const { generateAllCommands } = require('./generate-commands');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -105,6 +106,9 @@ function installAntigravity(options) {
       process.stdout.write(`  [RapidX] Generated ${rapidxResult.generated} RapidX enterprise commands → .agent/commands/rapidx/\n`);
     }
   }
+
+  // ── Install Understand-Anything ────────────────────────────────────────────────
+  installUnderstandAnything('antigravity', targetDir);
 
   return { success: true };
 }

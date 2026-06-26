@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { generateAgentsMd } = require('./generate-agents-md');
 const { generateAllCommands, rewriteCommandRefs } = require('./generate-commands');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
@@ -67,6 +68,14 @@ const SKILL_DESCRIPTIONS = {
   'pod-maturity':          'Engineering pod maturity assessment and progression guidance.',
   'architecture-copilot':  'Architecture copilot for system design, ADRs, and technical strategy.',
   'migration-framework':   'Legacy system modernisation and incremental migration strategies.',
+  'understand':            'Analyze codebase and build interactive knowledge graph with architecture visualization.',
+  'understand-chat':       'Ask questions about the codebase using its AI-generated knowledge graph.',
+  'understand-diff':       'Analyze the impact and blast radius of current code changes via the knowledge graph.',
+  'understand-explain':    'Deep-dive explanation of any file, function, or module with architectural context.',
+  'understand-onboard':    'Generate comprehensive onboarding guide for new team members from the knowledge graph.',
+  'understand-domain':     'Extract and visualize business domain knowledge and process flows from the codebase.',
+  'understand-dashboard':  'Launch interactive web dashboard to explore the knowledge graph visually.',
+  'understand-knowledge':  'Analyze Karpathy-pattern LLM wiki knowledge bases and generate knowledge graphs.',
 };
 
 // ── Power definitions — each major agent becomes a Kiro power ─────────────────
@@ -707,6 +716,9 @@ function installKiro(options) {
   // 6. Write AGENTS.md at project root for cross-tool compatibility
   const agentsMd = generateAgentsMd(profile, stack, components);
   fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
+
+  // 7. Install Understand-Anything skills and agents
+  installUnderstandAnything('kiro', targetDir);
 
   return { success: true };
 }

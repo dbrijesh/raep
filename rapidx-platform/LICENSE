@@ -1,0 +1,57 @@
+MIT License
+
+Copyright (c) 2024-2026 RapidX Platform Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Attributions
+
+This project incorporates or is derived from the following open-source projects,
+each licensed under the MIT License:
+
+### Understand-Anything
+Copyright (c) 2024-2026 Egonex AI
+Source: https://github.com/Egonex-AI/Understand-Anything
+License: MIT
+
+The Understand-Anything plugin provides AI-powered codebase knowledge graph
+analysis. The `/rapidx:understand-anything*` commands in this package are
+wrappers around Understand-Anything's skill engine, installed during setup
+from the upstream repository.
+
+### Get-Shit-Done (GSD) Workflow Engine
+Copyright (c) 2024-2026 gsd-build contributors
+Source: https://github.com/gsd-build/get-shit-done
+License: MIT
+
+The RapidX workflow engine (plan → build → review → test → ship) is derived
+from the GSD workflow engine. All user-facing names have been rebranded to
+"RapidX". The underlying vendored engine directory (`get-things-done/`) retains
+its original path for compatibility.
+
+### Everything-Claude-Code Enterprise Component Library
+Copyright (c) 2024-2026 Affaan M and contributors
+Source: https://github.com/affaan-m/everything-claude-code
+License: MIT
+
+The enterprise component library (rules, skills, agents, hooks, security
+patterns, compliance packs, multi-client profiles) is derived from the
+everything-claude-code project.

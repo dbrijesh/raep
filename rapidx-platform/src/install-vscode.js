@@ -9,6 +9,7 @@ const { execSync } = require('child_process');
 const { writeCopilotInstructions } = require('./generate-copilot-instructions');
 const { writeAgentsMd } = require('./generate-agents-md');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -273,6 +274,9 @@ function installVSCode(options) {
   writeCommandsIndex(gtdSrc, {
     copilotPrompts: promptsDir,
   });
+
+  // ── Install Understand-Anything skills ─────────────────────────────────────
+  installUnderstandAnything('vscode', targetDir);
 
   return { success: true };
 }

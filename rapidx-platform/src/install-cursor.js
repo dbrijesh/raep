@@ -6,6 +6,7 @@ const { generateAllCommands } = require('./generate-commands');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { writeAgentsMd } = require('./generate-agents-md');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -223,6 +224,9 @@ function installCursor(options) {
 
   // Generate AGENTS.md
   writeAgentsMd(targetDir, profile, stack, components);
+
+  // ── Install Understand-Anything skills and agents ──────────────────────────
+  installUnderstandAnything('cursor', targetDir);
 
   return { success: true };
 }

@@ -6,6 +6,7 @@ const { generateAgentsMd } = require('./generate-agents-md');
 const { generateAllCommands } = require('./generate-commands');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -132,6 +133,9 @@ This project uses RapidX workflow engine. Key commands (see prompts/ directory):
       process.stdout.write(`  [RapidX] Generated ${rapidxResult.generated} RapidX enterprise prompt files → .github/copilot/prompts/\n`);
     }
   }
+
+  // ── Install Understand-Anything skills ─────────────────────────────────────
+  installUnderstandAnything('copilot-cli', targetDir);
 
   return { success: true };
 }

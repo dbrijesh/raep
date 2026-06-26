@@ -12,7 +12,15 @@
       "codebase-learning",
       "cross-platform-commands",
       "adr-management",
-      "invariant-checks"
+      "invariant-checks",
+      "understand",
+      "understand-chat",
+      "understand-diff",
+      "understand-explain",
+      "understand-onboard",
+      "understand-domain",
+      "understand-dashboard",
+      "understand-knowledge"
     ],
     "agents": [
       "planner",

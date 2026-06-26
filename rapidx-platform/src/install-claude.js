@@ -8,6 +8,7 @@ const { generateAllCommands } = require('./generate-commands');
 const { writeCommandsIndex } = require('./generate-commands-index');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -302,6 +303,9 @@ function installClaude(options) {
 
   // ── Generate CLAUDE.md ─────────────────────────────────────────────────────
   writeClaudeMd(targetDir, profile, stack, components);
+
+  // ── Install Understand-Anything skills and agents ──────────────────────────
+  installUnderstandAnything('claude', targetDir);
 
   return { success: true };
 }
