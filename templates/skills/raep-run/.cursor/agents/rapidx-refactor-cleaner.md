@@ -3,7 +3,7 @@ description: RapidX Refactor Cleaner agent — activate when cleaning up technic
 alwaysApply: false
 ---
 
-# Agent: Refactor Cleaner — Get Things Done
+# Agent: Refactor Cleaner — RapidX
 
 ## Role
 

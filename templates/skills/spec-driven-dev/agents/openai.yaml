@@ -20,7 +20,7 @@ instructions: |
   The spec directory structure is:
   specs/{###-feature-slug}/spec.md    (source of truth)
   specs/{###-feature-slug}/plan.md    (implementation plan)
-  specs/{###-feature-slug}/tasks.md   (GTD task list)
+  specs/{###-feature-slug}/tasks.md   (RapidX task list)
   specs/{###-feature-slug}/checklist.md (completion tracking)
 
   Never skip the spec-review step before planning. Never begin implementation

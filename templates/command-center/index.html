@@ -1,0 +1,321 @@
+<title>RapidX Command</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #12161f; --panel2: #171c27; --border: #232938;
+    --text: #e6e9f0; --muted: #7d8496;
+    --impl: #4f8cff; --verify: #35c98f; --warn: #e0a53c; --stop: #ef5a6f;
+    --paused: #8b8fa3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.5 -apple-system, "Segoe UI", Inter, sans-serif;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 16px 20px 60px; }
+  header.bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 14px;
+  }
+  header.bar h1 { font-size: 15px; margin: 0; letter-spacing: .02em; }
+  header.bar .sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+  .btn {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;
+  }
+  .btn:hover { border-color: #3a4356; }
+  .btn.hold { color: var(--warn); border-color: #4a3a1c; }
+  .btn.stop { color: var(--stop); border-color: #4a1c24; }
+  .btn.mini { padding: 3px 8px; font-size: 11px; font-weight: 500; }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .kpi .n { font-size: 22px; font-weight: 700; }
+  .kpi .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  section { margin-bottom: 20px; }
+  section h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+    margin: 0 0 8px;
+  }
+  .repo-group { margin-bottom: 14px; }
+  .repo-group .repo-name { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .agent {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    border-left: 3px solid var(--muted);
+  }
+  .agent.s-build { border-left-color: var(--impl); }
+  .agent.s-verify { border-left-color: var(--verify); }
+  .agent.s-escalated { border-left-color: var(--warn); }
+  .agent.s-silent { border-left-color: var(--stop); }
+  .agent.s-paused { border-left-color: var(--paused); }
+  .agent.s-done { border-left-color: #3a4356; opacity: .6; }
+  .agent .row1 { display: flex; justify-content: space-between; align-items: baseline; }
+  .agent .id { font-weight: 700; font-size: 12.5px; }
+  .agent .status { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .agent .msg { margin: 6px 0; color: var(--text); font-size: 12px; word-break: break-word; }
+  .agent .meta { color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+  .agent .lane { display: flex; gap: 2px; margin-bottom: 8px; height: 8px; }
+  .agent .lane i { flex: 1; border-radius: 1px; background: #232938; }
+  .agent .lane i.impl { background: var(--impl); }
+  .agent .lane i.verify { background: var(--verify); }
+  .agent .lane i.warn { background: var(--warn); }
+  .agent .lane i.stop { background: var(--stop); }
+  .agent .actions { display: flex; gap: 6px; }
+  .esc-list { display: flex; flex-direction: column; gap: 8px; }
+  .esc {
+    background: var(--panel); border: 1px solid #4a3a1c; border-left: 3px solid var(--warn);
+    border-radius: 8px; padding: 12px;
+  }
+  .esc .q { font-weight: 600; margin-bottom: 4px; }
+  .esc .ctx { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .esc .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .esc .note { color: var(--muted); font-size: 10.5px; margin-top: 6px; }
+  .empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
+  .stream { display: flex; flex-direction: column-reverse; gap: 4px; max-height: 420px; overflow-y: auto; }
+  .ev { padding: 5px 8px; border-radius: 5px; background: var(--panel); font-size: 11.5px; display: flex; gap: 8px; border-left: 2px solid var(--muted); }
+  .ev.impl { border-left-color: var(--impl); }
+  .ev.verify { border-left-color: var(--verify); }
+  .ev.warn { border-left-color: var(--warn); }
+  .ev.stop { border-left-color: var(--stop); }
+  .ev .t { color: var(--muted); white-space: nowrap; }
+  .ev .who { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div><h1>RapidX Command</h1><span class="sub">Claude Code fleet — observe &amp; interrupt</span></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn hold" id="holdAllBtn">Hold Fleet</button>
+      <button class="btn stop" id="stopAllBtn">Stop All</button>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <h2>Escalations</h2>
+    <div class="esc-list" id="escList"><div class="empty">No open escalations.</div></div>
+  </section>
+
+  <section>
+    <h2>Agent Wall</h2>
+    <div id="wall"><div class="empty">Waiting for events&hellip; run <code>/rapidx:command-center</code> in a repo to opt it in.</div></div>
+  </section>
+
+  <section>
+    <h2>Event Stream</h2>
+    <div class="stream" id="stream"></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var STREAM_CAP = 60;
+  var LANE_CAP = 24;
+  var lanes = {}; // correlation_id -> array of event_type buckets
+  var streamEl = document.getElementById('stream');
+  var streamCount = 0;
+  var lastKpiKey = '';
+  var lastWallKey = '';
+  var lastEscKey = '';
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function laneClass(eventType, status) {
+    if (eventType === 'escalation' || eventType === 'blocked') return 'warn';
+    if (eventType === 'error' || status === 'error') return 'stop';
+    if (eventType === 'verification') return 'verify';
+    return 'impl';
+  }
+
+  function fmtElapsed(ts) {
+    if (!ts) return '';
+    var ms = Date.now() - Date.parse(ts);
+    if (ms < 0) ms = 0;
+    var s = Math.floor(ms / 1000);
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    return Math.floor(m / 60) + 'h ago';
+  }
+
+  function renderKpis(kpis) {
+    var key = JSON.stringify(kpis);
+    if (key === lastKpiKey) return;
+    lastKpiKey = key;
+    var el = document.getElementById('kpis');
+    var items = [
+      ['Agents Running', kpis.running],
+      ['Awaiting You', kpis.awaiting],
+      ['Events Today', kpis.events_today],
+      ['Tokens Observed', kpis.tokens_observed],
+    ];
+    el.innerHTML = items.map(function (it) {
+      return '<div class="kpi"><div class="n">' + escapeHtml(it[1]) + '</div><div class="l">' + escapeHtml(it[0]) + '</div></div>';
+    }).join('');
+  }
+
+  function renderLane(correlationId) {
+    var buf = lanes[correlationId] || [];
+    return buf.slice(-LANE_CAP).map(function (cls) { return '<i class="' + cls + '"></i>'; }).join('');
+  }
+
+  function agentCard(a) {
+    var lastMsg = a.last_message || a.last_event_type || 'no activity yet';
+    return (
+      '<div class="agent s-' + escapeHtml(a.status) + '" data-cid="' + escapeHtml(a.correlation_id) + '">' +
+        '<div class="row1"><span class="id">' + escapeHtml(a.agent_id || a.correlation_id) + '</span>' +
+          '<span class="status">' + escapeHtml(a.status) + '</span></div>' +
+        '<div class="msg">' + escapeHtml(lastMsg) + '</div>' +
+        '<div class="meta">' +
+          (a.phase ? escapeHtml(a.phase) + ' &middot; ' : '') +
+          (a.loop ? escapeHtml(a.loop) + ' &middot; ' : '') +
+          (a.branch ? escapeHtml(a.branch) + ' &middot; ' : '') +
+          escapeHtml(fmtElapsed(a.last_ts)) +
+        '</div>' +
+        '<div class="lane" id="lane-' + escapeHtml(a.correlation_id) + '">' + renderLane(a.correlation_id) + '</div>' +
+        '<div class="actions">' +
+          '<button class="btn mini" data-action="hold" data-cid="' + escapeHtml(a.correlation_id) + '">Hold</button>' +
+          '<button class="btn mini" data-action="resume" data-cid="' + escapeHtml(a.correlation_id) + '">Resume</button>' +
+          '<button class="btn mini stop" data-action="kill" data-cid="' + escapeHtml(a.correlation_id) + '">Stop</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderWall(agents) {
+    var key = JSON.stringify(agents.map(function (a) {
+      return [a.correlation_id, a.status, a.last_message, a.last_ts, a.phase, a.loop];
+    }));
+    if (key === lastWallKey) return;
+    lastWallKey = key;
+    var el = document.getElementById('wall');
+    if (!agents.length) {
+      el.innerHTML = '<div class="empty">Waiting for events&hellip; run <code>/rapidx:command-center</code> in a repo to opt it in.</div>';
+      return;
+    }
+    var groups = {};
+    var order = [];
+    agents.forEach(function (a) {
+      var repo = a.repo || 'unknown repo';
+      if (!groups[repo]) { groups[repo] = []; order.push(repo); }
+      groups[repo].push(a);
+    });
+    el.innerHTML = order.map(function (repo) {
+      return '<div class="repo-group"><div class="repo-name">' + escapeHtml(repo) + '</div>' +
+        '<div class="wall">' + groups[repo].map(agentCard).join('') + '</div></div>';
+    }).join('');
+  }
+
+  function escCard(e) {
+    var opts = (e.options || []).map(function (o) {
+      return '<button class="btn mini" data-esc-answer="' + escapeHtml(e.id) + '" data-answer="' + escapeHtml(o) + '">' + escapeHtml(o) + '</button>';
+    }).join('');
+    if (!opts) {
+      opts = '<input type="text" placeholder="type an answer&hellip;" data-esc-input="' + escapeHtml(e.id) + '" style="flex:1;background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;" />' +
+        '<button class="btn mini" data-esc-submit="' + escapeHtml(e.id) + '">Record</button>';
+    }
+    return (
+      '<div class="esc" data-eid="' + escapeHtml(e.id) + '">' +
+        '<div class="q">' + escapeHtml(e.question) + '</div>' +
+        (e.context ? '<div class="ctx">' + escapeHtml(e.context) + '</div>' : '') +
+        '<div class="meta" style="margin-bottom:8px;">' + escapeHtml(e.repo || '') + ' &middot; ' + escapeHtml(e.agent_id || '') + '</div>' +
+        '<div class="opts">' + opts + '</div>' +
+        '<div class="note">Recorded as an audit decision only — does not yet auto-resume the agent (no ask_operator tool wired up in this MVP).</div>' +
+      '</div>'
+    );
+  }
+
+  function renderEscalations(list) {
+    var key = JSON.stringify(list.map(function (e) { return [e.id, e.question]; }));
+    if (key === lastEscKey) return;
+    lastEscKey = key;
+    var el = document.getElementById('escList');
+    el.innerHTML = list.length ? list.map(escCard).join('') : '<div class="empty">No open escalations.</div>';
+  }
+
+  function renderState(state) {
+    renderKpis(state.kpis);
+    renderWall(state.agents);
+    renderEscalations(state.escalations);
+  }
+
+  function pushEvent(evt) {
+    var cls = laneClass(evt.event_type, evt.status);
+    if (evt.correlation_id) {
+      lanes[evt.correlation_id] = (lanes[evt.correlation_id] || []).concat([cls]).slice(-LANE_CAP);
+      var laneEl = document.getElementById('lane-' + evt.correlation_id);
+      if (laneEl) laneEl.innerHTML = renderLane(evt.correlation_id);
+    }
+
+    var row = document.createElement('div');
+    row.className = 'ev ' + cls;
+    var summary = (evt.payload && evt.payload.summary) || evt.event_type;
+    row.innerHTML = '<span class="t">' + escapeHtml((evt.ts || '').slice(11, 19)) + '</span>' +
+      '<span class="who">' + escapeHtml(evt.agent_id || evt.correlation_id || '') + '</span>' +
+      '<span>' + escapeHtml(summary) + '</span>';
+    streamEl.appendChild(row);
+    streamCount++;
+    while (streamCount > STREAM_CAP && streamEl.firstChild) {
+      streamEl.removeChild(streamEl.firstChild);
+      streamCount--;
+    }
+  }
+
+  function connect() {
+    var es = new EventSource('/api/events');
+    es.addEventListener('state', function (ev) {
+      try { renderState(JSON.parse(ev.data)); } catch (_) {}
+    });
+    es.addEventListener('agent_event', function (ev) {
+      try { pushEvent(JSON.parse(ev.data)); } catch (_) {}
+    });
+    es.onerror = function () { /* EventSource auto-reconnects */ };
+  }
+
+  function poll() {
+    fetch('/api/state').then(function (r) { return r.json(); }).then(renderState).catch(function () {});
+  }
+
+  function postControl(correlationId, action) {
+    fetch('/api/control', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correlation_id: correlationId, action: action }),
+    }).catch(function () {});
+  }
+
+  function answerEscalation(id, answer) {
+    if (!answer) return;
+    fetch('/api/escalations/' + encodeURIComponent(id) + '/answer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answer: answer }),
+    }).catch(function () {});
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t.dataset.action && t.dataset.cid) { postControl(t.dataset.cid, t.dataset.action); return; }
+    if (t.dataset.escAnswer) { answerEscalation(t.dataset.escAnswer, t.dataset.answer); return; }
+    if (t.dataset.escSubmit) {
+      var input = document.querySelector('[data-esc-input="' + t.dataset.escSubmit + '"]');
+      answerEscalation(t.dataset.escSubmit, input ? input.value : '');
+      return;
+    }
+    if (t.id === 'holdAllBtn' || t.id === 'stopAllBtn') {
+      var action = t.id === 'holdAllBtn' ? 'hold' : 'kill';
+      document.querySelectorAll('.agent[data-cid]').forEach(function (card) {
+        postControl(card.getAttribute('data-cid'), action);
+      });
+    }
+  });
+
+  connect();
+  poll();
+  setInterval(poll, 8000);
+})();
+</script>

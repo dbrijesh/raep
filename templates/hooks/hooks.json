@@ -78,6 +78,15 @@
       "enabled": true,
       "required": false,
       "note": "Set RAPIDX_STRICT_SPEC=1 to block commits on spec violations"
+    },
+    {
+      "name": "token-tracker",
+      "description": "Track cumulative token usage for the live /rapidx:loop dashboard by tailing the session transcript",
+      "trigger": "post_tool_use",
+      "script": ".rapidx/hooks/token-tracker.js",
+      "enabled": true,
+      "required": false,
+      "note": "No-ops immediately unless .rapidx/loop/manifest.json exists — safe to leave enabled outside loop engagements"
     }
   ]
 }

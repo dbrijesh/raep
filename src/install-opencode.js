@@ -6,6 +6,7 @@ const { generateAgentsMd } = require('./generate-agents-md');
 const { generateAllCommands } = require('./generate-commands');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -96,21 +97,24 @@ function installOpencode(options) {
     process.stdout.write(`  [RapidX] Installed ${agentCount} agent definitions → .opencode/agents/\n`);
   }
 
-  // Generate Get Things Done command files
+  // Generate RapidX command files
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const gtdResult = generateAllCommands(gtdSrc, { cursor: commandsDir }, { gtdDir: GTD_DIR });
   if (gtdResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Generated ${gtdResult.generated} Get Things Done commands → .opencode/commands/rapidx/\n`);
+    process.stdout.write(`  [RapidX] Generated ${gtdResult.generated} RapidX commands → .opencode/commands/rapidx/\n`);
   }
 
   // Generate RapidX enterprise command files
   const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
   if (fs.existsSync(rapidxSrc)) {
-    const rapidxResult = generateAllCommands(rapidxSrc, { cursor: commandsDir }, { gtdDir: GTD_DIR });
+    const rapidxResult = generateAllCommands(rapidxSrc, { cursor: commandsDir }, { gtdDir: GTD_DIR, nativeSource: true });
     if (rapidxResult.generated > 0) {
       process.stdout.write(`  [RapidX] Generated ${rapidxResult.generated} RapidX enterprise commands → .opencode/commands/rapidx/\n`);
     }
   }
+
+  // ── Install Understand-Anything skills ─────────────────────────────────────
+  installUnderstandAnything('opencode', targetDir);
 
   return { success: true };
 }

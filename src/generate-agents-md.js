@@ -43,7 +43,7 @@ function generateAgentsMd(profile, stack, components) {
     'database-reviewer': 'Database schema review, query optimization, and migration safety.',
     'spec-writer': 'Writes EARS-notation feature specifications, requirements docs, and implementation plans.',
     'knowledge-curator': 'Captures and maintains project knowledge, architecture patterns, and team conventions in .rapidx/knowledge/.',
-    'workflow-orchestrator': 'Orchestrates multi-agent Get Things Done SDLC pipelines across Plan→Build→Review→Test→Ship phases.',
+    'workflow-orchestrator': 'Orchestrates multi-agent RapidX SDLC pipelines across Plan→Build→Review→Test→Ship phases.',
     'adr-writer': 'Writes Architecture Decision Records (ADRs) in MADR format with context, options, and consequences.',
     'csharp-reviewer': 'C#/.NET code review: SOLID principles, async correctness, EF Core patterns, ASP.NET Core security.',
     'go-reviewer': 'Go-specific code review: idiomatic patterns, concurrency safety, interface design, error handling.',
@@ -97,7 +97,7 @@ Always use the versions listed above. Do NOT suggest features from newer version
 
 ## Workflow
 
-This project uses the **Get Things Done** workflow:
+This project uses the **RapidX** workflow:
 1. \`/rapidx:new-project\` or \`/rapidx:new-milestone\` — Start
 2. \`/rapidx:plan-phase\` — Plan a phase
 3. \`/rapidx:execute-phase\` — Execute
@@ -110,6 +110,28 @@ This project uses the **Get Things Done** workflow:
 - \`/rapidx:switch-client\` — Change profile
 - \`/rapidx:add-tech\` — Add technology
 - \`/rapidx:governance-check\` — Governance audit
+- \`/rapidx:invariant-catalog\` — Author project invariants (guided Q&A)
+- \`/rapidx:invariant-check\` — Run invariant catalog across the repo
+- \`/rapidx:knowledge-graph\` — Build/query the codebase knowledge graph
+
+## Invariants — enforce on every execute phase (REQUIRED)
+
+This project has a machine-checkable **invariant catalog** at
+\`.rapidx/invariants/catalog.json\`. On platforms with native hooks (Claude Code,
+Cursor, Kiro) it is enforced automatically on every file edit. On this platform
+you MUST enforce it yourself:
+
+> After making code changes during an execute phase, run:
+> \`node .rapidx/hooks/lib/invariants.cjs\` is the engine; invoke the check with
+> \`node -e "const e=require('./.rapidx/hooks/lib/invariants.cjs');const r=e.evaluate(process.cwd());console.log(e.renderFailures(r.results)||'invariants OK');process.exit(r.summary.errors?1:0)"\`
+> Fix every \`error\`-severity violation before continuing. Treat \`warn\` as a
+> strong signal to address.
+
+## Knowledge graph
+
+Before non-trivial edits, consult the codebase knowledge graph for blast radius:
+\`node .rapidx/hooks/lib/graph-query.cjs <term>\`. Build/refresh it with
+\`node scripts/build-knowledge-graph.js\`.
 `;
 }
 

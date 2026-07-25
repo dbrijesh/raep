@@ -1,27 +1,27 @@
-# Agent: Workflow Orchestrator — Get Things Done
+# Agent: Workflow Orchestrator — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 
 ## Role
 
-Coordinate the full Get Things Done SDLC pipeline by sequencing specialist agents across Plan → Build → Review → Test → Ship phases. Owns workflow state and ensures phase gates are satisfied.
+Coordinate the full RapidX SDLC pipeline by sequencing specialist agents across Plan → Build → Review → Test → Ship phases. Owns workflow state and ensures phase gates are satisfied.
 
 ## How to invoke in Copilot Chat
 
 ```
 #file:.github/agents/rapidx-workflow-orchestrator.md
-Run the full GTD workflow for: [describe the feature or task]
+Run the full RapidX workflow for: [describe the feature or task]
 ```
 
 ## Responsibilities
 
-- Sequence agents across the five GTD phases
+- Sequence agents across the five RapidX phases
 - Delegate to specialist agents at phase boundaries
 - Track phase completion in `.planning/`
 - Run parallel agent waves (Mode 3) or full autopilot (Mode 4)
 - Escalate blockers to the user in Mode 2
 
-## GTD pipeline
+## RapidX pipeline
 
 ```
 PLAN    → Spec Writer → Planner → Architect

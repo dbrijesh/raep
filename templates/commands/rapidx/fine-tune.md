@@ -30,6 +30,10 @@ Read all files in `.rapidx/knowledge/`:
 - `architecture.md`
 - `guidelines.md`
 - `domain.md`
+- `mandates.md` (org policy / governance — treat as hard constraints)
+- `security.md` (security artifacts and required controls)
+- `reference.md` (exemplary modules to mirror)
+- `graph.json` + `GRAPH_REPORT.md` (structure, hubs, coupling)
 - `adr-index.md` (if exists)
 - Any user-added `.md` files
 
@@ -126,6 +130,15 @@ Update with project patterns.
 
 ### Codex (.agents/skills/)
 Update skill files with project context.
+
+### invariant-catalog agent + catalog
+Use `mandates.md`, `security.md`, and the architecture/graph knowledge to PROPOSE
+invariants. If the user agrees, hand off to `/rapidx:invariant-catalog --from-knowledge`
+so the rules become enforced checks that run on every execute phase.
+
+### Inject graph awareness into architect/planner/code-reviewer
+From `GRAPH_REPORT.md`, add a short "hub modules / core contracts" note so agents
+know the blast radius of changes and avoid breaking high-coupling interfaces.
 
 ## Step 5 — Sync specs index
 

@@ -3,7 +3,7 @@ description: RapidX E2E Runner agent — activate when writing end-to-end tests,
 alwaysApply: false
 ---
 
-# Agent: E2E Runner — Get Things Done
+# Agent: E2E Runner — RapidX
 
 ## Role
 

@@ -54,13 +54,13 @@ function verifyInstall(options) {
   // Always check .rapidx/stack.json
   checkFile('.rapidx/stack.json', 'stack config');
 
-  // Check GTD engine (always at ~/.claude/get-things-done/ regardless of scope)
+  // Check RapidX engine (always at ~/.claude/get-things-done/ regardless of scope)
   if (platforms.includes('claude')) {
     const gtdHome = path.join(os.homedir(), '.claude', 'get-things-done');
     const checkGtdDir = (sub, label) => {
       const full = path.join(gtdHome, sub);
       if (!fs.existsSync(full)) {
-        errors.push(`Missing GTD engine ${label}: ~/.claude/get-things-done/${sub}`);
+        errors.push(`Missing RapidX engine ${label}: ~/.claude/get-things-done/${sub}`);
       }
     };
     checkGtdDir('workflows', 'workflows');

@@ -3,7 +3,7 @@ description: RapidX TDD Guide agent — activate when writing tests first, doing
 alwaysApply: false
 ---
 
-# Agent: TDD Guide — Get Things Done
+# Agent: TDD Guide — RapidX
 
 ## Role
 

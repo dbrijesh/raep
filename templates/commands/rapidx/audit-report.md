@@ -19,7 +19,7 @@ Generate a formatted audit report from the `.rapidx/audit.jsonl` log file. Usefu
 
 Report sections:
 - **Summary**: date range, total sessions, total events
-- **Commands used**: which GTD and RapidX commands were used
+- **Commands used**: which RapidX and RapidX commands were used
 - **Review gates**: which gates were triggered and their outcomes
 - **Security events**: any secret scanning findings
 - **Stack changes**: any `add-tech` or profile switches

@@ -112,4 +112,32 @@ console.log('\nschema-validation.test.js');
   console.log('  ✓ insurance-hipaa profile has HIPAA compliance framework');
 }
 
+// Test 7: workflow-modernization profile has the 3 mandatory review gates and
+// the 8 workflow agents
+{
+  const workflowMod = JSON.parse(fs.readFileSync(path.join(PROFILES_DIR, 'workflow-modernization.json'), 'utf8'));
+  assert.strictEqual(workflowMod.profile_id, 'workflow-modernization');
+  assert.strictEqual(workflowMod.engagement.type, 'modernization');
+
+  const gateNames = workflowMod.review_gates.map(g => g.name);
+  assert.deepStrictEqual(
+    gateNames.sort(),
+    ['blueprint-review', 'parity-review', 'reimagine-review'],
+    'workflow-modernization should declare exactly the 3 review gates'
+  );
+  assert.ok(workflowMod.review_gates.every(g => g.mandatory === true), 'All 3 review gates should be mandatory');
+
+  const expectedAgents = [
+    'migration-analyst', 'workflow-logic-extractor', 'workflow-dependency-mapper',
+    'workflow-forms-generator', 'workflow-data-modeler', 'workflow-topology-architect',
+    'workflow-blueprint-architect', 'workflow-forward-engineer',
+  ];
+  expectedAgents.forEach(a => assert.ok(workflowMod.agents.includes(a), `workflow-modernization should include agent ${a}`));
+
+  const expectedParitySkills = ['workflow-parity-appian', 'workflow-parity-pega', 'workflow-parity-baw', 'workflow-parity-mulesoft'];
+  expectedParitySkills.forEach(s => assert.ok(workflowMod.skills.includes(s), `workflow-modernization should include skill ${s}`));
+
+  console.log('  ✓ workflow-modernization profile has correct review gates, agents, and parity skills');
+}
+
 console.log('  All schema-validation tests passed.\n');

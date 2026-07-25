@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { generateAgentsMd } = require('./generate-agents-md');
 const { generateAllCommands, rewriteCommandRefs } = require('./generate-commands');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
@@ -67,13 +68,21 @@ const SKILL_DESCRIPTIONS = {
   'pod-maturity':          'Engineering pod maturity assessment and progression guidance.',
   'architecture-copilot':  'Architecture copilot for system design, ADRs, and technical strategy.',
   'migration-framework':   'Legacy system modernisation and incremental migration strategies.',
+  'understand':            'Analyze codebase and build interactive knowledge graph with architecture visualization.',
+  'understand-chat':       'Ask questions about the codebase using its AI-generated knowledge graph.',
+  'understand-diff':       'Analyze the impact and blast radius of current code changes via the knowledge graph.',
+  'understand-explain':    'Deep-dive explanation of any file, function, or module with architectural context.',
+  'understand-onboard':    'Generate comprehensive onboarding guide for new team members from the knowledge graph.',
+  'understand-domain':     'Extract and visualize business domain knowledge and process flows from the codebase.',
+  'understand-dashboard':  'Launch interactive web dashboard to explore the knowledge graph visually.',
+  'understand-knowledge':  'Analyze Karpathy-pattern LLM wiki knowledge bases and generate knowledge graphs.',
 };
 
 // ── Power definitions — each major agent becomes a Kiro power ─────────────────
 const POWER_DEFINITIONS = {
   planner: {
     displayName: 'RapidX Planner',
-    description: 'Plans project phases, roadmaps, and requirements using Get Things Done methodology.',
+    description: 'Plans project phases, roadmaps, and requirements using RapidX methodology.',
     keywords: ['plan', 'planning', 'roadmap', 'requirements', 'feature', 'milestone', 'sprint', 'backlog'],
     steeringFiles: ['planning-workflow.md'],
   },
@@ -127,8 +136,8 @@ const POWER_DEFINITIONS = {
   },
   'workflow-orchestrator': {
     displayName: 'RapidX Workflow Orchestrator',
-    description: 'Orchestrates multi-agent Get Things Done SDLC workflows end-to-end.',
-    keywords: ['workflow', 'orchestrate', 'pipeline', 'SDLC', 'end to end', 'GTD', 'get things done'],
+    description: 'Orchestrates multi-agent RapidX SDLC workflows end-to-end.',
+    keywords: ['workflow', 'orchestrate', 'pipeline', 'SDLC', 'end to end', 'RapidX', 'get things done'],
     steeringFiles: ['gtd-workflow.md'],
   },
 };
@@ -352,7 +361,7 @@ Activate the Architect for system design decisions, new service design, or scali
 4. Implementation Plan (sequenced tasks)
 5. Test Plan (acceptance criteria)`,
 
-  'gtd-workflow.md': `# Get Things Done — SDLC Workflow
+  'gtd-workflow.md': `# RapidX — SDLC Workflow
 
 ## Pipeline Stages
 1. **Plan** → Requirements, ADRs, task breakdown
@@ -601,15 +610,15 @@ function installKiroHooks(kiroHooksDir, components) {
 }
 
 /**
- * Install Get Things Done workflow commands as Kiro slash commands.
+ * Install RapidX workflow commands as Kiro slash commands.
  * Kiro supports slash commands via skill activation — we write lightweight
- * skills that proxy to the GTD command descriptions.
+ * skills that proxy to the RapidX command descriptions.
  */
 function installKiroCommands(kiroSkillsDir) {
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const rapidxSrc = path.join(TEMPLATES_DIR, 'commands', 'rapidx');
 
-  // Generate command index for both GTD and RapidX commands
+  // Generate command index for both RapidX and RapidX commands
   const commandSources = [
     { src: gtdSrc, prefix: 'rapidx' },
     { src: rapidxSrc, prefix: 'rapidx' },
@@ -698,15 +707,18 @@ function installKiro(options) {
   // 4. Install hook scripts
   installKiroHooks(kiroHooksDir, components);
 
-  // 5. Install GTD + RapidX commands as Kiro skills
+  // 5. Install RapidX + RapidX commands as Kiro skills
   const cmdCount = installKiroCommands(kiroSkillsDir);
   if (cmdCount > 0) {
-    process.stdout.write(`  [RapidX] Installed ${cmdCount} Get Things Done commands as Kiro skills\n`);
+    process.stdout.write(`  [RapidX] Installed ${cmdCount} RapidX commands as Kiro skills\n`);
   }
 
   // 6. Write AGENTS.md at project root for cross-tool compatibility
   const agentsMd = generateAgentsMd(profile, stack, components);
   fs.writeFileSync(path.join(targetDir, 'AGENTS.md'), agentsMd, 'utf8');
+
+  // 7. Install Understand-Anything skills and agents
+  installUnderstandAnything('kiro', targetDir);
 
   return { success: true };
 }

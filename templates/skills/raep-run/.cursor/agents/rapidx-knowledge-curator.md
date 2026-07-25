@@ -3,7 +3,7 @@ description: RapidX Knowledge Curator — activate when capturing architectural 
 alwaysApply: false
 ---
 
-# Agent: Knowledge Curator — Get Things Done
+# Agent: Knowledge Curator — RapidX
 
 ## Role
 

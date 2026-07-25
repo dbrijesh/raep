@@ -3,7 +3,7 @@ description: RapidX Go Reviewer — activate when reviewing Go code for idiomati
 alwaysApply: false
 ---
 
-# Agent: Go Reviewer — Get Things Done
+# Agent: Go Reviewer — RapidX
 
 ## Role
 

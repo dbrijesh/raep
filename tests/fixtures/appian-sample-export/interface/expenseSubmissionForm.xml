@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic Appian interface (form) export fixture (not a real customer export).
+  Backs the "Submit Expense Report" user input task.
+-->
+<interface name="Expense Submission Form" uuid="if-expense-submission">
+  <components>
+    <textField label="Employee Name" bindTo="employeeName" required="true"/>
+    <numberField label="Expense Amount" bindTo="expenseAmount" required="true" format="currency"/>
+    <dropdown label="Category" bindTo="expenseCategory" required="true">
+      <choices>Travel, Meals, Supplies, Software, Other</choices>
+    </dropdown>
+    <fileUploadField label="Receipt" bindTo="receiptDocument" required="false"/>
+    <submitButton label="Submit for Approval"/>
+  </components>
+</interface>

@@ -110,7 +110,7 @@ Always use the exact versions listed above. Do NOT suggest upgrading or using fe
 
 ## Workflow
 
-This project uses **Get Things Done** (GTD) workflow engine for structured SDLC delivery.
+This project uses **RapidX** workflow engine for structured SDLC delivery.
 
 Key commands:
 - \`/rapidx:new-project\` — Start a new project with requirements and roadmap

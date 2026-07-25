@@ -1,0 +1,49 @@
+{
+  "$comment": "Machine-readable map of this scaffold's provenance, used by src/generate-workflow-scaffold.js (stampWorkflowScaffold) to drive substitution and by tooling to audit what shipped. Source: AppianDemo/mgp (Hexaware Manufacturing Governance Platform, an Appian migration demo). Do not hand-edit paths here without updating the actual tree.",
+  "source": "AppianDemo/mgp",
+  "extracted_by": "workflow-modernization plan, phase 1a",
+  "tokens": {
+    "{{PLATFORM_NAME}}": "Human-readable product name, e.g. \"Acme Claims Platform\". Replaces \"Manufacturing Governance Platform\" and \"HexaMGP\".",
+    "{{platform_slug}}": "Lowercase kebab/snake identifier, e.g. \"acme-claims\". Replaces lowercase \"mgp\" (docker network name, py-shared package dir/name, minio bucket prefix, npm scope).",
+    "{{PLATFORM_SLUG_UPPER}}": "Uppercase identifier, e.g. \"ACME_CLAIMS\". Replaces uppercase \"MGP\" (env var prefixes, brand-mark spans, BPMN process id prefix).",
+    "{{platform_docker_network}}": "Reserved token name; in this extraction pass the docker network name was folded into {{platform_slug}} directly (docker-compose `networks: [{{platform_slug}}]`). Generator may treat platform_docker_network as an alias of platform_slug unless a project needs them to differ.",
+    "{{platform_seed_email_domain}}": "Email domain used for seeded demo users, e.g. \"acmeclaims.local\". Replaces \"mgp.local\".",
+    "{{PLATFORM_BASE_AGENT_CLASS}}": "Base agent class name, e.g. \"BaseAcmeClaimsAgent\". Replaces \"BaseMGPAgent\" in services/agent-service/app/agents/base.py and its subclass imports."
+  },
+  "categories": {
+    "A_generic_copied_as_is": {
+      "description": "Copied verbatim from AppianDemo/mgp with only token substitution applied. Reusable for any workflow-modernization target.",
+      "areas": [
+        "docker-compose.yml, .env.example, Makefile, infrastructure/nginx/nginx.conf",
+        "services/{workflow-engine,task-service,audit-core,esign,identity,agent-service,llm-gateway}/{Dockerfile,requirements.txt,.env.local.example}",
+        "services/workflow-engine/app/{config,database,main,models,router,schemas,service}.py + app/engine/**",
+        "services/task-service/app/**, services/audit-core/app/** + alembic/ + tests/, services/esign/app/**, services/identity/app/**, services/llm-gateway/app/**",
+        "services/agent-service/app/{config,database,main,models,router,schemas}.py, app/agents/base.py, app/agents/__init__.py",
+        "packages/py-shared/{{platform_slug}}_shared/** (renamed from mgp_shared), packages/py-shared/setup.py",
+        "packages/ui/{package.json,tsconfig.json,vite.config.ts,index.html,Dockerfile,nginx-ui.conf}",
+        "packages/ui/src/{main.tsx,vite-env.d.ts,api/client.ts,stores/auth.ts}",
+        "packages/ui/src/design-system/**, packages/ui/src/components/WorkflowEditor/**",
+        "packages/ui/src/pages/{Login,Dashboard,Tasks,Workflows}.{tsx,css}",
+        "packages/ui/src/pages/Admin/{Users,AuditLog,WorkflowDesigner,AgentBuilder,AgentPlayground}.{tsx,css}"
+      ]
+    },
+    "B_stub_or_partially_generic": {
+      "description": "Copied but with workload-specific content stripped and replaced with a minimal generic example or a TODO marker. Structure/mechanics kept intact.",
+      "files": [
+        "services/workflow-engine/app/seed.py — manufacturing MATERIAL_REQUISITION/CERTIFICATE_MANAGEMENT/DEVIATION_CAPA graphs replaced with one 7-node EXAMPLE_APPROVAL graph; seeding mechanics (fingerprinting, create_definition) kept verbatim",
+        "services/agent-service/app/service.py — AGENT_REGISTRY emptied to a TODO-commented dict, and the 5 workload-specific agent-class imports removed; pipeline CRUD, invoke, tracing left verbatim",
+        "packages/ui/src/components/AppShell.tsx — NAV array's manufacturing routes (Material Requisition, Certificates, Deviations & CAPA, Reports) replaced with a TODO comment; ADMIN_NAV's DB Query Agent entry dropped (its page is category C)",
+        "packages/ui/src/App.tsx — workload-specific routes (mr, certificates, reports, deviations, admin/db-agent) removed, replaced with a TODO comment; generic routes (login, dashboard, tasks, workflows, admin/*) kept"
+      ]
+    },
+    "C_workload_specific_excluded": {
+      "description": "Not copied — manufacturing-domain code that must never ship in a generic scaffold. Placeholder dirs/READMEs left so forward-engineer output has a known landing spot.",
+      "excluded": [
+        "services/agent-service/app/agents/{batch_anomaly,capa_suggestion,cert_review,db_query,deviation_triage,rca_drafting}.py — replaced by services/agent-service/app/agents/README.md",
+        "packages/ui/src/pages/{Certificates,Deviations,Reports}.tsx, pages/Reports/, pages/MaterialRequisition/, pages/Admin/{DBAgent.tsx,DBAgent.css} — placeholder dir at packages/ui/src/pages/.gitkeep",
+        "data/, logs/, *.egg-info/, __pycache__/, *.pyc — build/runtime artifacts, never part of a template"
+      ]
+    }
+  },
+  "file_count": 160
+}

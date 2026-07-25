@@ -9,6 +9,7 @@ const TEST_FILES = [
   'installer/detect-platforms.test.js',
   'installer/detect-stack.test.js',
   'installer/map-components.test.js',
+  'installer/generate-workflow-scaffold.test.js',
   'profiles/schema-validation.test.js',
   'profiles/profile-loading.test.js',
   'hooks/audit-trail.test.js',

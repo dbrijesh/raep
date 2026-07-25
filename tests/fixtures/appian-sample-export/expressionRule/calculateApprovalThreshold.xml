@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic Appian expression rule export fixture (not a real customer export).
+  Business rule: expenses over $1000 require an additional Finance approval
+  tier on top of the manager approval already required for every expense.
+-->
+<expressionRule name="calculateApprovalThreshold" uuid="er-approval-threshold">
+  <inputs>
+    <parameter name="expenseAmount" type="Decimal"/>
+  </inputs>
+  <output type="Boolean" name="requiresFinanceApproval"/>
+  <definition><![CDATA[
+    a!localVariables(
+      local!threshold: 1000,
+      expenseAmount > local!threshold
+    )
+  ]]></definition>
+</expressionRule>

@@ -1,0 +1,258 @@
+<meta charset="utf-8" />
+<title>RapidX Command (Azure mirror)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b0e14; --panel: #12161f; --panel2: #171c27; --border: #232938;
+    --text: #e6e9f0; --muted: #7d8496;
+    --impl: #4f8cff; --verify: #35c98f; --warn: #e0a53c; --stop: #ef5a6f;
+    --paused: #8b8fa3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.5 -apple-system, "Segoe UI", Inter, sans-serif;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 16px 20px 60px; }
+  header.bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border); margin-bottom: 14px; gap: 12px; flex-wrap: wrap;
+  }
+  header.bar h1 { font-size: 15px; margin: 0; letter-spacing: .02em; }
+  header.bar .sub { color: var(--muted); font-size: 12px; margin-left: 8px; }
+  .mirror-tag {
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 99px; padding: 4px 10px; white-space: nowrap;
+  }
+  .banner {
+    background: #1c1f14; border: 1px solid #3a3a1c; color: var(--warn); border-radius: 6px;
+    padding: 8px 12px; font-size: 11.5px; margin-bottom: 16px;
+  }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  .kpi .n { font-size: 22px; font-weight: 700; }
+  .kpi .l { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  section { margin-bottom: 20px; }
+  section h2 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+    margin: 0 0 8px;
+  }
+  .repo-group { margin-bottom: 14px; }
+  .repo-group .repo-name { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .agent {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px;
+    border-left: 3px solid var(--muted);
+  }
+  .agent.s-build { border-left-color: var(--impl); }
+  .agent.s-verify { border-left-color: var(--verify); }
+  .agent.s-escalated { border-left-color: var(--warn); }
+  .agent.s-silent { border-left-color: var(--stop); }
+  .agent.s-paused { border-left-color: var(--paused); }
+  .agent.s-done { border-left-color: #3a4356; opacity: .6; }
+  .agent .row1 { display: flex; justify-content: space-between; align-items: baseline; }
+  .agent .id { font-weight: 700; font-size: 12.5px; }
+  .agent .status { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .agent .msg { margin: 6px 0; color: var(--text); font-size: 12px; word-break: break-word; }
+  .agent .meta { color: var(--muted); font-size: 11px; margin-bottom: 8px; }
+  .agent .lane { display: flex; gap: 2px; margin-bottom: 2px; height: 8px; }
+  .agent .lane i { flex: 1; border-radius: 1px; background: #232938; }
+  .agent .lane i.impl { background: var(--impl); }
+  .agent .lane i.verify { background: var(--verify); }
+  .agent .lane i.warn { background: var(--warn); }
+  .agent .lane i.stop { background: var(--stop); }
+  .esc-list { display: flex; flex-direction: column; gap: 8px; }
+  .esc {
+    background: var(--panel); border: 1px solid #4a3a1c; border-left: 3px solid var(--warn);
+    border-radius: 8px; padding: 12px;
+  }
+  .esc .q { font-weight: 600; margin-bottom: 4px; }
+  .esc .ctx { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+  .esc .note { color: var(--muted); font-size: 10.5px; margin-top: 6px; }
+  .empty { color: var(--muted); font-size: 12px; padding: 10px 0; }
+  .stream { display: flex; flex-direction: column; gap: 4px; max-height: 420px; overflow-y: auto; }
+  .ev { padding: 5px 8px; border-radius: 5px; background: var(--panel); font-size: 11.5px; display: flex; gap: 8px; border-left: 2px solid var(--muted); }
+  .ev.impl { border-left-color: var(--impl); }
+  .ev.verify { border-left-color: var(--verify); }
+  .ev.warn { border-left-color: var(--warn); }
+  .ev.stop { border-left-color: var(--stop); }
+  .ev .t { color: var(--muted); white-space: nowrap; }
+  .ev .who { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div><h1>RapidX Command</h1><span class="sub">Claude Code fleet &mdash; observe only (Azure mirror)</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="mirror-tag" id="updated">polled snapshot</span>
+    </div>
+  </header>
+
+  <div class="banner">
+    Read-only mirror. Hold / Resume / Stop and escalation answers require the
+    local console (<code>node ~/.rapidx-command/launch.js --open</code>) &mdash; this
+    static page has no path back to the collector's control endpoint.
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <h2>Escalations</h2>
+    <div class="esc-list" id="escList"><div class="empty">No open escalations.</div></div>
+  </section>
+
+  <section>
+    <h2>Agent Wall</h2>
+    <div id="wall"><div class="empty">Loading&hellip;</div></div>
+  </section>
+
+  <section>
+    <h2>Event Stream</h2>
+    <div class="stream" id="stream"><div class="empty">Loading&hellip;</div></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  // Fill in the blob's public/SAS read URL, or pass ?src=<url> at load time.
+  var BLOB_URL = '';
+  var params = new URLSearchParams(location.search);
+  var src = params.get('src') || BLOB_URL;
+  var LANE_CAP = 24;
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function laneClass(eventType, status) {
+    if (eventType === 'escalation' || eventType === 'blocked') return 'warn';
+    if (eventType === 'error' || status === 'error') return 'stop';
+    if (eventType === 'verification') return 'verify';
+    return 'impl';
+  }
+
+  function fmtElapsed(ts) {
+    if (!ts) return '';
+    var ms = Date.now() - Date.parse(ts);
+    if (ms < 0) ms = 0;
+    var s = Math.floor(ms / 1000);
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    return Math.floor(m / 60) + 'h ago';
+  }
+
+  // Recent events (last 50, provided in the snapshot) are the only history
+  // this static page has — enough to fake a short per-agent lane strip,
+  // unlike the live dashboard which accumulates its own buffer from SSE.
+  function buildLanes(events) {
+    var lanes = {};
+    (events || []).slice().reverse().forEach(function (evt) {
+      if (!evt.correlation_id) return;
+      var cls = laneClass(evt.event_type, evt.status);
+      lanes[evt.correlation_id] = (lanes[evt.correlation_id] || []).concat([cls]).slice(-LANE_CAP);
+    });
+    return lanes;
+  }
+
+  function agentCard(a, lanes) {
+    var lastMsg = a.last_message || a.last_event_type || 'no activity yet';
+    var lane = (lanes[a.correlation_id] || []).map(function (cls) { return '<i class="' + cls + '"></i>'; }).join('');
+    return (
+      '<div class="agent s-' + escapeHtml(a.status) + '">' +
+        '<div class="row1"><span class="id">' + escapeHtml(a.agent_id || a.correlation_id) + '</span>' +
+          '<span class="status">' + escapeHtml(a.status) + '</span></div>' +
+        '<div class="msg">' + escapeHtml(lastMsg) + '</div>' +
+        '<div class="meta">' +
+          (a.phase ? escapeHtml(a.phase) + ' &middot; ' : '') +
+          (a.loop ? escapeHtml(a.loop) + ' &middot; ' : '') +
+          (a.branch ? escapeHtml(a.branch) + ' &middot; ' : '') +
+          escapeHtml(fmtElapsed(a.last_ts)) +
+        '</div>' +
+        (lane ? '<div class="lane">' + lane + '</div>' : '') +
+      '</div>'
+    );
+  }
+
+  function renderWall(agents, lanes) {
+    var el = document.getElementById('wall');
+    if (!agents || !agents.length) {
+      el.innerHTML = '<div class="empty">No agents reporting.</div>';
+      return;
+    }
+    var groups = {};
+    var order = [];
+    agents.forEach(function (a) {
+      var repo = a.repo || 'unknown repo';
+      if (!groups[repo]) { groups[repo] = []; order.push(repo); }
+      groups[repo].push(a);
+    });
+    el.innerHTML = order.map(function (repo) {
+      return '<div class="repo-group"><div class="repo-name">' + escapeHtml(repo) + '</div>' +
+        '<div class="wall">' + groups[repo].map(function (a) { return agentCard(a, lanes); }).join('') + '</div></div>';
+    }).join('');
+  }
+
+  function escCard(e) {
+    return (
+      '<div class="esc">' +
+        '<div class="q">' + escapeHtml(e.question) + '</div>' +
+        (e.context ? '<div class="ctx">' + escapeHtml(e.context) + '</div>' : '') +
+        '<div class="meta" style="margin-bottom:0;">' + escapeHtml(e.repo || '') + ' &middot; ' + escapeHtml(e.agent_id || '') + '</div>' +
+        '<div class="note">Answer from the local console &mdash; this mirror is read-only.</div>' +
+      '</div>'
+    );
+  }
+
+  function renderEscalations(list) {
+    var el = document.getElementById('escList');
+    el.innerHTML = (list && list.length) ? list.map(escCard).join('') : '<div class="empty">No open escalations.</div>';
+  }
+
+  function renderStream(events) {
+    var el = document.getElementById('stream');
+    if (!events || !events.length) {
+      el.innerHTML = '<div class="empty">No events yet.</div>';
+      return;
+    }
+    el.innerHTML = events.slice().reverse().map(function (e) {
+      var cls = laneClass(e.event_type, e.status);
+      var summary = (e.payload && e.payload.summary) || e.event_type;
+      return '<div class="ev ' + cls + '"><span class="t">' + escapeHtml((e.ts || '').slice(11, 19)) + '</span>' +
+        '<span class="who">' + escapeHtml(e.agent_id || e.correlation_id || '') + '</span>' +
+        '<span>' + escapeHtml(summary) + '</span></div>';
+    }).join('');
+  }
+
+  function render(snapshot) {
+    document.getElementById('updated').textContent = snapshot.updated_at ? ('updated ' + fmtElapsed(snapshot.updated_at)) : 'polled snapshot';
+
+    var kpis = snapshot.kpis || {};
+    document.getElementById('kpis').innerHTML = [
+      ['Agents Running', kpis.running], ['Awaiting You', kpis.awaiting],
+      ['Events Today', kpis.events_today], ['Tokens Observed', kpis.tokens_observed],
+    ].map(function (it) {
+      return '<div class="kpi"><div class="n">' + escapeHtml(it[1]) + '</div><div class="l">' + escapeHtml(it[0]) + '</div></div>';
+    }).join('');
+
+    var lanes = buildLanes(snapshot.recent_events);
+    renderWall(snapshot.agents, lanes);
+    renderEscalations(snapshot.escalations);
+    renderStream(snapshot.recent_events);
+  }
+
+  function poll() {
+    if (!src) {
+      document.getElementById('wall').innerHTML = '<div class="empty">No snapshot URL configured &mdash; set BLOB_URL in this file or load with ?src=&lt;blob SAS read URL&gt;.</div>';
+      return;
+    }
+    fetch(src, { cache: 'no-store' }).then(function (r) { return r.json(); }).then(render).catch(function () {});
+  }
+
+  poll();
+  setInterval(poll, 20000);
+})();
+</script>

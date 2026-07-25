@@ -141,6 +141,7 @@ function mapComponents(stackConfig, profile) {
     'enterprise-standard', 'regulated',
   ]);
   const MODERNIZATION_PROFILES = new Set(['modernization', 'legacy-modernization']);
+  const WORKFLOW_MODERNIZATION_PROFILES = new Set(['workflow-modernization']);
 
   if (stackConfig.profile) {
     const profileId = stackConfig.profile.toLowerCase();
@@ -149,6 +150,9 @@ function mapComponents(stackConfig, profile) {
     }
     if (MODERNIZATION_PROFILES.has(profileId)) {
       addFromEntry(componentMap.profiles.modernization, result);
+    }
+    if (WORKFLOW_MODERNIZATION_PROFILES.has(profileId)) {
+      addFromEntry(componentMap.profiles['workflow-modernization'], result);
     }
   }
 

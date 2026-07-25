@@ -1,6 +1,6 @@
 ---
 name: rapidx:remove-workspace
-description: Remove a Get Things Done workspace and clean up worktrees
+description: Remove a RapidX workspace and clean up worktrees
 argument-hint: "<workspace-name>"
 allowed-tools:
   - Bash

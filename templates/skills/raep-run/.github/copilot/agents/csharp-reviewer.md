@@ -1,4 +1,4 @@
-# Agent: C# Reviewer — Get Things Done
+# Agent: C# Reviewer — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

@@ -1,6 +1,6 @@
 ---
 name: rapidx:plan-spec
-description: "Get Things Done: Generate a detailed implementation plan from a feature specification"
+description: "RapidX: Generate a detailed implementation plan from a feature specification"
 allowed-tools:
   - Read
   - Write
@@ -8,7 +8,7 @@ allowed-tools:
 ---
 
 <objective>
-Generate a precise, executable implementation plan from the feature specification at `specs/$ARGUMENTS/spec.md`. This plan maps acceptance criteria to technical tasks, respects the project's tech stack versions, and structures work for the Get Things Done execution engine.
+Generate a precise, executable implementation plan from the feature specification at `specs/$ARGUMENTS/spec.md`. This plan maps acceptance criteria to technical tasks, respects the project's tech stack versions, and structures work for RapidX execution engine.
 </objective>
 
 <process>
@@ -131,7 +131,7 @@ Plan created: specs/$ARGUMENTS/plan.md
 Phases: {N} | Tasks: {total} | Estimated complexity: {Low/Medium/High}
 
 Next steps:
-  /rapidx:tasks-from-spec $ARGUMENTS  → Break into GTD tasks
+  /rapidx:tasks-from-spec $ARGUMENTS  → Break into RapidX tasks
   /rapidx:execute-phase                   → Start execution
   /rapidx:spec-review $ARGUMENTS      → Final spec review before coding
 ```

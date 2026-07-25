@@ -8,11 +8,12 @@ const { generateAllCommands } = require('./generate-commands');
 const { writeCommandsIndex } = require('./generate-commands-index');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 
-// GTD engine always lives at ~/.claude/get-things-done/ regardless of install scope,
+// RapidX engine always lives at ~/.claude/get-things-done/ regardless of install scope,
 // because all @~/.claude/get-things-done/ references in commands and workflows
 // resolve against the user's home directory, not the project directory.
 const GTD_INSTALL_DIR = path.join(os.homedir(), '.claude', 'get-things-done');
@@ -35,10 +36,10 @@ function copyDirRecursive(src, dest) {
   }
 }
 
-// Text file extensions to rewrite during GTD engine installation
+// Text file extensions to rewrite during RapidX engine installation
 const TEXT_EXTS = new Set(['.md', '.txt', '.json', '.toml', '.yaml', '.yml']);
 
-// All substitutions applied to GTD engine text files when installing to ~/.claude/
+// All substitutions applied to RapidX engine text files when installing to ~/.claude/
 // Order matters: longer/more-specific patterns before shorter ones to avoid partial matches.
 const GTD_REWRITES = [
   [/\/gsd:/g,                          '/rapidx:'],
@@ -82,7 +83,7 @@ const GTD_REWRITES = [
 ];
 
 /**
- * Apply all GTD→RapidX substitutions to a text file's content.
+ * Apply all RapidX→RapidX substitutions to a text file's content.
  */
 function rewriteGtdContent(content) {
   let out = content;
@@ -93,7 +94,7 @@ function rewriteGtdContent(content) {
 }
 
 /**
- * Copy the GTD engine directory to dest, rewriting legacy gsd- refs in text files.
+ * Copy the RapidX engine directory to dest, rewriting legacy gsd- refs in text files.
  * Binary files (.cjs, .js, etc.) are copied as-is.
  */
 function copyGtdEngine(src, dest) {
@@ -142,6 +143,8 @@ function mergeClaudeSettings(settingsPath, components) {
     'codebase-context': { event: 'UserPromptSubmit', matcher: null },
     'knowledge-sync':   { event: 'Stop',             matcher: null },
     'spec-validator':   { event: 'PreToolUse',       matcher: 'Bash' },
+    'invariant-check':  { event: 'PostToolUse',      matcher: 'Write|Edit|MultiEdit|NotebookEdit' },
+    'token-tracker':    { event: 'PostToolUse',      matcher: '.*' },
   };
 
   // Build Claude settings hooks object: { EventType: [ hookEntry, ... ] }
@@ -158,21 +161,33 @@ function mergeClaudeSettings(settingsPath, components) {
     hooksObj[event].push(entry);
   }
 
-  const rapidxSettings = {
-    hooks: hooksObj,
-    permissions: {
-      allow: [
-        'Bash(node:.rapidx/hooks/*.js)',
-        'Read(.rapidx/**)',
-        'Write(.rapidx/**)',
-      ],
-    },
-  };
+  // Claude Code reads `hooks` and `permissions` at the TOP LEVEL of
+  // settings.json — nesting them under a "rapidx" key would mean the hooks
+  // never fire. Merge them into the top level, preserving any existing
+  // (non-RapidX) entries rather than overwriting them.
+  const merged = Object.assign({}, existing);
 
-  // Merge: preserve all existing keys, add/update rapidx namespace
-  const merged = Object.assign({}, existing, {
-    rapidx: Object.assign({}, existing.rapidx || {}, rapidxSettings),
-  });
+  // ── Merge hooks (per event, de-duplicated by command) ──────────────────────
+  merged.hooks = Object.assign({}, existing.hooks || {});
+  for (const event of Object.keys(hooksObj)) {
+    const existingEntries = Array.isArray(merged.hooks[event]) ? merged.hooks[event] : [];
+    const existingCommands = new Set(
+      existingEntries.flatMap(e => (e.hooks || []).map(h => h.command))
+    );
+    const newEntries = hooksObj[event].filter(e =>
+      !(e.hooks || []).every(h => existingCommands.has(h.command))
+    );
+    merged.hooks[event] = existingEntries.concat(newEntries);
+  }
+
+  // ── Merge permissions.allow (unique) ───────────────────────────────────────
+  const rapidxAllow = ['Bash(node:.rapidx/hooks/*.js)', 'Read(.rapidx/**)', 'Write(.rapidx/**)'];
+  merged.permissions = Object.assign({}, existing.permissions || {});
+  const allow = new Set([...(merged.permissions.allow || []), ...rapidxAllow]);
+  merged.permissions.allow = [...allow];
+
+  // Keep a small marker under the rapidx namespace for traceability.
+  merged.rapidx = Object.assign({}, existing.rapidx || {}, { managed: true, hooksInstalled: Object.keys(hooksObj) });
 
   fs.writeFileSync(settingsPath, JSON.stringify(merged, null, 2), 'utf8');
 }
@@ -200,18 +215,18 @@ function installClaude(options) {
   fs.mkdirSync(skillsDir, { recursive: true });
   fs.mkdirSync(agentsDir, { recursive: true });
 
-  // ── Install GTD engine to ~/.claude/get-things-done/ ─────────────────────
-  // GTD commands reference @~/.claude/get-things-done/workflows|references|etc.
+  // ── Install RapidX engine to ~/.claude/get-things-done/ ─────────────────────
+  // RapidX commands reference @~/.claude/get-things-done/workflows|references|etc.
   // These paths always resolve against the user's home directory, so the engine
   // must live there regardless of whether this is a local or global install.
   if (fs.existsSync(GTD_DIR)) {
     copyGtdEngine(GTD_DIR, GTD_INSTALL_DIR);
-    process.stdout.write(`  [RapidX] Installed Get Things Done engine → ${GTD_INSTALL_DIR}\n`);
+    process.stdout.write(`  [RapidX] Installed RapidX engine → ${GTD_INSTALL_DIR}\n`);
   } else {
-    process.stderr.write(`[RapidX] Warning: GTD engine source not found at ${GTD_DIR}\n`);
+    process.stderr.write(`[RapidX] Warning: RapidX engine source not found at ${GTD_DIR}\n`);
   }
 
-  // ── Convert GTD commands → /rapidx:* and write to .claude/commands/rapidx/ ─
+  // ── Convert RapidX commands → /rapidx:* and write to .claude/commands/rapidx/ ─
   // Source files stay in get-things-done/commands/gtd/ (vendor source).
   // generateAllCommands rewrites all legacy /gsd: command refs to /rapidx: on output.
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
@@ -219,7 +234,7 @@ function installClaude(options) {
     rapidx: rapidxCommandsDir,
   });
   if (gtdResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Installed ${gtdResult.generated} Get Things Done commands as /rapidx:*\n`);
+    process.stdout.write(`  [RapidX] Installed ${gtdResult.generated} RapidX commands as /rapidx:*\n`);
   }
 
   // ── Copy hand-authored RapidX commands ────────────────────────────────────
@@ -289,6 +304,9 @@ function installClaude(options) {
 
   // ── Generate CLAUDE.md ─────────────────────────────────────────────────────
   writeClaudeMd(targetDir, profile, stack, components);
+
+  // ── Install Understand-Anything skills and agents ──────────────────────────
+  installUnderstandAnything('claude', targetDir);
 
   return { success: true };
 }

@@ -1,6 +1,6 @@
 ---
 name: rapidx:tasks-from-spec
-description: "Get Things Done: Convert a spec plan into GTD-compatible executable tasks"
+description: "RapidX: Convert a spec plan into RapidX-compatible executable tasks"
 allowed-tools:
   - Read
   - Write
@@ -8,21 +8,21 @@ allowed-tools:
 ---
 
 <objective>
-Transform the implementation plan at `specs/$ARGUMENTS/plan.md` into a GTD-compatible task list in `.planning/TASKS.md`, ready for `/rapidx:execute-phase` to pick up and run.
+Transform the implementation plan at `specs/$ARGUMENTS/plan.md` into a RapidX-compatible task list in `.planning/TASKS.md`, ready for `/rapidx:execute-phase` to pick up and run.
 </objective>
 
 <process>
-## Step 1 — Read plan and existing GTD state
+## Step 1 — Read plan and existing RapidX state
 
 Read:
 1. `specs/$ARGUMENTS/plan.md` — the implementation plan
-2. `.planning/TASKS.md` — existing GTD tasks (to avoid duplication)
-3. `.planning/config.json` — GTD config, current phase
+2. `.planning/TASKS.md` — existing RapidX tasks (to avoid duplication)
+3. `.planning/config.json` — RapidX config, current phase
 4. `.rapidx/stack.json` — tech stack for task context
 
-## Step 2 — Convert plan tasks to GTD format
+## Step 2 — Convert plan tasks to RapidX format
 
-For each task in the plan phases, generate a GTD-format task entry:
+For each task in the plan phases, generate a RapidX-format task entry:
 
 ```markdown
 ## Task: {T-number} — {Task Title}
@@ -111,7 +111,7 @@ Tasks generated from spec: specs/$ARGUMENTS/
 
   spec.md      → Feature specification
   plan.md      → Implementation plan
-  tasks.md     → GTD task list ({N} tasks)
+  tasks.md     → RapidX task list ({N} tasks)
   checklist.md → Completion checklist
 
 Tasks added to .planning/TASKS.md

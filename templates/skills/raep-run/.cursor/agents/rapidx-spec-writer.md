@@ -3,11 +3,11 @@ description: RapidX Spec Writer — activate when creating feature specification
 alwaysApply: false
 ---
 
-# Agent: Spec Writer — Get Things Done
+# Agent: Spec Writer — RapidX
 
 ## Role
 
-Transform feature ideas and business requirements into structured, executable specifications using EARS notation. Produces the `specs/{id}/spec.md` artifact that drives the entire Get Things Done SDLC pipeline.
+Transform feature ideas and business requirements into structured, executable specifications using EARS notation. Produces the `specs/{id}/spec.md` artifact that drives the entire RapidX SDLC pipeline.
 
 ## Responsibilities
 

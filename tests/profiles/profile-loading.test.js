@@ -14,6 +14,7 @@ console.log('\nprofile-loading.test.js');
   assert.ok(profiles.includes('pharma-regulated'), 'Should include pharma-regulated');
   assert.ok(profiles.includes('finserv-sox'), 'Should include finserv-sox');
   assert.ok(profiles.includes('insurance-hipaa'), 'Should include insurance-hipaa');
+  assert.ok(profiles.includes('workflow-modernization'), 'Should include workflow-modernization');
   assert.ok(!profiles.includes('_schema'), 'Should not include _schema');
   console.log(`  ✓ listProfiles returns ${profiles.length} profiles (correct set)`);
 }
@@ -76,6 +77,16 @@ console.log('\nprofile-loading.test.js');
   assert.strictEqual(profile.governance.secret_scanning, true, 'Pharma should have secret_scanning enabled');
   assert.strictEqual(profile.governance.mandatory_review, true, 'Pharma should have mandatory_review enabled');
   console.log('  ✓ pharma-regulated has correct governance settings');
+}
+
+// Test 8: workflow-modernization profile loads with the 3 mandatory review gates
+{
+  const profile = loadProfile('workflow-modernization');
+  assert.ok(profile, 'workflow-modernization profile should load');
+  assert.strictEqual(profile.engagement.type, 'modernization');
+  assert.strictEqual(profile.review_gates.length, 3, 'workflow-modernization should have exactly 3 review gates');
+  assert.ok(profile.review_gates.every(g => g.mandatory), 'All workflow-modernization review gates should be mandatory');
+  console.log('  ✓ workflow-modernization profile loads with 3 mandatory review gates');
 }
 
 console.log('  All profile-loading tests passed.\n');

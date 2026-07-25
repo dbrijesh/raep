@@ -123,7 +123,7 @@ ${codingStandards.join('\n')}
 
 ${skillRefs || 'Skills are defined in `.github/skills/`'}
 
-## Available agents (RapidX)
+## Available agents
 
 Attach an agent file in Copilot Chat with \`#file:\` to activate it:
 
@@ -174,7 +174,7 @@ Plan a new project for a user authentication service
 /rapidx-gtd              Command router — describe what you want
 \`\`\`
 Or open any \`.prompt.md\` file in \`.github/prompts/\` and click **Run in Copilot Chat**.
-All prompts use \`agent: agent\` per the VS Code prompt file standard with full tool access.
+All prompts use \`mode: agent\` per the VS Code prompt file standard with full tool access.
 
 **Cursor Composer** — reference a command file with @:
 \`\`\`
@@ -184,6 +184,21 @@ All prompts use \`agent: agent\` per the VS Code prompt file standard with full 
 \`\`\`
 All commands available in \`.cursor/commands/rapidx/\`
 
+## Invariants — enforce on every change (REQUIRED)
+
+This project has a machine-checkable invariant catalog at
+\`.rapidx/invariants/catalog.json\`. VS Code/Copilot has no automatic hook, so you
+MUST run the check yourself after editing code and fix every \`error\`-severity
+violation before continuing:
+
+\`\`\`
+node -e "const e=require('./.rapidx/hooks/lib/invariants.cjs');const r=e.evaluate(process.cwd());console.log(e.renderFailures(r.results)||'invariants OK');process.exit(r.summary.errors?1:0)"
+\`\`\`
+
+Build/query the codebase knowledge graph for impact analysis before non-trivial
+edits: \`node scripts/build-knowledge-graph.js\` then
+\`node .rapidx/hooks/lib/graph-query.cjs <term>\`.
+
 ## Review gates
 
 Before submitting code for review:
@@ -192,6 +207,7 @@ Before submitting code for review:
 - [ ] Error handling is explicit at all levels
 - [ ] Code follows the standards listed above
 - [ ] Security implications reviewed for auth/data changes
+- [ ] \`/rapidx:invariant-check\` passes (no error-severity violations)
 `;
 }
 

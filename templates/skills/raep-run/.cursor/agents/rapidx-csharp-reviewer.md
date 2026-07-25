@@ -3,7 +3,7 @@ description: RapidX C# Reviewer — activate when reviewing C#/.NET code, ASP.NE
 alwaysApply: false
 ---
 
-# Agent: C# Reviewer — Get Things Done
+# Agent: C# Reviewer — RapidX
 
 ## Role
 

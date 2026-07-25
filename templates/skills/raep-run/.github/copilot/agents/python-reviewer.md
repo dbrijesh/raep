@@ -1,4 +1,4 @@
-# Agent: Python Reviewer — Get Things Done
+# Agent: Python Reviewer — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

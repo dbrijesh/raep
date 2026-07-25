@@ -153,4 +153,68 @@ console.log('\nmap-components.test.js');
   console.log('  ✓ Regulated profile + Java/SpringBoot → correct components');
 }
 
+// Test 8: workflow-modernization profile
+{
+  const result = mapComponents({ profile: 'workflow-modernization' });
+
+  // Still has always-installed
+  assert.ok(result.skills.has('coding-standards'), 'coding-standards should always be installed');
+
+  // Workflow modernization skills
+  assert.ok(result.skills.has('workflow-modernization-method'), 'workflow-modernization-method should be installed');
+  assert.ok(result.skills.has('workflow-engine-patterns'), 'workflow-engine-patterns should be installed');
+  assert.ok(result.skills.has('workflow-forms-engine-patterns'), 'workflow-forms-engine-patterns should be installed');
+  assert.ok(result.skills.has('workflow-compliance-patterns'), 'workflow-compliance-patterns should be installed');
+  assert.ok(result.skills.has('workflow-agentic-topology-patterns'), 'workflow-agentic-topology-patterns should be installed');
+  assert.ok(result.skills.has('workflow-parity-appian'), 'workflow-parity-appian should be installed');
+  assert.ok(result.skills.has('workflow-parity-pega'), 'workflow-parity-pega should be installed');
+  assert.ok(result.skills.has('workflow-parity-baw'), 'workflow-parity-baw should be installed');
+  assert.ok(result.skills.has('workflow-parity-mulesoft'), 'workflow-parity-mulesoft should be installed');
+
+  // Workflow modernization agents
+  assert.ok(result.agents.has('migration-analyst'), 'migration-analyst should be installed');
+  assert.ok(result.agents.has('workflow-logic-extractor'), 'workflow-logic-extractor should be installed');
+  assert.ok(result.agents.has('workflow-dependency-mapper'), 'workflow-dependency-mapper should be installed');
+  assert.ok(result.agents.has('workflow-forms-generator'), 'workflow-forms-generator should be installed');
+  assert.ok(result.agents.has('workflow-data-modeler'), 'workflow-data-modeler should be installed');
+  assert.ok(result.agents.has('workflow-topology-architect'), 'workflow-topology-architect should be installed');
+  assert.ok(result.agents.has('workflow-blueprint-architect'), 'workflow-blueprint-architect should be installed');
+  assert.ok(result.agents.has('workflow-forward-engineer'), 'workflow-forward-engineer should be installed');
+
+  // Unrelated stack-specific skills should NOT leak in
+  assert.ok(!result.skills.has('golang-patterns'), 'golang-patterns should NOT be installed');
+  console.log('  ✓ workflow-modernization profile → correct skills/agents installed');
+}
+
+// Test 9: no orphaned allKnown entries — every allKnown skill/agent is reachable
+// from at least one mapping table entry (always/frameworks/languages/databases/
+// orms/infrastructure/testing/apiStyles/profiles), so nothing in allKnown is dead.
+{
+  const componentMap = require('../../src/component-map.json');
+  const reachable = { skills: new Set(), agents: new Set() };
+
+  const collectFrom = (entry) => {
+    if (!entry) return;
+    (entry.skills || []).forEach(s => reachable.skills.add(s));
+    (entry.agents || []).forEach(a => reachable.agents.add(a));
+  };
+
+  collectFrom(componentMap.always);
+  Object.values(componentMap.profiles || {}).forEach(collectFrom);
+  Object.values(componentMap.frameworks || {}).forEach(collectFrom);
+  Object.values(componentMap.languages || {}).forEach(collectFrom);
+  Object.values(componentMap.databases || {}).forEach(collectFrom);
+  Object.values(componentMap.orms || {}).forEach(collectFrom);
+  Object.values(componentMap.infrastructure || {}).forEach(collectFrom);
+  Object.values(componentMap.testing || {}).forEach(collectFrom);
+  Object.values(componentMap.apiStyles || {}).forEach(collectFrom);
+
+  const orphanedSkills = componentMap.allKnown.skills.filter(s => !reachable.skills.has(s));
+  const orphanedAgents = componentMap.allKnown.agents.filter(a => !reachable.agents.has(a));
+
+  assert.deepStrictEqual(orphanedSkills, [], `allKnown.skills has orphaned entries unreachable from any mapping table: ${orphanedSkills.join(', ')}`);
+  assert.deepStrictEqual(orphanedAgents, [], `allKnown.agents has orphaned entries unreachable from any mapping table: ${orphanedAgents.join(', ')}`);
+  console.log('  ✓ No orphaned allKnown entries');
+}
+
 console.log('  All map-components tests passed.\n');

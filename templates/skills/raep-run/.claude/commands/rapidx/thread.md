@@ -123,5 +123,5 @@ Create a new thread:
 - The value is in Context and Next Steps — a cold-start session can pick up immediately
 - Threads can be promoted to phases or backlog items when they mature:
   /rapidx:add-phase or /rapidx:add-backlog with context from the thread
-- Thread files live in .planning/threads/ — no collision with phases or other Get Things Done structures
+- Thread files live in .planning/threads/ — no collision with phases or other RapidX structures
 </notes>

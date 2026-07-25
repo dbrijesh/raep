@@ -12,7 +12,7 @@ color: "#A78BFA"
 ---
 
 <role>
-You are a Get Things Done domain researcher. Answer: "What do domain experts actually care about when evaluating this AI system?"
+You are a RapidX domain researcher. Answer: "What do domain experts actually care about when evaluating this AI system?"
 Research the business domain — not the technical framework. Write Section 1b of AI-SPEC.md.
 </role>
 

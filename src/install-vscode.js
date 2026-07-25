@@ -9,13 +9,14 @@ const { execSync } = require('child_process');
 const { writeCopilotInstructions } = require('./generate-copilot-instructions');
 const { writeAgentsMd } = require('./generate-agents-md');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
 const COPILOT_EXTENSION_URL = 'https://marketplace.visualstudio.com/items?itemName=GitHub.copilot';
 
 /**
- * Copy Get Things Done support files (workflows, references, templates) to
+ * Copy RapidX support files (workflows, references, templates) to
  * .github/prompts/rapidx/ so Copilot prompt files can reference them via #file:.
  * Rewrites /gsd: → /rapidx: in all text content.
  * @param {string} promptsDir — path to .github/prompts/
@@ -37,7 +38,7 @@ function installGtdPromptFiles(promptsDir) {
     }
   }
   if (count > 0) {
-    process.stdout.write(`  [RapidX] Copied ${count} Get Things Done workflow files → .github/prompts/rapidx/\n`);
+    process.stdout.write(`  [RapidX] Copied ${count} RapidX workflow files → .github/prompts/rapidx/\n`);
   }
 }
 
@@ -243,11 +244,11 @@ function installVSCode(options) {
   // ── Copy agent files to .github/agents/ ──────────────────────────────────
   createAgentRefs(githubDir, components);
 
-  // ── Copy GTD workflow/reference/template files to .github/prompts/rapidx/ ──
+  // ── Copy RapidX workflow/reference/template files to .github/prompts/rapidx/ ──
   // Copilot prompt files reference these via #file:.github/prompts/rapidx/...
   installGtdPromptFiles(promptsDir);
 
-  // ── Generate Copilot .prompt.md files from Get Things Done source ─────────
+  // ── Generate Copilot .prompt.md files from RapidX source ─────────
   // Files go to .github/prompts/ — VS Code auto-discovers this location.
   // Type /<command-name> in Copilot Chat to invoke any prompt.
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
@@ -255,7 +256,7 @@ function installVSCode(options) {
     copilot: promptsDir,
   });
   if (copilotPromptsResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Generated ${copilotPromptsResult.generated} Get Things Done prompt files in .github/prompts/\n`);
+    process.stdout.write(`  [RapidX] Generated ${copilotPromptsResult.generated} RapidX prompt files in .github/prompts/\n`);
   }
 
   // ── Generate Copilot .prompt.md files from RapidX enterprise commands ─────
@@ -263,7 +264,7 @@ function installVSCode(options) {
   if (fs.existsSync(rapidxSrc)) {
     const rapidxPromptsResult = generateAllCommands(rapidxSrc, {
       copilot: promptsDir,
-    });
+    }, { nativeSource: true });
     if (rapidxPromptsResult.generated > 0) {
       process.stdout.write(`  [RapidX] Generated ${rapidxPromptsResult.generated} RapidX enterprise prompt files in .github/prompts/\n`);
     }
@@ -273,6 +274,9 @@ function installVSCode(options) {
   writeCommandsIndex(gtdSrc, {
     copilotPrompts: promptsDir,
   });
+
+  // ── Install Understand-Anything skills ─────────────────────────────────────
+  installUnderstandAnything('vscode', targetDir);
 
   return { success: true };
 }

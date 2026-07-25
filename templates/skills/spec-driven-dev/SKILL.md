@@ -41,7 +41,7 @@ Map acceptance criteria to technical tasks. Every task traces back to a specific
 **Command**: `/rapidx:plan-spec {###-feature-slug}`
 
 ### Phase 3 — Task
-Break the plan into GTD-compatible executable tasks. Write tests first (failing) before implementation.
+Break the plan into RapidX-compatible executable tasks. Write tests first (failing) before implementation.
 
 **Output**: `specs/{###}/tasks.md`, `.planning/TASKS.md`
 **Command**: `/rapidx:tasks-from-spec {###-feature-slug}`
@@ -76,7 +76,7 @@ specs/
 │   ├── spec.md                       # Source of truth
 │   ├── review.md                     # Review report
 │   ├── plan.md                       # Implementation plan
-│   ├── tasks.md                      # GTD task list
+│   ├── tasks.md                      # RapidX task list
 │   └── checklist.md                  # Completion tracking
 └── 002-payment-integration/
     └── ...

@@ -1,6 +1,6 @@
 ---
 name: rapidx:settings
-description: Configure Get Things Done workflow toggles and model profile
+description: Configure RapidX workflow toggles and model profile
 allowed-tools:
   - Read
   - Write
@@ -9,7 +9,7 @@ allowed-tools:
 ---
 
 <objective>
-Interactive configuration of Get Things Done workflow agents and model profile via multi-question prompt.
+Interactive configuration of RapidX workflow agents and model profile via multi-question prompt.
 
 Routes to the settings workflow which handles:
 - Config existence ensuring

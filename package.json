@@ -1,10 +1,11 @@
 {
   "name": "rapidx-platform",
   "version": "2.0.0",
-  "description": "RapidX Agentic Engineering Platform — Enterprise-grade SDLC orchestration powered by Get Things Done + Everything Claude Code",
+  "description": "RapidX Agentic Engineering Platform — Enterprise-grade, multi-IDE SDLC orchestration with invariant catalogs, codebase knowledge graph, and context-aware fine-tuning",
   "bin": {
     "rapidx": "bin/install.js",
-    "rapidx-learn": "scripts/learn-codebase.js"
+    "rapidx-learn": "scripts/learn-codebase.js",
+    "rapidx-graph": "scripts/build-knowledge-graph.js"
   },
   "files": ["bin", "src", "templates", "profiles", "get-things-done", "tests", "scripts"],
   "engines": { "node": ">=18.0.0" },
@@ -18,6 +19,10 @@
     "learn": "node scripts/learn-codebase.js --all",
     "learn:code": "node scripts/learn-codebase.js --code",
     "learn:arch": "node scripts/learn-codebase.js --arch",
-    "learn:preview": "node scripts/learn-codebase.js --all --preview"
+    "learn:preview": "node scripts/learn-codebase.js --all --preview",
+    "graph": "node scripts/build-knowledge-graph.js",
+    "graph:rich": "node scripts/build-knowledge-graph.js --rich",
+    "invariant-check": "node -e \"const e=require('./.rapidx/hooks/lib/invariants.cjs');const r=e.evaluate(process.cwd());console.log(JSON.stringify(r.summary));console.log(e.renderFailures(r.results)||'invariants OK');process.exit(r.summary.errors?1:0)\"",
+    "rebrand:check": "node scripts/rebrand-rapidx.js --check"
   }
 }

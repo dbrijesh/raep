@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic Appian process model export fixture (not a real customer export).
+  Represents a simple two-tier expense approval process:
+    Employee submits -> Manager approval -> (if amount > threshold) Finance approval -> Paid
+                                          -> (else) Paid directly
+  Intentionally exercises: a start node, a user input task, a gateway with an
+  expression-rule-driven condition, a second approval task, an integration
+  call to a payment system, and an end node — enough shape for
+  workflow-logic-extractor and workflow-dependency-mapper to have real work
+  to do without needing a real customer export.
+-->
+<processModel name="Expense Approval" uuid="pm-expense-approval">
+  <startNode name="Start" uuid="node-start"/>
+
+  <userInputTask name="Submit Expense Report" uuid="node-submit">
+    <inputs>
+      <field name="employeeName" type="Text" required="true"/>
+      <field name="expenseAmount" type="Decimal" required="true"/>
+      <field name="expenseCategory" type="Text" required="true"/>
+      <field name="receiptDocument" type="Document" required="false"/>
+    </inputs>
+    <assignedTo>process.variable.submittingEmployee</assignedTo>
+    <nextNode>node-manager-approval</nextNode>
+  </userInputTask>
+
+  <userInputTask name="Manager Approval" uuid="node-manager-approval">
+    <inputs>
+      <field name="approved" type="Boolean" required="true"/>
+      <field name="managerComments" type="Text" required="false"/>
+    </inputs>
+    <assignedTo>process.variable.submittingEmployee.manager</assignedTo>
+    <onReject>node-rejected</onReject>
+    <nextNode>gateway-amount-check</nextNode>
+  </userInputTask>
+
+  <gateway name="Amount Threshold Check" uuid="gateway-amount-check" type="exclusive">
+    <expressionRule ref="expressionRule/calculateApprovalThreshold.xml"/>
+    <branch condition="requiresFinanceApproval = true" nextNode="node-finance-approval"/>
+    <branch condition="requiresFinanceApproval = false" nextNode="node-payment-integration"/>
+  </gateway>
+
+  <userInputTask name="Finance Approval" uuid="node-finance-approval">
+    <inputs>
+      <field name="financeApproved" type="Boolean" required="true"/>
+      <field name="costCenter" type="Text" required="true"/>
+    </inputs>
+    <assignedTo>group.FinanceApprovers</assignedTo>
+    <onReject>node-rejected</onReject>
+    <nextNode>node-payment-integration</nextNode>
+  </userInputTask>
+
+  <integrationNode name="Send to Payment System" uuid="node-payment-integration">
+    <connectedSystem>PaymentGatewayConnectedSystem</connectedSystem>
+    <operation>createPayment</operation>
+    <nextNode>node-end-paid</nextNode>
+  </integrationNode>
+
+  <endNode name="Paid" uuid="node-end-paid"/>
+  <endNode name="Rejected" uuid="node-rejected"/>
+
+  <recordTypeRef ref="recordType/ExpenseReport.xml"/>
+  <interfaceRef ref="interface/expenseSubmissionForm.xml"/>
+</processModel>

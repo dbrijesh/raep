@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RapidX Loop — Live Build Console</title>
+<style>
+:root{
+  --ink:#060B16;
+  --panel:#0B1424;
+  --panel-2:#0E1930;
+  --line:#1B2A45;
+  --line-bright:#2A4470;
+  --text:#DCE7F7;
+  --text-dim:#7C90B0;
+  --text-faint:#4A5C7A;
+  --impl:#4D9FFF;
+  --impl-glow:rgba(77,159,255,.55);
+  --verify:#3DE8A0;
+  --verify-glow:rgba(61,232,160,.5);
+  --amber:#FFB84D;
+  --danger:#FF5C7A;
+  --danger-glow:rgba(255,92,122,.5);
+  --mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --disp: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--body);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+/* ambient background — purely decorative CSS animation, never touched by JS re-renders */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg .grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(77,159,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,159,255,.045) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 100%);
+}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.35;animation:drift 22s ease-in-out infinite alternate}
+.orb.a{width:520px;height:520px;background:#123B6E;top:-160px;left:-120px}
+.orb.b{width:420px;height:420px;background:#0D3D2E;top:30%;right:-160px;animation-delay:-8s}
+.orb.c{width:380px;height:380px;background:#1A2A5E;bottom:-140px;left:32%;animation-delay:-14s}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.12)}}
+
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto;padding:28px 28px 72px}
+
+/* ============ HEADER ============ */
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:6px 2px 26px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.mark{
+  width:44px;height:44px;border-radius:12px;position:relative;
+  background:conic-gradient(from 210deg,#1E5FCC,#4D9FFF,#2AC98F,#1E5FCC);
+  box-shadow:0 0 24px rgba(77,159,255,.35);
+  animation:markSpin 14s linear infinite;
+}
+.mark::after{content:'';position:absolute;inset:5px;border-radius:8px;background:var(--ink)}
+.mark::before{content:'';position:absolute;inset:14px;border-radius:50%;background:var(--impl);box-shadow:0 0 12px var(--impl-glow);z-index:1;animation:corePulse 2.4s ease-in-out infinite}
+@keyframes markSpin{to{transform:rotate(360deg)}}
+@keyframes corePulse{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:.5;transform:scale(.82)}}
+.brand h1{font-family:var(--disp);font-size:1.45rem;font-weight:700;letter-spacing:.14em}
+.brand h1 span{color:var(--impl)}
+.brand small{display:block;font-family:var(--mono);font-size:.68rem;color:var(--text-dim);letter-spacing:.08em;margin-top:2px}
+.live{display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:.75rem}
+.live .clock{color:var(--text-dim);letter-spacing:.06em}
+.live .pill{
+  display:flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid rgba(61,232,160,.35);
+  border-radius:99px;color:var(--verify);background:rgba(61,232,160,.06);letter-spacing:.14em;
+  transition:color .25s,border-color .25s,background .25s;
+}
+.live .pill.offline{border-color:rgba(255,92,122,.35);color:var(--danger);background:rgba(255,92,122,.06)}
+.live .dot{width:8px;height:8px;border-radius:50%;background:var(--verify);box-shadow:0 0 10px var(--verify-glow);animation:blink 1.6s ease-in-out infinite}
+.live .pill.offline .dot{background:var(--danger);box-shadow:0 0 10px var(--danger-glow)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.banner{display:none;margin-bottom:22px;padding:14px 20px;border-radius:14px;border:1px solid rgba(255,92,122,.35);background:linear-gradient(90deg,rgba(255,92,122,.10),rgba(255,184,77,.06));color:#FFD9E0;font-size:.85rem;font-family:var(--body)}
+.banner.show{display:block}
+
+/* ============ HERO ============ */
+.hero{
+  display:grid;grid-template-columns:300px 1fr;gap:36px;align-items:center;
+  background:linear-gradient(150deg,var(--panel-2),var(--panel) 60%);
+  border:1px solid var(--line);border-radius:22px;padding:36px 40px;
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;top:0;bottom:0;left:-200px;width:180px;
+  background:linear-gradient(100deg,transparent,rgba(120,180,255,.05),transparent);
+  animation:sheen 7s ease-in-out infinite;
+}
+@keyframes sheen{0%{left:-200px}55%,100%{left:110%}}
+
+.reactor{position:relative;width:280px;height:280px;justify-self:center}
+.reactor svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring-track{fill:none;stroke:var(--line);stroke-width:10}
+.ring-fill{
+  fill:none;stroke:url(#ringGrad);stroke-width:10;stroke-linecap:round;
+  filter:drop-shadow(0 0 8px var(--impl-glow));
+  transition:stroke-dashoffset 1.2s cubic-bezier(.22,1,.36,1);
+}
+.ring-tick{fill:none;stroke:var(--line-bright);stroke-width:2;stroke-dasharray:2 10;opacity:.6}
+.radar{
+  position:absolute;inset:26px;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(77,159,255,.22),transparent 24%);
+  animation:radar 4.5s linear infinite;
+  mask-image:radial-gradient(circle,transparent 55%,#000 56%);
+}
+@keyframes radar{to{transform:rotate(360deg)}}
+.orbiter{position:absolute;inset:0;animation:radar 4.5s linear infinite}
+.orbiter i{
+  position:absolute;top:16px;left:50%;width:9px;height:9px;margin-left:-4.5px;border-radius:50%;
+  background:#BFE0FF;box-shadow:0 0 12px var(--impl-glow),0 0 4px #fff;
+}
+.reactor .core{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.core .pct{font-family:var(--disp);font-size:3.4rem;font-weight:700;letter-spacing:-.02em;
+  background:linear-gradient(180deg,#EAF3FF,#8FC1FF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.core .lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.3em;color:var(--text-dim);text-transform:uppercase}
+
+.hero-right .loop-tag{
+  display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.22em;color:var(--text-dim);border:1px solid var(--line-bright);
+  background:rgba(255,255,255,.03);border-radius:99px;padding:6px 14px;margin-bottom:14px;
+  transition:color .3s,border-color .3s,background .3s;
+}
+.loop-tag .dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor;animation:blink 1.4s ease-in-out infinite}
+.hero-right h2{font-family:var(--disp);font-size:2.1rem;font-weight:700;letter-spacing:-.01em}
+.hero-right h2 code{font-family:var(--mono);color:var(--impl);font-size:.85em;font-weight:600}
+.hero-right p{color:var(--text-dim);margin-top:8px;font-size:.92rem;max-width:56ch;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-top:26px}
+.stat{background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:14px;padding:14px 16px;transition:border-color .25s,transform .25s}
+.stat:hover{border-color:var(--line-bright);transform:translateY(-2px)}
+.stat b{display:block;font-family:var(--disp);font-size:1.5rem;font-weight:700;transition:color .3s ease}
+.stat b.flash{color:var(--amber)}
+.stat.phase b{font-family:var(--mono);font-size:1.05rem;color:var(--impl);padding-top:6px}
+.stat.blocked b{color:var(--verify)}
+.stat.blocked.has-blocked b{color:var(--danger)}
+.stat span{display:block;font-family:var(--mono);font-size:.62rem;color:var(--text-faint);letter-spacing:.14em;text-transform:uppercase;margin-top:5px}
+
+/* ============ TIMELINE ============ */
+.section-h{display:flex;align-items:baseline;gap:14px;margin:44px 0 18px}
+.section-h h3{font-family:var(--disp);font-size:.95rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--text)}
+.section-h .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line-bright),transparent)}
+.section-h .meta{font-family:var(--mono);font-size:.68rem;color:var(--text-faint)}
+
+/* .timeline-shell owns the (possible) horizontal scroll; .timeline itself has
+   no independent overflow and no decorative pseudo-elements, so it can never
+   generate scrollable area that isn't real phase content. */
+.timeline-shell{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:34px 10px 26px;overflow-x:auto}
+.timeline{display:flex;position:relative;padding:0 28px}
+.phase{flex:1 1 0;min-width:96px;position:relative;display:flex;flex-direction:column;align-items:center;text-align:center}
+.phase .node{
+  width:34px;height:34px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:2;
+  background:var(--panel-2);border:2px solid var(--line-bright);color:var(--text-faint);
+  font-family:var(--mono);font-size:.66rem;transition:transform .25s;
+}
+.phase:hover .node{transform:scale(1.15)}
+.phase .bar{position:absolute;top:16px;left:50%;width:100%;height:2px;background:var(--line);z-index:1}
+.phase:last-child .bar{display:none}
+.phase.done .node{border-color:var(--verify);background:rgba(61,232,160,.12);color:var(--verify)}
+.phase.done .bar{background:linear-gradient(90deg,var(--verify),rgba(61,232,160,.35))}
+.phase.current .node{
+  border-color:var(--impl);background:rgba(77,159,255,.14);color:#BFE0FF;
+  box-shadow:0 0 0 0 var(--impl-glow);animation:ripple 2s ease-out infinite;
+}
+@keyframes ripple{0%{box-shadow:0 0 0 0 var(--impl-glow)}70%{box-shadow:0 0 0 16px rgba(77,159,255,0)}100%{box-shadow:0 0 0 0 rgba(77,159,255,0)}}
+.phase.current .bar{background:linear-gradient(90deg,var(--impl),rgba(77,159,255,.35))}
+.phase.blocked .node{border-color:var(--danger);background:rgba(255,92,122,.14);color:var(--danger);animation:none}
+.phase.blocked .bar{background:linear-gradient(90deg,var(--danger),rgba(255,92,122,.35))}
+.phase .name{margin-top:12px;font-size:.7rem;line-height:1.3;color:var(--text-dim);max-width:110px;font-weight:500}
+.phase.done .name{color:#9ADFC0}
+.phase.current .name{color:#BFE0FF;font-weight:600}
+.phase.blocked .name{color:#FFC2CE;font-weight:600}
+.phase .sub{font-family:var(--mono);font-size:.58rem;color:var(--text-faint);margin-top:3px;letter-spacing:.08em}
+.phase.current .sub{color:var(--impl)}
+.phase.blocked .sub{color:var(--danger)}
+.phase.end .node{border-style:dashed}
+
+/* ============ LOWER GRID ============ */
+.lower{display:grid;grid-template-columns:5fr 7fr;gap:22px;margin-top:8px;align-items:start}
+
+/* architecture — layered diagram, not a flat card wrap */
+.arch{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px}
+.arch h4,.feed-panel h4{
+  font-family:var(--disp);font-size:.8rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:18px;display:flex;align-items:center;gap:10px;
+}
+.arch h4::before,.feed-panel h4::before{content:'';width:8px;height:8px;background:var(--impl);box-shadow:0 0 8px var(--impl-glow);border-radius:2px}
+.arch-empty{color:var(--text-faint);font-size:.82rem}
+.layers{display:flex;flex-direction:column}
+.layer{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.015)}
+.layer-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;color:var(--text-faint);text-transform:uppercase;margin-bottom:12px}
+.layer-nodes{display:flex;flex-wrap:wrap;gap:9px}
+.connector{display:flex;justify-content:center;padding:5px 0}
+.connector .cline{width:2px;height:16px;background:linear-gradient(var(--line-bright),var(--line));position:relative}
+.connector .cline::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid var(--line-bright)}
+.node{
+  font-family:var(--mono);font-size:.72rem;padding:8px 13px;border-radius:10px;
+  border:1px solid var(--line-bright);background:rgba(255,255,255,.02);color:var(--text);
+  display:inline-flex;align-items:center;gap:8px;cursor:default;
+  transition:border-color .25s,box-shadow .25s,transform .25s;
+}
+.node:hover{transform:translateY(-2px)}
+.node i{width:7px;height:7px;border-radius:50%;flex:none}
+.node.done{border-color:rgba(61,232,160,.5);background:rgba(61,232,160,.06)}
+.node.done i{background:var(--verify);box-shadow:0 0 7px var(--verify-glow)}
+.node.done:hover{border-color:rgba(61,232,160,.6);box-shadow:0 0 16px rgba(61,232,160,.15)}
+.node.building{border-color:rgba(77,159,255,.55);color:#BFE0FF;background:rgba(77,159,255,.07)}
+.node.building i{background:var(--impl);box-shadow:0 0 7px var(--impl-glow);animation:blink 1.4s infinite}
+.node.blocked{border-color:rgba(255,92,122,.55);color:#FFC2CE;background:rgba(255,92,122,.08)}
+.node.blocked i{background:var(--danger);box-shadow:0 0 7px var(--danger-glow)}
+.node.pending{color:var(--text-dim);border-style:dashed}
+.node.pending i{background:var(--text-faint)}
+.legend{display:flex;gap:16px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.legend span{font-family:var(--mono);font-size:.6rem;color:var(--text-faint);display:flex;align-items:center;gap:6px;letter-spacing:.08em}
+.legend i{width:7px;height:7px;border-radius:50%}
+.legend .lv{background:var(--verify)}.legend .lb{background:var(--impl)}.legend .lp{background:var(--text-faint)}.legend .ld{background:var(--danger)}
+
+/* feed */
+.feed-panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;position:relative}
+.feed-panel h4 .stream{margin-left:auto;font-family:var(--mono);font-size:.6rem;color:var(--verify);letter-spacing:.14em;display:flex;align-items:center;gap:7px}
+.stream .dot{width:6px;height:6px;border-radius:50%;background:var(--verify);animation:blink 1.2s infinite}
+.feed{display:flex;flex-direction:column;gap:12px;max-height:560px;overflow-y:auto;padding-right:6px}
+.feed::-webkit-scrollbar{width:5px}
+.feed::-webkit-scrollbar-thumb{background:var(--line-bright);border-radius:99px}
+.entry{
+  border:1px solid var(--line);border-left:3px solid var(--text-faint);border-radius:12px;
+  padding:14px 16px;background:rgba(255,255,255,.015);
+  opacity:0;transform:translateY(14px);animation:enter .5s cubic-bezier(.22,1,.36,1) forwards;
+}
+.entry.impl{border-left-color:var(--impl)}
+.entry.verify{border-left-color:var(--verify)}
+.entry.complete{border-left-color:var(--verify)}
+.entry.escalation{border-left-color:var(--danger)}
+@keyframes enter{to{opacity:1;transform:none}}
+.entry .msg{font-size:.84rem;line-height:1.55;color:var(--text)}
+.entry .path{
+  display:block;font-family:var(--mono);font-size:.68rem;color:var(--text-dim);
+  background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:7px;
+  padding:7px 10px;margin-top:10px;overflow-x:auto;white-space:nowrap;
+}
+.entry .meta{display:flex;align-items:center;gap:10px;margin-top:11px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;padding:4px 10px;border-radius:99px;font-weight:600}
+.tag.intent{color:var(--text-dim);border:1px solid var(--line-bright);background:rgba(255,255,255,.03)}
+.tag.impl{color:var(--impl);border:1px solid rgba(77,159,255,.4);background:rgba(77,159,255,.08)}
+.tag.verify{color:var(--amber);border:1px solid rgba(255,184,77,.4);background:rgba(255,184,77,.08)}
+.tag.complete{color:var(--verify);border:1px solid rgba(61,232,160,.4);background:rgba(61,232,160,.08)}
+.tag.escalation{color:var(--danger);border:1px solid rgba(255,92,122,.4);background:rgba(255,92,122,.08)}
+.entry .src{font-family:var(--mono);font-size:.64rem;color:var(--text-faint)}
+.entry .time{font-family:var(--mono);font-size:.64rem;color:var(--text-faint);margin-left:auto}
+.entry.fresh{box-shadow:0 0 0 1px rgba(77,159,255,.35),0 0 24px rgba(77,159,255,.12)}
+
+.typing{display:none;align-items:center;gap:10px;padding:10px 4px 0;font-family:var(--mono);font-size:.68rem;color:var(--text-faint)}
+.typing.show{display:flex}
+.typing .dots i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--impl);margin-right:4px;animation:tb 1.2s infinite}
+.typing .dots i:nth-child(2){animation-delay:.15s}
+.typing .dots i:nth-child(3){animation-delay:.3s}
+@keyframes tb{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
+
+footer{margin-top:40px;text-align:center;font-family:var(--mono);font-size:.62rem;color:var(--text-faint);letter-spacing:.14em}
+
+@media (max-width:960px){
+  .hero{grid-template-columns:1fr;padding:28px;text-align:center}
+  .hero-right p{margin:8px auto 0}
+  .lower{grid-template-columns:1fr}
+  .reactor{width:230px;height:230px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important}
+}
+</style>
+</head>
+<body>
+<div class="bg">
+  <div class="grid"></div>
+  <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="mark" aria-hidden="true"></div>
+      <div>
+        <h1>RAPIDX <span>LOOP</span></h1>
+        <small id="subtitle">AUTONOMOUS BUILD CONSOLE</small>
+      </div>
+    </div>
+    <div class="live">
+      <span class="clock" id="clock">00:00:00</span>
+      <span class="pill" id="live-pill"><span class="dot"></span><span id="live-pill-text">CONNECTING</span></span>
+    </div>
+  </header>
+
+  <div class="banner" id="banner"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="reactor" id="reactor" role="img" aria-label="0 percent of the build verified">
+      <div class="radar"></div>
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4D9FFF"/>
+            <stop offset="100%" stop-color="#3DE8A0"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-tick" cx="100" cy="100" r="76"/>
+        <circle class="ring-track" cx="100" cy="100" r="88"/>
+        <circle class="ring-fill" id="ringFill" cx="100" cy="100" r="88"
+                stroke-dasharray="552.9" stroke-dashoffset="552.9"/>
+      </svg>
+      <div class="orbiter"><i></i></div>
+      <div class="core">
+        <div class="pct"><span id="pctNum">0</span>%</div>
+        <div class="lbl">verified</div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <span class="loop-tag" id="loop-tag"><span class="dot" id="loop-tag-dot"></span><span id="loop-tag-text">idle</span></span>
+      <h2 id="hero-title">Waiting for engagement…</h2>
+      <p id="hero-sub">No /rapidx:loop run detected yet.</p>
+      <div class="stats">
+        <div class="stat phase"><b id="stat-phase">–</b><span>current phase</span></div>
+        <div class="stat"><b id="stat-verified">0</b><span>verified</span></div>
+        <div class="stat"><b id="stat-total">0</b><span>total phases</span></div>
+        <div class="stat blocked" id="stat-blocked-wrap"><b id="stat-blocked">0</b><span>blocked</span></div>
+        <div class="stat"><b id="stat-tokens">–</b><span>tokens used</span></div>
+        <div class="stat"><b id="stat-tokens-phase">–</b><span>tokens · this phase</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <div class="section-h">
+    <h3>Build Sequence</h3>
+    <div class="rule"></div>
+    <span class="meta" id="timeline-meta">AWAITING PLAN</span>
+  </div>
+  <div class="timeline-shell">
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <div class="lower">
+    <!-- ARCHITECTURE — layered diagram -->
+    <section class="arch">
+      <h4>Target Architecture</h4>
+      <div class="layers" id="arch-layers"><div class="arch-empty">Not designed yet.</div></div>
+      <div class="legend">
+        <span><i class="lv"></i>VERIFIED</span>
+        <span><i class="lb"></i>BUILDING</span>
+        <span><i class="lp"></i>QUEUED</span>
+        <span><i class="ld"></i>BLOCKED</span>
+      </div>
+    </section>
+
+    <!-- LIVE FEED -->
+    <section class="feed-panel">
+      <h4>Live Activity <span class="stream"><span class="dot"></span>STREAMING</span></h4>
+      <div class="feed" id="feed"></div>
+      <div class="typing" id="typing"><span class="dots"><i></i><i></i><i></i></span> agent working — next event incoming</div>
+    </section>
+  </div>
+
+  <footer>RAPIDX LOOP · AUTONOMOUS BUILD CONSOLE · STREAMING VIA SSE · CLOSING THIS TAB DOES NOT STOP THE BUILD</footer>
+</div>
+
+<script>
+  var STAGE_LABEL = { intent: 'Intent', implementation: 'Implementation', verification: 'Verification', complete: 'Complete', escalation: 'Escalation' };
+  var STAGE_TAG_CLASS = { intent: 'intent', implementation: 'impl', verification: 'verify', complete: 'complete', escalation: 'escalation' };
+  var STAGE_COLOR = { intent: 'var(--text-dim)', implementation: 'var(--impl)', verification: 'var(--amber)', complete: 'var(--verify)', escalation: 'var(--danger)' };
+  var LEVEL_ICON = { info: 'ℹ', success: '✓', warning: '⚠', error: '⛔' };
+  var LAYER_ORDER = ['agentic', 'core', 'sidecar'];
+  var LAYER_LABEL = { agentic: 'Agentic Layer', core: 'Core Domain Services', sidecar: 'Cross-Cutting Sidecars' };
+  var RING_C = 2 * Math.PI * 88;
+
+  function el(id) { return document.getElementById(id); }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function formatTokens(n) {
+    if (typeof n !== 'number') return '–';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+    return String(n);
+  }
+
+  // Briefly flashes amber when a stat's numeric value increases.
+  var lastStatValues = {};
+  function setStat(id, displayValue, rawValue) {
+    var node = el(id);
+    node.textContent = displayValue;
+    if (typeof rawValue === 'number' && lastStatValues[id] !== undefined && rawValue > lastStatValues[id]) {
+      node.classList.add('flash');
+      setTimeout(function () { node.classList.remove('flash'); }, 700);
+    }
+    if (typeof rawValue === 'number') lastStatValues[id] = rawValue;
+  }
+
+  function setConn(live) {
+    el('live-pill').classList.toggle('offline', !live);
+    el('live-pill-text').textContent = live ? 'LIVE' : 'RECONNECTING';
+    el('typing').classList.toggle('show', live);
+  }
+
+  // ---------- mission-elapsed clock, seeded from the earliest real event ----------
+  var startTs = null;
+  function tickClock() {
+    var secs = Math.max(0, Math.floor((Date.now() - startTs) / 1000));
+    var h = String(Math.floor(secs / 3600)).padStart(2, '0');
+    var m = String(Math.floor(secs % 3600 / 60)).padStart(2, '0');
+    var s = String(secs % 60).padStart(2, '0');
+    el('clock').textContent = h + ':' + m + ':' + s;
+  }
+  function ensureClock(ts) {
+    if (startTs) return;
+    startTs = ts;
+    tickClock();
+    setInterval(tickClock, 1000);
+  }
+
+  function setModePill(loopStage) {
+    if (!loopStage || !STAGE_LABEL[loopStage]) return;
+    var tag = el('loop-tag');
+    var color = STAGE_COLOR[loopStage];
+    tag.style.color = color;
+    tag.style.borderColor = color;
+    el('loop-tag-text').textContent = STAGE_LABEL[loopStage] + ' loop';
+  }
+
+  function renderHero(state) {
+    var m = state.manifest || { phases: [] };
+    var totals = state.totals || { total: m.phases.length, verified: 0, blocked: 0 };
+    var pct = state.progressCount || 0;
+
+    el('pctNum').textContent = pct;
+    el('ringFill').style.strokeDashoffset = RING_C * (1 - pct / 100);
+    el('reactor').setAttribute('aria-label', pct + ' percent of the build verified');
+
+    setStat('stat-verified', totals.verified, totals.verified);
+    setStat('stat-total', totals.total, totals.total);
+    setStat('stat-blocked', totals.blocked, totals.blocked);
+    el('stat-blocked-wrap').classList.toggle('has-blocked', totals.blocked > 0);
+
+    var tokens = state.tokens;
+    if (tokens && tokens.total) {
+      setStat('stat-tokens', formatTokens(tokens.total.sum), tokens.total.sum);
+      var phaseKey = (tokens.current_phase === null || tokens.current_phase === undefined) ? 'unassigned' : String(tokens.current_phase);
+      var phaseTokens = (tokens.by_phase && tokens.by_phase[phaseKey]) ? tokens.by_phase[phaseKey].sum : 0;
+      setStat('stat-tokens-phase', formatTokens(phaseTokens), phaseTokens);
+    }
+
+    var current = m.phases.filter(function (p) { return p.id === m.current_phase; })[0];
+    el('stat-phase').textContent = current ? current.name : (m.spec_frozen ? '—' : 'not frozen');
+    el('subtitle').textContent = state.title ? state.title.toUpperCase() : 'AUTONOMOUS BUILD CONSOLE';
+
+    if (!m.spec_frozen && !state.specExists) {
+      el('hero-title').innerHTML = 'Waiting for engagement…';
+      el('hero-sub').textContent = 'Run /rapidx:loop to begin. This page updates automatically once the build starts.';
+    } else if (!m.spec_frozen) {
+      el('hero-title').innerHTML = 'Requirements drafted — awaiting your confirmation';
+      el('hero-sub').textContent = 'Review .rapidx/loop/spec.md and confirm to unlock the autonomous build.';
+    } else if (totals.total > 0 && totals.verified === totals.total) {
+      el('hero-title').innerHTML = 'Build complete';
+      el('hero-sub').textContent = 'All phases verified. See execution/ logs for details.';
+    } else {
+      el('hero-title').innerHTML = current ? ('Building: <code>' + escapeHtml(current.name) + '</code>') : 'Planning the build…';
+      el('hero-sub').textContent = 'Continuous autonomous build in progress — no human gate until completion or an escalation.';
+    }
+  }
+
+  // Rebuilding the timeline every ~1.5s SSE tick (even when nothing changed)
+  // is what used to restart the ripple/entrance animations and read as
+  // flicker — so skip the rebuild entirely unless the underlying data moved.
+  var lastTimelineKey = null;
+  function renderTimeline(state) {
+    var m = state.manifest || { phases: [] };
+    var totals = state.totals || { total: m.phases.length, verified: 0, blocked: 0 };
+    var key = JSON.stringify({ sf: m.spec_frozen, cp: m.current_phase, se: state.specExists, pe: state.planExists,
+      ph: m.phases.map(function (p) { return [p.id, p.status]; }) });
+    if (key === lastTimelineKey) return;
+    lastTimelineKey = key;
+
+    var steps = [];
+    steps.push({ label: 'Intake', sub: 'requirements', status: (state.specExists || m.spec_frozen) ? 'done' : 'pending' });
+    steps.push({ label: 'Clarify & Freeze', sub: 'spec', status: m.spec_frozen ? 'done' : (state.specExists ? 'current' : 'pending') });
+    steps.push({ label: 'Architecture & Plan', sub: 'design', status: state.planExists ? 'done' : (m.spec_frozen ? 'current' : 'pending') });
+    m.phases.forEach(function (p) {
+      steps.push({
+        label: p.name,
+        sub: p.status === 'blocked' ? 'blocked' : null,
+        status: p.status === 'verified' ? 'done' : p.status === 'blocked' ? 'blocked' : (p.id === m.current_phase ? 'current' : 'pending'),
+      });
+    });
+    var allDone = m.phases.length > 0 && m.phases.every(function (p) { return p.status === 'verified'; });
+    steps.push({ label: 'Complete', sub: null, status: allDone ? 'done' : 'end' });
+
+    el('timeline').innerHTML = steps.map(function (s, i) {
+      var num = s.status === 'done' ? '✓' : s.status === 'blocked' ? '!' : (s.status === 'end' ? '⚑' : String(i + 1).padStart(2, '0'));
+      return '<div class="phase ' + s.status + '">' +
+        '<div class="bar"></div>' +
+        '<div class="node">' + num + '</div>' +
+        '<div class="name">' + escapeHtml(s.label) + '</div>' +
+        (s.sub ? '<div class="sub">' + escapeHtml(s.sub) + '</div>' : '') +
+        '</div>';
+    }).join('');
+
+    el('timeline-meta').textContent = totals.total
+      ? (totals.verified + ' / ' + totals.total + ' PHASES VERIFIED · ' + totals.blocked + ' BLOCKED')
+      : (m.spec_frozen ? 'PLANNING…' : 'AWAITING PLAN');
+  }
+
+  // Classify each service into one of three architectural layers from its
+  // authored type/name text. The schema only ever authors "Core" or
+  // "Cross-cutting (sidecar)" today, plus agent/gateway-named services —
+  // this stays honest to what the data actually distinguishes.
+  function classifyLayer(svc) {
+    var t = ((svc.type || '') + ' ' + (svc.name || '')).toLowerCase();
+    if (/agent|gateway/.test(t)) return 'agentic';
+    if (/sidecar|cross-cutting|cross cutting/.test(t)) return 'sidecar';
+    return 'core';
+  }
+
+  function serviceStatus(svc, manifest) {
+    if (!manifest || !manifest.phases || !manifest.phases.length) return 'pending';
+    var name = (svc.name || '').toLowerCase();
+    var match = manifest.phases.filter(function (p) {
+      var pn = (p.name || '').toLowerCase();
+      return pn && name && (pn.indexOf(name) !== -1 || name.indexOf(pn) !== -1);
+    })[0];
+    if (!match) return 'pending';
+    if (match.status === 'verified') return 'done';
+    if (match.status === 'blocked') return 'blocked';
+    if (match.id === manifest.current_phase) return 'building';
+    return 'pending';
+  }
+
+  // Same anti-flicker guard as the timeline — this panel was the one the
+  // user specifically flagged as "continuously flickering."
+  var lastServicesKey = null;
+  function renderServices(services, manifest) {
+    var key = JSON.stringify(services) + '|' + JSON.stringify(manifest ? { cp: manifest.current_phase, ph: manifest.phases.map(function (p) { return [p.id, p.status]; }) } : null);
+    if (key === lastServicesKey) return;
+    lastServicesKey = key;
+
+    var box = el('arch-layers');
+    if (!services || !services.length) {
+      box.innerHTML = '<div class="arch-empty">Not designed yet.</div>';
+      return;
+    }
+
+    var buckets = { agentic: [], core: [], sidecar: [] };
+    services.forEach(function (s) { buckets[classifyLayer(s)].push(s); });
+
+    var blocks = LAYER_ORDER.filter(function (k) { return buckets[k].length; }).map(function (k) {
+      var nodes = buckets[k].map(function (s) {
+        var st = serviceStatus(s, manifest);
+        var title = s.responsibility ? escapeHtml(s.responsibility) : '';
+        return '<div class="node ' + st + '" title="' + title + '"><i></i>' + escapeHtml(s.name) + '</div>';
+      }).join('');
+      return '<div class="layer"><div class="layer-label">' + LAYER_LABEL[k] + '</div><div class="layer-nodes">' + nodes + '</div></div>';
+    });
+
+    var out = [];
+    blocks.forEach(function (b, i) {
+      out.push(b);
+      if (i < blocks.length - 1) out.push('<div class="connector"><span class="cline"></span></div>');
+    });
+    box.innerHTML = out.join('');
+  }
+
+  function renderEscalation(state) {
+    var m = state.manifest || { phases: [] };
+    var blocked = m.phases.filter(function (p) { return p.status === 'blocked'; })[0];
+    var banner = el('banner');
+    if (blocked) {
+      banner.textContent = '⚠ Needs your attention — phase "' + blocked.name + '" is blocked. Check /rapidx:loop-status or .rapidx/loop/audit/ for the escalation reason.';
+      banner.classList.add('show');
+    } else {
+      banner.classList.remove('show');
+    }
+  }
+
+  function applyState(state) {
+    renderHero(state);
+    renderTimeline(state);
+    renderServices(state.services, state.manifest);
+    renderEscalation(state);
+  }
+
+  function addEvent(evt) {
+    ensureClock(evt.ts ? new Date(evt.ts).getTime() : Date.now());
+
+    var feed = el('feed');
+    var stageClass = STAGE_TAG_CLASS[evt.loop_stage] || 'intent';
+    var level = evt.level || 'info';
+    var tagLabel = STAGE_LABEL[evt.loop_stage] || (evt.stage || '').toUpperCase();
+    var srcLabel = evt.phase_name || evt.stage || '';
+
+    var div = document.createElement('article');
+    div.className = 'entry ' + stageClass + ' fresh';
+    div.innerHTML =
+      '<div class="msg">' + escapeHtml(evt.message || '') + '</div>' +
+      (evt.detail ? '<span class="path">' + escapeHtml(evt.detail) + '</span>' : '') +
+      '<div class="meta">' +
+      '<span class="tag ' + stageClass + '">' + (LEVEL_ICON[level] || '') + ' ' + escapeHtml(tagLabel) + '</span>' +
+      (srcLabel ? '<span class="src">◈ ' + escapeHtml(srcLabel) + '</span>' : '') +
+      '<span class="time">' + new Date(evt.ts || Date.now()).toLocaleTimeString() + '</span>' +
+      '</div>';
+    feed.prepend(div);
+    setTimeout(function () { div.classList.remove('fresh'); }, 4000);
+    while (feed.children.length > 60) feed.removeChild(feed.lastElementChild);
+
+    setModePill(evt.loop_stage);
+  }
+
+  var source = new EventSource('/api/events');
+  source.onopen = function () { setConn(true); };
+  source.onerror = function () { setConn(false); };
+  source.addEventListener('progress', function (e) { addEvent(JSON.parse(e.data)); });
+  source.addEventListener('state', function (e) { applyState(JSON.parse(e.data)); });
+
+  fetch('/api/state').then(function (r) { return r.json(); }).then(applyState).catch(function () {});
+</script>
+</body>
+</html>

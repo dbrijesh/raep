@@ -37,6 +37,7 @@
 26. [Architecture Decision Records](#26-architecture-decision-records)
 27. [Scripts Reference](#27-scripts-reference)
 28. [Inspiration and Credits](#28-inspiration-and-credits)
+29. [Workflow Modernization Domain](#29-workflow-modernization-domain)
 
 ---
 
@@ -387,6 +388,7 @@ Profiles are JSON files in `profiles/`. They control governance, compliance, mat
 | `pharma-regulated` | L2 | 21 CFR Part 11 compliance — full audit, e-signatures, validation |
 | `finserv-sox` | L2 | Financial services / SOX — change management, segregation of duties |
 | `insurance-hipaa` | L2 | Insurance / HIPAA — PHI controls, access logging, breach notification |
+| `workflow-modernization` | L2 | Migrating a legacy Pega/IBM BAW/Appian/MuleSoft workflow app to the custom target platform — see [§29](#29-workflow-modernization-domain) |
 
 ### Profile schema (key fields)
 
@@ -473,6 +475,8 @@ These are the 53 SDLC workflow commands from the Get Things Done engine, availab
 | `/rapidx:audit-report` | Generate a full audit trail report from JSONL logs |
 | `/rapidx:onboard-codebase` | Onboard an existing legacy codebase to RapidX |
 | `/rapidx:health` | Check RapidX installation health and configuration |
+
+> The `workflow-modernization` profile additionally installs 7 `/rapidx:workflow-*` commands (Comprehend → Reimagine → Blueprint → Forward-Engineer pipeline) — see [§29](#29-workflow-modernization-domain) for the full command reference.
 
 ### How commands are delivered per platform
 
@@ -584,6 +588,8 @@ These skills were installed for your tech stack. Reference them with @ in Compos
 | `rapidx/compliance-checker` | Regulatory compliance validation (HIPAA, SOX, 21CFR) |
 | `rapidx/client-onboarder` | Client profile setup and discovery questionnaire |
 
+> The `workflow-modernization` profile additionally installs 7 more enterprise agents (`workflow-logic-extractor`, `workflow-dependency-mapper`, `workflow-forms-generator`, `workflow-data-modeler`, `workflow-topology-architect`, `workflow-blueprint-architect`, `workflow-forward-engineer`) — see [§29](#29-workflow-modernization-domain).
+
 ### SDD & Knowledge agents (installed with plugins)
 
 | Agent | Role |
@@ -665,6 +671,8 @@ Skills are reusable prompt modules injected into agent context. 52 skills total 
 | `pod-maturity` | AI maturity model assessment and progression |
 | `architecture-copilot` | Architecture guidance and decision support |
 | `migration-framework` | Legacy modernization framework (installed for modernization engagements) |
+
+> The `workflow-modernization` profile additionally installs 6 more enterprise skills (`workflow-modernization-method`, `workflow-engine-patterns`, `workflow-forms-engine-patterns`, `workflow-compliance-patterns`, `workflow-agentic-topology-patterns`, and one `workflow-parity-<platform>` skill per source platform) — see [§29](#29-workflow-modernization-domain).
 
 ---
 
@@ -1440,6 +1448,149 @@ RapidX v2.0 incorporates ideas and patterns from:
 | **[github/spec-kit](https://github.com/github/spec-kit)** | Spec-Driven Development methodology, spec/plan/tasks/checklist/constitution templates |
 | **[github/awesome-copilot](https://github.com/github/awesome-copilot)** | Pattern-based instruction files, agent format, hook structure, agentic GitHub workflows |
 | **[abhigyanpatwari/GitNexus](https://github.com/abhigyanpatwari/GitNexus)** | Codebase knowledge graph concept, cross-platform context injection, MCP-style architecture awareness |
+
+---
+
+## 29. Workflow Modernization Domain
+
+The `workflow-modernization` profile turns RapidX into a migration harness for
+moving a legacy low-code/BPM workflow application — **Pega, IBM BAW, Appian,
+or MuleSoft** — into a production-grade custom application: a BPMN 2.0/
+SpiffWorkflow engine, task/rules/forms/audit/e-signature services, an
+agentic AI layer (LLM-backed pipeline steps), and full data/observability/
+DevOps infrastructure. Appian has the deepest, validated parity coverage;
+Pega/BAW/MuleSoft ship the same agent/skill/command scaffolding with clearly
+marked **stub** parity docs, thinner until validated against a real export.
+
+### The 4-stage method
+
+```
+Comprehend  →  Reimagine  →  Blueprint  →  Forward-Engineer
+(intake)       (architect-     (architect-     (agent-generated
+                led design)     led design)      code + parity report)
+```
+
+1. **Comprehend** — two intake paths converge on the same downstream
+   pipeline:
+   - **Path A** (`/rapidx:workflow-comprehend --source <path>`) — agent-driven
+     extraction from an existing legacy codebase or platform export.
+   - **Path B** (`/rapidx:workflow-intake-requirements`) — ingests a
+     human- or externally-authored `requirements.md`.
+   Both paths produce per-process `logic-model.json` files and synthesize
+   `.rapidx/migration/requirements/requirements.md` as the canonical shared
+   spine, so downstream stages never need to know which path was used.
+2. **Reimagine** (`/rapidx:workflow-reimagine`) — proposes a target topology
+   per process using the 9 node types (`start`, `end`, `task`, `gateway`,
+   `timer`, `agent_step`, `esign`, `integration`, `logic`) and identifies
+   agentic (LLM-backed) opportunities. **Stops at the `reimagine-review`
+   gate** — an architect must approve before Blueprint begins.
+3. **Blueprint** (`/rapidx:workflow-blueprint`) — turns the approved design
+   into concrete artifacts: a versioned `graph_json` workflow definition,
+   a data model, forms, and a compliance controls map. **Stops at the
+   `blueprint-review` gate.**
+4. **Forward-Engineer** (`/rapidx:workflow-forward-engineer`) — stamps the
+   generic target-platform scaffold once per engagement, then generates the
+   workload-specific code (seed data, agent registry entries, forms/pages)
+   for each approved blueprint, plus a per-platform parity report. **Stops
+   at the `parity-review` gate** before cutover.
+
+`/rapidx:workflow-modernize` is the top-level orchestrator that routes
+between intake paths and drives all four stages, pausing at every gate.
+`/rapidx:workflow-status` is a read-only board showing every process's
+current stage and any open gate flags — safe to run at any time.
+
+### `.rapidx/migration/` state directory
+
+Seeded automatically (only for the `workflow-modernization` profile) by the
+installer's core setup:
+
+```
+.rapidx/migration/
+  manifest.json                 # source_platform(s), intake_path, target_dir, per-process board
+  requirements/requirements.md  # canonical spine (user-authored or comprehend-synthesized)
+  inventory.json                # path A only — estate inventory
+  dependency-graph.json         # path A only — cross-process/cross-system edges
+  processes/{slug}/{logic-model.json, forms.json, data-model.json}
+  blueprint/{reimagine.md, blueprint.md}
+  definitions/{slug}/v1.json    # canonical graph_json workflow definition
+  compliance/controls-map.md
+  parity-reports/{platform}.md
+  forward-engineer/
+```
+
+### Commands
+
+| Command | Stage | Description |
+|---------|-------|-------------|
+| `/rapidx:workflow-modernize` | orchestrator | Routes on intake path, drives all 4 stages, pauses at every review gate |
+| `/rapidx:workflow-intake-requirements` | Comprehend (path B) | Structures a human/externally-authored `requirements.md` into logic models |
+| `/rapidx:workflow-comprehend` | Comprehend (path A) | Agent-driven extraction from an existing legacy codebase/export |
+| `/rapidx:workflow-reimagine` | Reimagine | Proposes target topology + agentic opportunities per process |
+| `/rapidx:workflow-blueprint` | Blueprint | Produces versioned workflow definitions, data models, forms, compliance map |
+| `/rapidx:workflow-forward-engineer` | Forward-Engineer | Stamps the scaffold, generates workload-specific code, produces parity reports |
+| `/rapidx:workflow-status` | any | Read-only engagement status board |
+
+### Agents (enterprise, `workflow-modernization` profile only)
+
+| Agent | Role |
+|-------|------|
+| `migration-analyst` | Estate inventory and risk-ranking (extended with a Workflow Modernization Mode) |
+| `workflow-logic-extractor` | Extracts business/process logic into a platform-neutral logic model |
+| `workflow-dependency-mapper` | Maps cross-process and cross-system dependencies |
+| `workflow-forms-generator` | Extracts/generates form schemas from source UI definitions |
+| `workflow-data-modeler` | Produces the target data model (entities, fields, JSON-in-SQLite persistence shape) |
+| `workflow-topology-architect` | Proposes the Reimagine-stage target topology and agentic opportunities |
+| `workflow-blueprint-architect` | Produces the Blueprint-stage versioned workflow definition |
+| `workflow-forward-engineer` | Generates workload-specific Forward-Engineer code and parity reports |
+
+### Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `workflow-modernization-method` | The 4-stage method itself — when each stage runs, what it produces, gate discipline |
+| `workflow-engine-patterns` | Target workflow-engine node types, `graph_json` shape, SpiffWorkflow/BPMN conventions |
+| `workflow-forms-engine-patterns` | Target form-schema conventions and field-type mapping |
+| `workflow-compliance-patterns` | Compliance controls mapping (21 CFR Part 11, HIPAA, GxP, zero-trust) to target services |
+| `workflow-agentic-topology-patterns` | The 6-node Agent Pipeline shape (`ap_input → prompt → llm → extract → condition → output`) |
+| `workflow-parity-appian` | **Validated** — construct-by-construct Appian → target platform mapping, mined from a real migration engagement |
+| `workflow-parity-pega` | **Stub** — best-effort Pega → target platform mapping, not yet validated against a real export |
+| `workflow-parity-baw` | **Stub** — best-effort IBM BAW → target platform mapping; expected highest fidelity since both are native BPMN 2.0 |
+| `workflow-parity-mulesoft` | **Stub** — best-effort MuleSoft → target platform mapping; mostly maps to `integration` nodes and shared library code |
+
+### The target platform scaffold
+
+`/rapidx:workflow-forward-engineer` stamps
+`templates/workflow-platform-scaffold/` — a genericized extraction of a real,
+running instance of the target architecture — into the engagement repo via:
+
+```bash
+node bin/install.js --stamp-workflow-scaffold \
+  --target ./platform \
+  --platform-name "Acme Governance Platform" \
+  --platform-slug acme
+```
+
+The scaffold is categorized A/B/C during extraction: **(A)** generic platform
+code copied as-is with token substitution (workflow engine, task/audit/
+esign/identity services, shared Python lib, UI shell and design system);
+**(B)** generic mechanics with workload-specific data stubbed to an empty/
+example registry with `TODO` markers (seed data, agent registry); **(C)**
+workload-specific code excluded entirely, generated instead by
+`workflow-forward-engineer` per approved blueprint. Token vocabulary
+(`{{PLATFORM_NAME}}`, `{{platform_slug}}`, `{{PLATFORM_SLUG_UPPER}}`,
+`{{platform_docker_network}}`, `{{platform_seed_email_domain}}`,
+`{{PLATFORM_BASE_AGENT_CLASS}}`) is substituted in both file contents and
+path segments; see `templates/workflow-platform-scaffold/SCAFFOLD_README.md`
+for the full reference.
+
+### Test fixtures
+
+`tests/fixtures/appian-sample-export/` is a synthetic (hand-authored, not a
+real customer export) Appian application export used to exercise
+`/rapidx:workflow-comprehend` and the extraction agents end-to-end without
+needing real customer data — a single "Expense Approval" process covering a
+start/end pair, two human approval tasks, an expression-rule-gated gateway,
+an integration node, a record type, and a form interface.
 | **[gsd-build/get-shit-done](https://github.com/gsd-build/get-shit-done)** | SDLC workflow engine (vendored as "Get Things Done") |
 | **[affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code)** | Enterprise component library (ECC) — skills, rules, agents, hooks |
 

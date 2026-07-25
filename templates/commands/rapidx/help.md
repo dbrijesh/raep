@@ -10,6 +10,20 @@ Display the complete RapidX command reference including all available commands, 
 <output>
 # RapidX Agentic Engineering Platform — Command Reference
 
+## How to run these commands on your platform
+
+The same commands are available everywhere; only the invocation syntax differs:
+
+| Platform | How to invoke | Example |
+|----------|---------------|---------|
+| **Claude Code** | `/rapidx:<command>` | `/rapidx:help` |
+| **VS Code + Copilot** | `/rapidx-<command>` in Copilot Chat (agent mode) | `/rapidx-help` |
+| **Cursor** | `/<command>` or reference `@.cursor/commands/rapidx/<command>.md` in Composer | `/help` |
+| **Codex / OpenCode / Gemini / Antigravity** | reference the file in `commands/rapidx/<command>.md` or ask the agent to run it | "run the help command" |
+
+Arguments follow the command, e.g. `/rapidx:spec "user auth"` or `/rapidx-do-mode4 add a settings page`.
+Commands that take a path or id: `/rapidx:plan-spec 001-user-auth`.
+
 ## Execution modes — choose your autonomy level
 
 | Mode | Command | Autonomy | Description |
@@ -51,7 +65,7 @@ For VS Code Copilot: `/rapidx-do-mode2`, `/rapidx-do-mode3`, `/rapidx-do-mode4`
 | `/rapidx:spec [feature]` | Create a feature specification (SDD) |
 | `/rapidx:spec-review [id]` | Review spec for completeness and compliance |
 | `/rapidx:plan-spec [id]` | Generate implementation plan from spec |
-| `/rapidx:tasks-from-spec [id]` | Convert plan to GTD executable tasks |
+| `/rapidx:tasks-from-spec [id]` | Convert plan to RapidX executable tasks |
 | `/rapidx:constitution` | View, create, or amend project constitution |
 | `/rapidx:constitution create` | Create the project constitution |
 | `/rapidx:constitution check` | Check current diff against constitution |
@@ -68,10 +82,25 @@ For VS Code Copilot: `/rapidx-do-mode2`, `/rapidx-do-mode3`, `/rapidx-do-mode4`
 | `/rapidx:learn --arch` | Focus on architecture artifacts |
 | `/rapidx:learn --file <path>` | Learn from a specific file |
 | `/rapidx:learn --dir <path>` | Learn from a directory (e.g., .rapidx/inputs/) |
+| `/rapidx:learn --all` | Learn everything: code, arch, guidelines, docs, mandates, security, reference, graph |
+| `/rapidx:learn --mandates` | Ingest org policy/governance mandates (also reads `.rapidx/inputs/`) |
+| `/rapidx:learn --security` | Ingest security artifacts (SECURITY.md, threat models, scanning config) |
+| `/rapidx:learn --reference` | Identify exemplary modules to mirror for new code |
 | `/rapidx:learn-arch` | Deep architecture analysis (ADRs, diagrams) |
 | `/rapidx:fine-tune` | Apply learned knowledge to all platform configs |
 | `/rapidx:fine-tune --preview` | Preview changes without applying |
 | `/rapidx:knowledge-sync` | Push knowledge to all installed platforms |
+| `/rapidx:knowledge-graph` | Build/query the codebase knowledge graph (GitNexus-style) |
+
+## Invariant commands (enforced on every execute phase)
+
+| Command | Description |
+|---------|-------------|
+| `/rapidx:invariant-catalog` | Author project invariants via guided Q&A |
+| `/rapidx:invariant-catalog --from-knowledge` | Propose invariants from learned mandates/security/architecture |
+| `/rapidx:invariant-catalog --extend` | Add to an existing catalog |
+| `/rapidx:invariant-check` | Scan the whole repo against the catalog |
+| `/rapidx:invariant-check --ci` | Non-zero exit on error-severity violations (for CI) |
 
 ## Plugin management commands
 
@@ -128,7 +157,7 @@ All RapidX commands work across AI coding platforms:
 # 6. Generate implementation plan
 /rapidx:plan-spec 001-user-authentication
 
-# 7. Create GTD tasks
+# 7. Create RapidX tasks
 /rapidx:tasks-from-spec 001-user-authentication
 
 # 8. Execute tasks

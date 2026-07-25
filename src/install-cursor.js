@@ -6,6 +6,7 @@ const { generateAllCommands } = require('./generate-commands');
 const { injectAgentSkills } = require('./inject-agent-skills');
 const { writeAgentsMd } = require('./generate-agents-md');
 const { AGENT_NAMES, ENTERPRISE_AGENT_NAMES } = require('./constants');
+const { installUnderstandAnything } = require('./install-understand-anything');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 const GTD_DIR = path.join(__dirname, '..', 'get-things-done');
@@ -67,12 +68,21 @@ function installCursorSkills(skillsDir, components) {
     if (!fs.existsSync(skillSrc)) continue;
 
     const destSkillDir = path.join(skillsDir, skill);
-    fs.mkdirSync(destSkillDir, { recursive: true });
+    // Copy recursively — some skills (e.g. spec-driven-dev) carry subdirectories.
+    copyTree(skillSrc, destSkillDir);
+  }
+}
 
-    const files = fs.readdirSync(skillSrc);
-    for (const file of files) {
-      fs.copyFileSync(path.join(skillSrc, file), path.join(destSkillDir, file));
-    }
+/**
+ * Recursively copy a directory tree.
+ */
+function copyTree(src, dest) {
+  fs.mkdirSync(dest, { recursive: true });
+  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+    const s = path.join(src, entry.name);
+    const d = path.join(dest, entry.name);
+    if (entry.isDirectory()) copyTree(s, d);
+    else fs.copyFileSync(s, d);
   }
 }
 
@@ -153,24 +163,30 @@ function installCursor(options) {
   // Copy skills
   installCursorSkills(skillsDir, components);
 
-  // Copy hook scripts to .cursor/hooks/
+  // Copy hook scripts to .cursor/hooks/ (recursively — includes lib/ engine).
   const hooksSrc = path.join(TEMPLATES_DIR, 'hooks', 'rapidx');
   if (fs.existsSync(hooksSrc)) {
     fs.mkdirSync(hooksDir, { recursive: true });
-    const hookFiles = fs.readdirSync(hooksSrc);
-    for (const file of hookFiles) {
-      fs.copyFileSync(path.join(hooksSrc, file), path.join(hooksDir, file));
-    }
-    process.stdout.write(`  [RapidX] Installed ${hookFiles.length} hook scripts → .cursor/hooks/\n`);
+    let count = 0;
+    const copyHooks = (src, dest) => {
+      for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+        const s = path.join(src, entry.name);
+        const d = path.join(dest, entry.name);
+        if (entry.isDirectory()) { fs.mkdirSync(d, { recursive: true }); copyHooks(s, d); }
+        else { fs.copyFileSync(s, d); count++; }
+      }
+    };
+    copyHooks(hooksSrc, hooksDir);
+    process.stdout.write(`  [RapidX] Installed ${count} hook scripts → .cursor/hooks/\n`);
   }
 
   // Generate mcp.json
   writeMcpJson(cursorDir, stack);
 
-  // Copy Get Things Done agent MDC files to .cursor/agents/
+  // Copy RapidX agent MDC files to .cursor/agents/
   installCursorAgents(path.join(cursorDir, 'agents'), components);
 
-  // ── Copy GTD workflow/reference/template files to .cursor/rapidx/ ───────────
+  // ── Copy RapidX workflow/reference/template files to .cursor/rapidx/ ───────────
   // Cursor command files reference these via @.cursor/rapidx/... paths.
   const cursorGtdDest = path.join(cursorDir, 'rapidx');
   for (const sub of ['workflows', 'references', 'templates', 'contexts']) {
@@ -185,14 +201,14 @@ function installCursor(options) {
     }
   }
 
-  // ── Generate Cursor command files from Get Things Done source ─────────────
+  // ── Generate Cursor command files from RapidX source ─────────────
   const gtdSrc = path.join(GTD_DIR, 'commands', 'gtd');
   const cursorCommandsDir = path.join(cursorDir, 'commands', 'rapidx');
   const cursorCommandsResult = generateAllCommands(gtdSrc, {
     cursor: cursorCommandsDir,
   }, { gtdDir: GTD_DIR });
   if (cursorCommandsResult.generated > 0) {
-    process.stdout.write(`  [RapidX] Generated ${cursorCommandsResult.generated} Get Things Done commands in .cursor/commands/rapidx/\n`);
+    process.stdout.write(`  [RapidX] Generated ${cursorCommandsResult.generated} RapidX commands in .cursor/commands/rapidx/\n`);
   }
 
   // ── Generate Cursor command files from RapidX enterprise commands ──────────
@@ -200,7 +216,7 @@ function installCursor(options) {
   if (fs.existsSync(rapidxSrc)) {
     const rapidxCommandsResult = generateAllCommands(rapidxSrc, {
       cursor: cursorCommandsDir,
-    });
+    }, { nativeSource: true });
     if (rapidxCommandsResult.generated > 0) {
       process.stdout.write(`  [RapidX] Generated ${rapidxCommandsResult.generated} RapidX enterprise commands in .cursor/commands/rapidx/\n`);
     }
@@ -208,6 +224,9 @@ function installCursor(options) {
 
   // Generate AGENTS.md
   writeAgentsMd(targetDir, profile, stack, components);
+
+  // ── Install Understand-Anything skills and agents ──────────────────────────
+  installUnderstandAnything('cursor', targetDir);
 
   return { success: true };
 }

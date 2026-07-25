@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic Appian record type export fixture (not a real customer export).
+  Backing data entity for the Expense Approval process.
+-->
+<recordType name="Expense Report" uuid="rt-expense-report">
+  <fields>
+    <field name="id" type="Text" isPrimaryKey="true"/>
+    <field name="employeeName" type="Text"/>
+    <field name="expenseAmount" type="Decimal"/>
+    <field name="expenseCategory" type="Text"/>
+    <field name="receiptDocument" type="Document" nullable="true"/>
+    <field name="status" type="Text"/>
+    <field name="managerComments" type="Text" nullable="true"/>
+    <field name="financeApproved" type="Boolean" nullable="true"/>
+    <field name="costCenter" type="Text" nullable="true"/>
+    <field name="submittedOn" type="DateTime"/>
+    <field name="paidOn" type="DateTime" nullable="true"/>
+  </fields>
+  <relationships>
+    <relationship name="submittingEmployee" targetRecordType="Employee" cardinality="many-to-one"/>
+  </relationships>
+</recordType>

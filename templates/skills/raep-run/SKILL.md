@@ -10,7 +10,7 @@ Run the RapidX platform demonstration application — a full-stack todo app used
 ## When to use
 
 - After a fresh RapidX installation to confirm everything works end-to-end
-- To demonstrate RapidX workflows (Get Things Done, spec-driven dev, TDD) to a new team
+- To demonstrate RapidX workflows (RapidX, spec-driven dev, TDD) to a new team
 - As a reference implementation for React + Express + SQLite stack patterns
 
 ## Commands
@@ -52,9 +52,9 @@ raep-run/
         └── routes/todos.ts
 ```
 
-## GTD workflow validation
+## RapidX workflow validation
 
-Once running, try these commands to validate the full Get Things Done workflow:
+Once running, try these commands to validate the full RapidX workflow:
 
 ```
 /rapidx:plan-phase    — Plan a new todo feature

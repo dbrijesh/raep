@@ -80,7 +80,7 @@ Always use the versions listed above. Do NOT suggest features from newer version
 
 ## Workflow
 
-This project uses the **Get Things Done** workflow:
+This project uses the **RapidX** workflow:
 1. `/rapidx:new-project` or `/rapidx:new-milestone` — Start
 2. `/rapidx:plan-phase` — Plan a phase
 3. `/rapidx:execute-phase` — Execute

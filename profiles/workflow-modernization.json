@@ -1,0 +1,69 @@
+{
+  "profile_id": "workflow-modernization",
+  "client_name": "Workflow Modernization (Pega / IBM BAW / Appian / MuleSoft)",
+  "version": "1.0.0",
+  "engagement": {
+    "type": "modernization",
+    "maturity_level": "L2",
+    "tech_stack_ref": null
+  },
+  "rules": ["common"],
+  "skills": [
+    "migration-framework",
+    "workflow-modernization-method",
+    "workflow-engine-patterns",
+    "workflow-forms-engine-patterns",
+    "workflow-compliance-patterns",
+    "workflow-agentic-topology-patterns",
+    "workflow-parity-appian",
+    "workflow-parity-pega",
+    "workflow-parity-baw",
+    "workflow-parity-mulesoft",
+    "workflow-loop-build-patterns"
+  ],
+  "agents": [
+    "migration-analyst",
+    "workflow-logic-extractor",
+    "workflow-dependency-mapper",
+    "workflow-forms-generator",
+    "workflow-data-modeler",
+    "workflow-topology-architect",
+    "workflow-blueprint-architect",
+    "workflow-forward-engineer",
+    "loop-requirements-clarifier",
+    "loop-architecture-planner",
+    "loop-phase-builder"
+  ],
+  "hooks": [
+    "session-start",
+    "session-end",
+    "audit-trail",
+    "secret-scanner",
+    "governance-gate",
+    "token-tracker"
+  ],
+  "review_gates": [
+    {
+      "name": "reimagine-review",
+      "description": "Architect sign-off on the Reimagine stage before Blueprint begins",
+      "mandatory": true
+    },
+    {
+      "name": "blueprint-review",
+      "description": "Architect sign-off on the Blueprint (target workflow/data/forms design) before Forward-Engineer begins",
+      "mandatory": true
+    },
+    {
+      "name": "parity-review",
+      "description": "Verify forward-engineered process matches source-platform behavior parity report",
+      "mandatory": true
+    }
+  ],
+  "governance": {
+    "compliance_frameworks": ["21 CFR Part 11", "HIPAA", "GxP"],
+    "audit_trail": true,
+    "secret_scanning": true,
+    "mandatory_review": true,
+    "notes": "Legacy workflow logic (Pega/BAW/Appian/MuleSoft) must be inventoried and behavior-mapped before any forward-engineering. Every generated process must retain an auditable trace back to its source-platform definition and pass a parity review before cutover."
+  }
+}

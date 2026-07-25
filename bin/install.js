@@ -16,6 +16,7 @@ const { writeCopilotInstructions } = require('../src/generate-copilot-instructio
 const { verifyInstall } = require('../src/verify-install');
 const { addTech } = require('../src/add-tech');
 const { uninstall } = require('../src/uninstall');
+const { stampWorkflowScaffold } = require('../src/generate-workflow-scaffold');
 const ui = require('../src/prompt-ui');
 
 // Platform installers
@@ -27,6 +28,7 @@ const { installCodex } = require('../src/install-codex');
 const { installOpencode } = require('../src/install-opencode');
 const { installGemini } = require('../src/install-gemini');
 const { installAntigravity } = require('../src/install-antigravity');
+const { installRapidxCore } = require('../src/install-rapidx-core');
 const { installKiro } = require('../src/install-kiro');
 
 // ── CLI Flag parsing ───────────────────────────────────────────────────────────
@@ -71,6 +73,13 @@ function parseArgs(argv) {
     uninstall: false,
     'check-update': false,
     'skip-verify': false,
+
+    // Workflow platform scaffold stamping
+    'stamp-workflow-scaffold': false,
+    target: null,
+    'platform-name': null,
+    'platform-slug': null,
+    force: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -94,6 +103,8 @@ function parseArgs(argv) {
     else if (arg === '--uninstall') flags.uninstall = true;
     else if (arg === '--check-update') flags['check-update'] = true;
     else if (arg === '--skip-verify') flags['skip-verify'] = true;
+    else if (arg === '--stamp-workflow-scaffold') flags['stamp-workflow-scaffold'] = true;
+    else if (arg === '--force') flags.force = true;
     else if (arg.startsWith('--') && args[i + 1] && !args[i + 1].startsWith('--')) {
       const key = arg.slice(2);
       if (key in flags) {
@@ -432,6 +443,15 @@ async function runInstallers(platforms, targetDir, profile, stack, components, s
   ui.writeln('');
   progress.advance('Creating directory structure...');
   fs.mkdirSync(path.join(targetDir, '.rapidx'), { recursive: true });
+  // Platform-neutral runtime: invariant engine, knowledge-graph query lib,
+  // invariants/knowledge/inputs dirs, and the graph builder script. Shared by
+  // every platform so the engine + /rapidx:invariant-check + /rapidx:knowledge-graph
+  // work even on tools without a native hook system (Antigravity, Copilot, …).
+  try {
+    installRapidxCore(targetDir, { profile });
+  } catch (e) {
+    process.stderr.write(`  [RapidX] Core runtime install warning: ${e.message}\n`);
+  }
   progress.done('Creating directory structure...');
 
   let allSucceeded = true;
@@ -526,7 +546,7 @@ function printQuickStart(platforms, profileId, stack, targetDir, components) {
   }
   ui.writeln('');
   ui.writeln(ui.colored('  Key commands:', ui.BOLD));
-  ui.writeln(`    ${ui.colored('/rapidx:new-project', ui.CYAN)}    Start a new project with Get Things Done workflow`);
+  ui.writeln(`    ${ui.colored('/rapidx:new-project', ui.CYAN)}    Start a new project with RapidX workflow`);
   ui.writeln(`    ${ui.colored('/rapidx:map-codebase', ui.CYAN)}   Analyze existing codebase`);
   ui.writeln(`    ${ui.colored('/rapidx:quick', ui.CYAN)}          Quick ad-hoc task or bug fix`);
   ui.writeln(`    ${ui.colored('/rapidx:help', ui.CYAN)}           Show all RapidX commands`);
@@ -548,6 +568,32 @@ async function main() {
   if (flags['check-update']) {
     ui.writeln('  Checking for updates... (visit https://github.com/rapidx/rapidx-platform for latest)');
     process.exit(0);
+  }
+
+  // ── Handle --stamp-workflow-scaffold ────────────────────────────────────────
+  // Stands alone (no platform detection / stack questionnaire): stamps the
+  // workflow-modernization target application scaffold into --target.
+  if (flags['stamp-workflow-scaffold']) {
+    if (!flags.target || !flags['platform-name'] || !flags['platform-slug']) {
+      ui.writeln(ui.colored(
+        '  Usage: rapidx --stamp-workflow-scaffold --target <dir> --platform-name "<Name>" --platform-slug <slug> [--force]',
+        ui.RED,
+      ));
+      process.exit(1);
+    }
+    try {
+      stampWorkflowScaffold({
+        targetDir: path.resolve(flags.target),
+        platformName: flags['platform-name'],
+        platformSlug: flags['platform-slug'],
+        force: flags.force,
+      });
+      ui.writeln(ui.colored('  Workflow platform scaffold stamped.', ui.GREEN));
+      process.exit(0);
+    } catch (e) {
+      ui.writeln(ui.colored(`  [RapidX] ${e.message}`, ui.RED));
+      process.exit(1);
+    }
   }
 
   // Detect platforms

@@ -1,4 +1,4 @@
-# Agent: E2E Runner — Get Things Done
+# Agent: E2E Runner — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

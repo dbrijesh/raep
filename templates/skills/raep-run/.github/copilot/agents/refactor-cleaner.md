@@ -1,4 +1,4 @@
-# Agent: Refactor Cleaner — Get Things Done
+# Agent: Refactor Cleaner — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

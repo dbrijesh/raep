@@ -5,7 +5,7 @@ Display the complete RapidX command reference. Output ONLY the reference content
 <reference>
 # RapidX Command Reference
 
-**RapidX** (Get Shit Done) creates hierarchical project plans optimized for solo agentic development with Claude Code.
+**RapidX** (RapidX) creates hierarchical project plans optimized for solo agentic development with Claude Code.
 
 ## Quick Start
 

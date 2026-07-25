@@ -25,12 +25,17 @@ const { execSync } = require('child_process');
 // ─── CLI args ────────────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
+const all = args.includes('--all') || args.length === 0;
 const flags = {
-  all: args.includes('--all') || args.length === 0,
-  code: args.includes('--code') || args.includes('--all') || args.length === 0,
-  docs: args.includes('--docs') || args.includes('--all'),
-  arch: args.includes('--arch') || args.includes('--all'),
-  guidelines: args.includes('--guidelines') || args.includes('--all'),
+  all,
+  code: args.includes('--code') || all,
+  docs: args.includes('--docs') || all,
+  arch: args.includes('--arch') || all,
+  guidelines: args.includes('--guidelines') || all,
+  mandates: args.includes('--mandates') || all,
+  security: args.includes('--security') || all,
+  reference: args.includes('--reference') || all,
+  graph: args.includes('--graph') || all,
   syncOnly: args.includes('--sync-only'),
   preview: args.includes('--preview'),
   file: args.includes('--file') ? args[args.indexOf('--file') + 1] : null,
@@ -371,6 +376,171 @@ ${docFiles.map(f => `- \`${path.relative(cwd, f)}\``).join('\n') || '_No docs/ d
 `;
 }
 
+// ─── Mandates extraction (governance / compliance / org policy) ───────────────
+
+function extractMandates() {
+  log('Extracting mandates and organizational policies...');
+
+  // Org/team mandates live either in well-known docs or dropped into .rapidx/inputs/
+  const mandateDocs = [
+    'MANDATES.md', 'docs/MANDATES.md', 'POLICY.md', 'docs/POLICY.md',
+    'GOVERNANCE.md', 'docs/GOVERNANCE.md', 'COMPLIANCE.md', 'docs/COMPLIANCE.md',
+    'tech-radar.md', 'docs/tech-radar.md',
+  ].map(f => path.join(cwd, f)).filter(f => fs.existsSync(f));
+
+  const inputDocs = findFiles(path.join(cwd, '.rapidx', 'inputs'), ['.md', '.txt'], 30);
+
+  const all = [...mandateDocs, ...inputDocs];
+  const body = all.map(f => `### From: ${path.relative(cwd, f)}\n\n${(readFile(f) || '').substring(0, 2000)}`).join('\n\n---\n\n');
+
+  return `# Mandates & Organizational Policy
+
+**Extracted**: ${now()}
+**Sources**: ${all.map(f => path.relative(cwd, f)).join(', ') || 'None found'}
+
+---
+
+## Mandates in force
+
+${body || '_No mandate documents found. Drop org policies, tech-radar, or approved-library lists into `.rapidx/inputs/` and re-run `/rapidx:learn --mandates`._'}
+
+---
+
+## Notes for AI agents & invariants
+
+1. Treat the mandates above as NON-NEGOTIABLE constraints when planning or coding.
+2. These are prime candidates for **invariants** — run \`/rapidx:invariant-catalog --from-knowledge\`
+   to turn mandates into enforced checks.
+3. Flag any requested work that conflicts with a mandate before implementing it.
+
+---
+*Regenerate with: \`/rapidx:learn --mandates\`*
+`;
+}
+
+// ─── Security artifacts extraction ─────────────────────────────────────────────
+
+function extractSecurity() {
+  log('Extracting security artifacts...');
+
+  const securityDocs = [
+    'SECURITY.md', 'docs/SECURITY.md', 'THREAT_MODEL.md', 'docs/THREAT_MODEL.md',
+    'docs/security/README.md', '.github/SECURITY.md',
+  ].map(f => path.join(cwd, f)).filter(f => fs.existsSync(f));
+
+  // Signals of security tooling already in the repo
+  const signals = {
+    codeowners: fs.existsSync(path.join(cwd, 'CODEOWNERS')) || fs.existsSync(path.join(cwd, '.github', 'CODEOWNERS')),
+    dependabot: fs.existsSync(path.join(cwd, '.github', 'dependabot.yml')),
+    semgrep: fs.existsSync(path.join(cwd, '.semgrep.yml')) || findFiles(path.join(cwd, '.semgrep'), ['.yml', '.yaml'], 3).length > 0,
+    codeql: findFiles(path.join(cwd, '.github', 'workflows'), ['.yml'], 30).some(f => (readFile(f) || '').includes('codeql')),
+    envExample: fs.existsSync(path.join(cwd, '.env.example')),
+    gitleaks: fs.existsSync(path.join(cwd, '.gitleaks.toml')),
+  };
+
+  const body = securityDocs.map(f => `### From: ${path.relative(cwd, f)}\n\n${(readFile(f) || '').substring(0, 2000)}`).join('\n\n---\n\n');
+
+  return `# Security Artifacts
+
+**Extracted**: ${now()}
+**Security docs**: ${securityDocs.map(f => path.relative(cwd, f)).join(', ') || 'none'}
+
+---
+
+## Security tooling detected
+
+- CODEOWNERS: ${signals.codeowners ? 'yes' : 'no'}
+- Dependabot: ${signals.dependabot ? 'yes' : 'no'}
+- Semgrep: ${signals.semgrep ? 'yes' : 'no'}
+- CodeQL: ${signals.codeql ? 'yes' : 'no'}
+- Secret scanning (gitleaks): ${signals.gitleaks ? 'yes' : 'no'}
+- .env.example present: ${signals.envExample ? 'yes' : 'no'}
+
+## Security documentation
+
+${body || '_No SECURITY.md / threat model found. Add one and re-run `/rapidx:learn --security`._'}
+
+---
+
+## Notes for AI agents & invariants
+
+1. Honor the security requirements above in every change (auth, validation, secrets).
+2. The \`security-reviewer\` agent and \`secret-scanner\` hook enforce a baseline already.
+3. Encode hard security rules as \`error\`-severity **invariants** via \`/rapidx:invariant-catalog\`.
+
+---
+*Regenerate with: \`/rapidx:learn --security\`*
+`;
+}
+
+// ─── Reference implementation extraction ───────────────────────────────────────
+
+function extractReference() {
+  log('Identifying reference implementations...');
+
+  const codeExtensions = ['.ts', '.tsx', '.js', '.py', '.go', '.java', '.cs', '.rb', '.php'];
+  const srcDirs = ['src', 'lib', 'app', 'packages', 'services'];
+  const candidates = [];
+  for (const d of srcDirs) candidates.push(...findFiles(path.join(cwd, d), codeExtensions, 120));
+
+  // Heuristic: a good reference file is one that has a co-located test and a
+  // moderate (not trivial, not gigantic) size.
+  const testNames = new Set(findFiles(cwd, ['.test.ts', '.test.js', '.spec.ts', '.spec.js', '_test.go', '_test.py'], 200).map(f =>
+    path.basename(f).replace(/\.(test|spec)\.[a-z]+$/, '').replace(/_test\.[a-z]+$/, '')
+  ));
+
+  const scored = candidates.map(f => {
+    const content = readFile(f) || '';
+    const loc = content.split('\n').length;
+    const base = path.basename(f).replace(path.extname(f), '');
+    const hasTest = testNames.has(base);
+    const score = (hasTest ? 100 : 0) + (loc >= 40 && loc <= 400 ? 50 : 0) + (content.includes('/**') ? 10 : 0);
+    return { f, loc, hasTest, score };
+  }).filter(x => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
+
+  return `# Reference Implementations
+
+**Identified**: ${now()}
+**Candidates scanned**: ${candidates.length}
+
+---
+
+## Exemplary modules (follow these patterns for new code)
+
+${scored.map(s => `- \`${path.relative(cwd, s.f)}\` — ${s.loc} LOC${s.hasTest ? ', has tests' : ''}`).join('\n') || '_No clear reference implementations detected (need tested, well-sized modules)._'}
+
+---
+
+## Notes for AI agents
+
+1. When implementing similar functionality, mirror the structure, naming, error
+   handling, and test style of the reference files above.
+2. Prefer extending established patterns over introducing new ones.
+3. Cross-check new code against \`.rapidx/knowledge/code-patterns.md\`.
+
+---
+*Regenerate with: \`/rapidx:learn --reference\`*
+`;
+}
+
+// ─── Knowledge graph build ─────────────────────────────────────────────────────
+
+function buildGraph() {
+  log('Building codebase knowledge graph...');
+  const script = path.join(cwd, 'scripts', 'build-knowledge-graph.js');
+  if (!fs.existsSync(script)) {
+    err('build-knowledge-graph.js not found — skipping graph build. (Re-run the installer to add it.)');
+    return null;
+  }
+  try {
+    execSync(`node "${script}" --quiet`, { cwd, stdio: 'inherit' });
+    return '.rapidx/knowledge/graph.json';
+  } catch (e) {
+    err(`Knowledge graph build failed: ${e.message}`);
+    return null;
+  }
+}
+
 // ─── Sync to platforms ───────────────────────────────────────────────────────
 
 function syncToPlatforms(knowledgeSummary) {
@@ -490,10 +660,41 @@ async function main() {
         log('PREVIEW: domain.md would be written');
       }
     }
+
+    if (flags.mandates) {
+      const content = extractMandates();
+      if (!flags.preview) {
+        writeFile(path.join(knowledgeDir, 'mandates.md'), content);
+        written.push('.rapidx/knowledge/mandates.md');
+      } else { log('PREVIEW: mandates.md would be written'); }
+    }
+
+    if (flags.security) {
+      const content = extractSecurity();
+      if (!flags.preview) {
+        writeFile(path.join(knowledgeDir, 'security.md'), content);
+        written.push('.rapidx/knowledge/security.md');
+      } else { log('PREVIEW: security.md would be written'); }
+    }
+
+    if (flags.reference) {
+      const content = extractReference();
+      if (!flags.preview) {
+        writeFile(path.join(knowledgeDir, 'reference.md'), content);
+        written.push('.rapidx/knowledge/reference.md');
+      } else { log('PREVIEW: reference.md would be written'); }
+    }
+
+    if (flags.graph && !flags.preview) {
+      const g = buildGraph();
+      if (g) written.push(g);
+    } else if (flags.graph) {
+      log('PREVIEW: knowledge graph would be built');
+    }
   }
 
   // Build summary for sync
-  const knowledgeSummary = written.map(f => {
+  const knowledgeSummary = written.filter(f => f.endsWith('.md')).map(f => {
     const content = readFile(path.join(cwd, f)) || '';
     return `### ${path.basename(f, '.md')}\n${content.split('\n').slice(0, 15).join('\n')}`;
   }).join('\n\n');

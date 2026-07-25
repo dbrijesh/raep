@@ -1,6 +1,6 @@
 ---
 name: rapidx:spec
-description: "Get Things Done: Create a structured feature specification using Spec-Driven Development"
+description: "RapidX: Create a structured feature specification using Spec-Driven Development"
 allowed-tools:
   - Read
   - Write

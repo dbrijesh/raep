@@ -1,4 +1,4 @@
-# Agent: Security Reviewer — Get Things Done
+# Agent: Security Reviewer — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 

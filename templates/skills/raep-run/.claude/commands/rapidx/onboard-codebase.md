@@ -30,7 +30,7 @@ Analyze an existing codebase and configure RapidX for it. This is the first step
    - Create `.planning/PROJECT.md` with codebase overview
    - Create `.planning/RISKS.md` with identified technical debt
 
-5. Recommend Get Things Done workflow starting point:
+5. Recommend RapidX workflow starting point:
    - If greenfield: `/rapidx:new-project`
    - If brownfield/migration: `/rapidx:map-codebase`
 

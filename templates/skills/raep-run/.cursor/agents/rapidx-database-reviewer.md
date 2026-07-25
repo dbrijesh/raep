@@ -3,7 +3,7 @@ description: RapidX Database Reviewer agent — activate when reviewing database
 alwaysApply: false
 ---
 
-# Agent: Database Reviewer — Get Things Done
+# Agent: Database Reviewer — RapidX
 
 ## Role
 

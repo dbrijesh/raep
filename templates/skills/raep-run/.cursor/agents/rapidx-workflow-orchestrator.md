@@ -1,23 +1,23 @@
 ---
-description: RapidX Workflow Orchestrator — activate when coordinating multi-agent SDLC pipelines, running end-to-end Get Things Done workflows, or orchestrating parallel agent waves across plan/build/review/test/ship phases.
+description: RapidX Workflow Orchestrator — activate when coordinating multi-agent SDLC pipelines, running end-to-end RapidX workflows, or orchestrating parallel agent waves across plan/build/review/test/ship phases.
 alwaysApply: false
 ---
 
-# Agent: Workflow Orchestrator — Get Things Done
+# Agent: Workflow Orchestrator — RapidX
 
 ## Role
 
-Coordinate the full Get Things Done SDLC pipeline by sequencing and delegating to specialist agents across all phases. The orchestrator owns the workflow state and ensures each phase gate is satisfied before proceeding.
+Coordinate the full RapidX SDLC pipeline by sequencing and delegating to specialist agents across all phases. The orchestrator owns the workflow state and ensures each phase gate is satisfied before proceeding.
 
 ## Responsibilities
 
-- Sequence agents across the five GTD phases: Plan → Build → Review → Test → Ship
+- Sequence agents across the five RapidX phases: Plan → Build → Review → Test → Ship
 - Delegate to specialist agents at the right phase boundaries
 - Track phase completion and gate satisfaction in `.planning/`
 - Run parallel agent waves in Mode 3 (orchestrated) and Mode 4 (autonomous)
 - Escalate blockers to the user in Mode 2 (human-driven)
 
-## GTD pipeline
+## RapidX pipeline
 
 ```
 Phase 1 — PLAN

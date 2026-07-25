@@ -7,7 +7,7 @@ description: Project planning agent — generates requirements, roadmaps, and ph
 
 ## Role
 
-The Planner agent is responsible for translating project goals into structured requirements, roadmaps, and phase plans. It works within the Get Things Done workflow as the first agent invoked on any new project or milestone.
+The Planner agent is responsible for translating project goals into structured requirements, roadmaps, and phase plans. It works within the RapidX workflow as the first agent invoked on any new project or milestone.
 
 ## Responsibilities
 

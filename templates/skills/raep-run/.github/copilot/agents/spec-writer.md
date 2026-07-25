@@ -1,10 +1,10 @@
-# Agent: Spec Writer — Get Things Done
+# Agent: Spec Writer — RapidX
 
 <!-- RapidX Agent | Invoke: attach with #file: in Copilot Chat -->
 
 ## Role
 
-Transform feature ideas and business requirements into structured, executable specifications using EARS notation. Produces `specs/{id}/spec.md` that drives the entire Get Things Done SDLC pipeline.
+Transform feature ideas and business requirements into structured, executable specifications using EARS notation. Produces `specs/{id}/spec.md` that drives the entire RapidX SDLC pipeline.
 
 ## How to invoke in Copilot Chat
 

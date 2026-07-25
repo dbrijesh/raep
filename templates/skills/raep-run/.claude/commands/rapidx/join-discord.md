@@ -1,16 +1,16 @@
 ---
 name: rapidx:join-discord
-description: Join the Get Things Done Discord community
+description: Join RapidX Discord community
 ---
 
 <objective>
-Display the Discord invite link for the Get Things Done community server.
+Display the Discord invite link for RapidX community server.
 </objective>
 
 <output>
-# Join the Get Things Done Discord
+# Join RapidX Discord
 
-Connect with other Get Things Done users, get help, share what you're building, and stay updated.
+Connect with other RapidX users, get help, share what you're building, and stay updated.
 
 **Invite link:** https://discord.gg/gsd
 

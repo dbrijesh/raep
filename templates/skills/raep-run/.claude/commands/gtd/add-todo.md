@@ -10,7 +10,7 @@ allowed-tools:
 ---
 
 <objective>
-Capture an idea, task, or issue that surfaces during a Get Things Done session as a structured todo for later work.
+Capture an idea, task, or issue that surfaces during a RapidX session as a structured todo for later work.
 
 Routes to the add-todo workflow which handles:
 - Directory structure creation

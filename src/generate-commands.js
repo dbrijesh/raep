@@ -3,7 +3,7 @@
 /**
  * generate-commands.js
  *
- * Converts Get Things Done command files into equivalent formats for:
+ * Converts RapidX command files into equivalent formats for:
  *   - Claude Code /rapidx:* aliases
  *   - GitHub Copilot .prompt.md files (.github/prompts/)
  *   - Cursor MDC command files (.cursor/commands/rapidx/)
@@ -17,7 +17,7 @@ const path = require('path');
 // ─── Parsers ──────────────────────────────────────────────────────────────────
 
 /**
- * Parse a Get Things Done command file into its components.
+ * Parse a RapidX command file into its components.
  *
  * Supports two source formats:
  *   - Structured: uses <objective>, <context>, <process> XML blocks (most files)
@@ -52,9 +52,11 @@ function parseCommandFile(content) {
   const objectiveMatch = content.match(/<objective>([\s\S]*?)<\/objective>/);
   const contextMatch = content.match(/<context>([\s\S]*?)<\/context>/);
   const processMatch = content.match(/<process>([\s\S]*?)<\/process>/);
+  // Reference/output-style commands (e.g. help) put their body in <output>.
+  const outputMatch = content.match(/<output>([\s\S]*?)<\/output>/);
 
   // Flat format: no XML blocks — use full body after frontmatter as processBlock
-  const hasXmlStructure = objectiveMatch || processMatch || contextMatch;
+  const hasXmlStructure = objectiveMatch || processMatch || contextMatch || outputMatch;
   const bodyContent = fmMatch ? content.slice(fmMatch[0].length).trim() : content.trim();
 
   return {
@@ -64,9 +66,13 @@ function parseCommandFile(content) {
     allowedTools,
     objective: objectiveMatch ? objectiveMatch[1].trim() : description,
     contextBlock: contextMatch ? contextMatch[1].trim() : '',
+    // Body precedence: <process>, then <output> (reference docs like help),
+    // then the whole flat body when there is no XML structure at all.
     processBlock: processMatch
       ? processMatch[1].trim()
-      : (hasXmlStructure ? '' : bodyContent),
+      : outputMatch
+        ? outputMatch[1].trim()
+        : (hasXmlStructure ? '' : bodyContent),
     raw: content,
   };
 }
@@ -90,7 +96,7 @@ function titleCase(s) {
 // ─── Generators ───────────────────────────────────────────────────────────────
 
 // Commands that already exist as native /rapidx: entries in templates/commands/rapidx/.
-// When generateAllCommands() converts GTD source commands to /rapidx: aliases, it skips
+// When generateAllCommands() converts RapidX source commands to /rapidx: aliases, it skips
 // any name listed here to avoid creating a duplicate that shadows the hand-authored version.
 // Update this list whenever a new command is added to templates/commands/rapidx/.
 const NATIVE_RAPIDX_COMMANDS = new Set([
@@ -99,6 +105,10 @@ const NATIVE_RAPIDX_COMMANDS = new Set([
   'plugin', 'tasks-from-spec', 'init-client', 'switch-client', 'add-tech',
   'governance-check', 'maturity-gate', 'spec', 'spec-review', 'do-mode2',
   'do-mode3', 'do-mode4',
+  'workflow-modernize', 'workflow-intake-requirements', 'workflow-comprehend',
+  'workflow-reimagine', 'workflow-blueprint', 'workflow-forward-engineer',
+  'workflow-status', 'loop', 'loop-status',
+  'command-center', 'command-center-status',
 ]);
 
 /**
@@ -135,7 +145,7 @@ function rewriteCommandRefs(text) {
 }
 
 /**
- * Generate a Claude Code /rapidx:* command from a parsed Get Things Done command.
+ * Generate a Claude Code /rapidx:* command from a parsed RapidX command.
  * All internal /gsd: cross-references are rewritten to /rapidx:.
  */
 function toRapidxAlias(parsed) {
@@ -250,23 +260,19 @@ function sanitizeForIde(text, platform) {
   return out.trim();
 }
 
-// VS Code Copilot built-in tools available in agent mode.
-// The `agent` field (not `mode`) controls execution — valid values: ask | agent | plan.
+// VS Code Copilot prompt-file notes:
+//  - Execution is controlled by the `mode` frontmatter field (ask | edit | agent).
+//    There is NO `agent` field — an unknown field leaves `mode` undefined and the
+//    extension throws "Cannot read properties of undefined (reading 'bind')".
+//  - We intentionally do NOT emit a `tools:` list. Tool names differ across
+//    Copilot Chat versions (0.48.x has no editFiles/runCommands/findTestFiles),
+//    and declaring an unregistered tool triggers the same `.bind`-on-undefined
+//    crash. Omitting tools makes prompts work on every version.
 // See: https://code.visualstudio.com/docs/copilot/customization/prompt-files
-const COPILOT_AGENT_TOOLS = [
-  'codebase',
-  'editFiles',
-  'runCommands',
-  'fetch',
-  'problems',
-  'search',
-  'findTestFiles',
-  'workspaceDetails',
-];
 
 /**
  * Convert @~/.claude/get-things-done/ file references to #file: workspace-relative paths.
- * The GTD support files are copied to .github/prompts/rapidx/ during VS Code installation,
+ * The RapidX support files are copied to .github/prompts/rapidx/ during VS Code installation,
  * so Copilot can resolve them via the standard #file: syntax.
  *
  * @param {string} text
@@ -280,11 +286,11 @@ function convertGtdRefsToCopilot(text) {
 }
 
 /**
- * Generate a GitHub Copilot .prompt.md file from a parsed Get Things Done command.
+ * Generate a GitHub Copilot .prompt.md file from a parsed RapidX command.
  * Output filename: rapidx-<name>.prompt.md — placed in .github/prompts/
  * VS Code auto-discovers that folder; type /rapidx-<name> in Copilot Chat to invoke.
  *
- * Frontmatter uses the `agent` field per VS Code prompt file specification:
+ * Frontmatter uses the `mode` field per VS Code prompt file specification:
  * https://code.visualstudio.com/docs/copilot/customization/prompt-files
  *
  * @~/.claude/get-things-done/ references are converted to #file:.github/prompts/rapidx/
@@ -324,13 +330,15 @@ function toCopilotPrompt(parsed) {
     ? `\n## Context\n\n${sanitizeForIde(rewriteCommandRefs(parsed.contextBlock), 'copilot')}\n`
     : '';
 
-  const toolsList = COPILOT_AGENT_TOOLS.map(t => `  - ${t}`).join('\n');
-
+  // NOTE: we intentionally do NOT emit a `tools:` frontmatter list. Tool names
+  // differ across Copilot Chat versions (e.g. 0.48.x has no `editFiles`/
+  // `runCommands`/`findTestFiles`), and declaring a tool the installed version
+  // doesn't register makes Copilot call `.bind` on an undefined handler →
+  // "Cannot read properties of undefined (reading 'bind')". Omitting `tools`
+  // makes the prompt version-proof: agent mode then grants all available tools.
   return `---
-agent: agent
+mode: agent
 description: "[RapidX] ${rewriteCommandRefs(parsed.description)}"
-tools:
-${toolsList}
 ---
 # RapidX: ${displayName}
 ${usageLine}
@@ -369,7 +377,7 @@ function resolveGtdRefs(text, gtdDir) {
 }
 
 /**
- * Generate a Cursor MDC command file from a parsed Get Things Done command.
+ * Generate a Cursor MDC command file from a parsed RapidX command.
  * Placed in .cursor/commands/rapidx/<name>.md
  * Users reference with @.cursor/commands/rapidx/<name>.md in Composer.
  *
@@ -472,7 +480,7 @@ Then describe what you want or provide the required arguments.
 // ─── Batch generator ──────────────────────────────────────────────────────────
 
 /**
- * Convert all Get Things Done command files into Claude Code, Copilot, and Cursor formats.
+ * Convert all RapidX command files into Claude Code, Copilot, and Cursor formats.
  *
  * @param {string} commandsDir — directory containing source command .md files
  * @param {object} outputDirs
@@ -485,7 +493,7 @@ Then describe what you want or provide the required arguments.
  */
 function generateAllCommands(commandsDir, outputDirs, opts) {
   if (!fs.existsSync(commandsDir)) {
-    process.stderr.write(`[RapidX] Get Things Done commands source not found: ${commandsDir}\n`);
+    process.stderr.write(`[RapidX] RapidX commands source not found: ${commandsDir}\n`);
     return { generated: 0, skipped: 0, names: [] };
   }
 
@@ -508,8 +516,13 @@ function generateAllCommands(commandsDir, outputDirs, opts) {
 
     const name = slug(parsed.name);
 
-    // Skip commands that already exist as native /rapidx: entries
-    if (NATIVE_RAPIDX_COMMANDS.has(name)) {
+    // Skip commands that already exist as native /rapidx: entries — but ONLY when
+    // generating from the GTD source (to avoid duplicating hand-authored rapidx
+    // commands). When generating from the native rapidx source itself
+    // (opts.nativeSource), these ARE the commands we want: non-Claude platforms
+    // (Copilot, Cursor, Codex, …) have no raw copy, so they must be generated
+    // here or commands like /rapidx-help would be missing entirely.
+    if (!(opts && opts.nativeSource) && NATIVE_RAPIDX_COMMANDS.has(name)) {
       skipped++;
       continue;
     }
