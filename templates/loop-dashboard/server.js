@@ -162,7 +162,8 @@ const AZURE_SAS_URL = resolveAzureSasUrl();
 
 function mirrorToAzure() {
   if (!AZURE_SAS_URL) return;
-  const snapshot = Object.assign({ updated_at: new Date().toISOString() }, buildState());
+  const recent = readProgressLines().slice(-50);
+  const snapshot = Object.assign({ updated_at: new Date().toISOString(), recent_events: recent }, buildState());
   const body = Buffer.from(JSON.stringify(snapshot));
   let url;
   try { url = new URL(AZURE_SAS_URL); } catch (_) { return; }

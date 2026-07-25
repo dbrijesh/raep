@@ -188,6 +188,29 @@ header{display:flex;align-items:center;justify-content:space-between;gap:16px;pa
 .legend i{width:7px;height:7px;border-radius:50%}
 .legend .lv{background:var(--verify)}.legend .lb{background:var(--impl)}.legend .lp{background:var(--text-faint)}.legend .ld{background:var(--danger)}
 
+.feed{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:22px}
+.feed h4{
+  font-family:var(--disp);font-size:.8rem;font-weight:600;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--text-dim);margin-bottom:18px;display:flex;align-items:center;gap:10px;
+}
+.feed h4::before{content:'';width:8px;height:8px;background:var(--impl);box-shadow:0 0 8px var(--impl-glow);border-radius:2px}
+.stream{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding-right:5px}
+.stream::-webkit-scrollbar{width:5px}
+.stream::-webkit-scrollbar-thumb{background:var(--line-bright);border-radius:99px}
+.ev{display:flex;gap:11px;align-items:baseline;font-size:.74rem;padding:9px 11px;border-radius:9px;
+  background:rgba(255,255,255,.02);border-left:2px solid var(--text-faint)}
+.ev.info{border-left-color:var(--impl)}
+.ev.success{border-left-color:var(--verify)}
+.ev.warning{border-left-color:var(--amber)}
+.ev.error{border-left-color:var(--danger)}
+.ev .t{font-family:var(--mono);font-size:.58rem;color:var(--text-faint);flex:none}
+.ev .who{font-family:var(--mono);font-size:.58rem;color:var(--text-dim);flex:none;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ev span:last-child{color:var(--text);line-height:1.45}
+.ev.warning span:last-child{color:var(--amber)}
+.ev.error span:last-child{color:var(--danger)}
+.ev.success span:last-child{color:#9ADFC0}
+.empty{font-family:var(--mono);font-size:.66rem;color:var(--text-faint);text-align:center;padding:22px 10px;line-height:1.7}
+
 .mirror-note{
   margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 24px;
   font-family:var(--mono);font-size:.72rem;color:var(--text-faint);line-height:1.7;
@@ -286,11 +309,17 @@ footer{margin-top:40px;text-align:center;font-family:var(--mono);font-size:.62re
     </section>
   </div>
 
+  <div class="feed">
+    <h4>Live Activity</h4>
+    <div class="stream" id="stream"><div class="empty">No events yet.</div></div>
+  </div>
+
   <div class="mirror-note">
-    Read-only mirror of a single /rapidx:loop engagement, polled every 20s.
-    The live activity feed only exists on the local dashboard (SSE) &mdash; run
-    <code>node .rapidx/loop/dashboard/launch.js --open</code> from the engagement
-    repo for the full live build console.
+    Read-only mirror of a single /rapidx:loop engagement. Status refreshes every 20s;
+    the activity feed below shows the last 50 progress events, mirrored from the
+    engagement's local dashboard roughly every 45s. For the full instant, per-action
+    feed, run <code>node .rapidx/loop/dashboard/launch.js --open</code> from the
+    engagement repo.
   </div>
 
   <footer>RAPIDX LOOP &middot; AZURE MIRROR &middot; READ-ONLY &middot; POLLED SNAPSHOT</footer>
@@ -485,12 +514,28 @@ footer{margin-top:40px;text-align:center;font-family:var(--mono);font-size:.62re
     }
   }
 
+  function renderStream(events) {
+    var box = el('stream');
+    if (!events || !events.length) {
+      box.innerHTML = '<div class="empty">No events yet.</div>';
+      return;
+    }
+    box.innerHTML = events.slice().reverse().map(function (e) {
+      var cls = e.level || 'info';
+      var who = e.phase_name || e.stage || '';
+      return '<div class="ev ' + escapeHtml(cls) + '"><span class="t">' + escapeHtml((e.ts || '').slice(11, 19)) + '</span>' +
+        '<span class="who">' + escapeHtml(who) + '</span>' +
+        '<span>' + escapeHtml(e.message || '') + '</span></div>';
+    }).join('');
+  }
+
   function render(state) {
     el('updated').textContent = state.updated_at ? ('updated ' + fmtElapsed(state.updated_at)) : '';
     renderHero(state);
     renderTimeline(state);
     renderServices(state.services, state.manifest);
     renderEscalation(state);
+    renderStream(state.recent_events);
   }
 
   function poll() {
